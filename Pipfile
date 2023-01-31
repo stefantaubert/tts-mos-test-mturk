@@ -1,0 +1,28 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+tts_mos_test_mturk = {editable = true, path = "."}
+autopep8 = "*"
+pylint = "*"
+pycodestyle = "*"
+isort = "*"
+rope = "*"
+pytest = "*"
+autoflake = "*"
+twine = "*"
+build = "*"
+tox = "*"
+
+[packages]
+pandas = "*"
+tqdm = "*"
+boto3 = "*"
+boto3-stubs = {extras = ["mturk"], version = "*"}
+xmltodict = "*"
+ordered-set = "*"
+
+[requires]
+python_version = "3.11"
