@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.stats import norm, t
+from scipy.stats import t
 
 
 def get_assignment_count(assignments: np.ndarray) -> int:

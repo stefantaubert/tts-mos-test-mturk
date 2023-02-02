@@ -3,7 +3,6 @@ from typing import Tuple
 
 import numpy as np
 import scipy
-from scipy.stats import norm, t
 
 from tts_mos_test_mturk.calculation.etc import matlab_tinv
 from tts_mos_test_mturk.calculation.mos_variance import mos_variance
@@ -23,6 +22,7 @@ def compute_mos_ci95_3gaussian(Z: np.ndarray) -> Tuple[float, float]:
   Z = remove_outliers(Z)
   mos = np.nanmean(Z.flatten())
 
-  mos_var = mos_variance(Z)
-  ci95 = matlab_tinv(0.95, min(Z.shape) - 1) * sqrt(mos_var)
+  v_mu = mos_variance(Z)
+  t = matlab_tinv(0.95, min(Z.shape) - 1)
+  ci95 = t * sqrt(v_mu)
   return mos, ci95

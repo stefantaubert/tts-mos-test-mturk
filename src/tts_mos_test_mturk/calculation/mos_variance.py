@@ -43,8 +43,8 @@ def mos_variance(Z: np.ndarray) -> float:
     ], dtype=np.float32)
     v = np.linalg.solve(v, b)
     v_s = max(v[0], 0)
-    v_w = max(v[0], 1)
-    v_u = max(v[0], 2)
+    v_w = max(v[1], 0)
+    v_u = max(v[2], 0)
     v_mu = v_s * np.sum(Mi**2) / T**2 + v_w * sum(Nj**2) / T**2 + v_u / T
   elif np.isnan(v_su) and ~np.isnan(v_wu):
     v = np.array([

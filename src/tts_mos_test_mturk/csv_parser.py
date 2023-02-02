@@ -134,26 +134,19 @@ def parse_df(input_df: DataFrame, output_df: DataFrame, consider_lt: Set[str], p
   for algo_i, algo in enumerate(algo_results):
     mos, ci95 = compute_mos_ci95_3gaussian(algo)
     logger.info(f"MOS for alg{algo_i}: {mos} +- {ci95}")
-    continue
-    mos = np.mean(calc_worker_mos(algo))
-    std = np.mean(calc_worker_std(algo))
-    std_ci95 = np.mean(calc_worker_std(algo) * 1.95996)
-    logger.info(f"MOS for alg{algo_i}: {mos} +- {std}")
+    std2 = np.mean(calc_worker_std2(algo))
+    std_ci95 = np.mean(calc_worker_std2(algo) * 1.95996)
     logger.info(f"MOS for alg{algo_i}: {mos} +- {std_ci95}")
+    # logger.info(f"MOS for alg{algo_i}: {mos} +- {std2}")
 
   return resulting_ratings
 
 
-def calc_worker_mos(array: np.array) -> np.ndarray:
-  res = np.nanmean(array, axis=1)
-  return res
-
-
-def calc_worker_std(array: np.array) -> np.ndarray:
+def calc_worker_std2(array: np.array) -> np.ndarray:
   # std = quality_ambiguity
-  std = np.nanstd(array, axis=1)
-  x = ~np.isnan(array)
-  count_not_nan = np.nansum(x, axis=1)
+  std = np.nanstd(array.flatten())
+  x = ~np.isnan(array.flatten())
+  count_not_nan = np.nansum(x)
   # std / sqrt(N), ignoring NaN
   mos_std = std / np.sqrt(count_not_nan)
   return mos_std
