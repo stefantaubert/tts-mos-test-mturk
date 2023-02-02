@@ -17,7 +17,7 @@ MIN_WORK_TIME = 35
 TOO_FAST_RATE = 0.07
 REJECT_RATE = 0.07
 WRONG_DEVICE_RATE = 0.07
-WRONG_ANNOTATION_RATE = 0.07
+# WRONG_ANNOTATION_RATE = 0.07
 
 N_ALG = 4
 ALG_WEIGHTS = {
@@ -129,7 +129,7 @@ for i_assignment in range(N_ASSIGNMENTS_PER_HIT):
       alg_nr = int(reg.group(1))
       # alg_rate = ALG_WEIGHTS[alg_nr]
       alg_rate = [
-        hit_worker_performance if mos == mos_ground_truth[sample_audio] else 0.3
+        hit_worker_performance if mos == mos_ground_truth[sample_audio] else 0.25
         for mos in range(1, 6)
       ]
       alg_weights.append(alg_rate)
