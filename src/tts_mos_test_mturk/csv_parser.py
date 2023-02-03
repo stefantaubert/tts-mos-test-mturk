@@ -12,7 +12,10 @@ from mypy_boto3_mturk.type_defs import HITTypeDef
 from ordered_set import OrderedSet
 from pandas import DataFrame
 
-from tts_mos_test_mturk.calculation.compute_mos_ci95_3gaussian import compute_mos_ci95_3gaussian
+from tts_mos_test_mturk.calculation.compute_mos_ci95_3gaussian import (compute_ci95, compute_mos,
+                                                                       compute_mos_ci95_3gaussian)
+from tts_mos_test_mturk.calculation.etc import (mask_lower_outliers, mask_outliers,
+                                                mask_smaller_than_val, mask_workers)
 
 MOS_PATTERN = re.compile(r"Answer\.(\d+)-mos-rating\.([1-5])")
 LT_PATTERN = re.compile(r"Answer\.listening-type\.(.+)")
@@ -86,7 +89,9 @@ def parse_df(input_df: DataFrame, output_df: DataFrame, consider_lt: Set[str], p
   workers = {row['WorkerId'] for row in df_as_dict.values()}
   workers = OrderedSet(sorted(workers))
 
-  result = np.full((len(workers), len(all_audio_paths)), fill_value=np.nan, dtype=np.float16)
+  Z_all = np.full((len(workers), len(all_audio_paths)), fill_value=np.nan, dtype=np.float16)
+  work_times_all = np.full((len(workers), len(all_audio_paths)),
+                           fill_value=np.nan, dtype=np.float16)
 
   for i, row in df_as_dict.items():
     if row["AssignmentStatus"] == "Rejected":
@@ -94,10 +99,10 @@ def parse_df(input_df: DataFrame, output_df: DataFrame, consider_lt: Set[str], p
       ignored_assignments_count += 1
       continue
     worktime = int(row["WorkTimeInSeconds"])
-    if worktime < min_worktime_s:
-      logger.info(f"Ignored too fast assignment: {row['AssignmentId']}")
-      ignored_assignments_count += 1
-      continue
+    # if worktime < min_worktime_s:
+    #   logger.info(f"Ignored too fast assignment: {row['AssignmentId']}")
+    #   ignored_assignments_count += 1
+    #   continue
     lt = parse_listening_type(row)
     if lt not in consider_lt:
       logger.info(f"Ignored invalid listening type assignment: {row['AssignmentId']}")
@@ -113,7 +118,8 @@ def parse_df(input_df: DataFrame, output_df: DataFrame, consider_lt: Set[str], p
       audio_index = all_audio_paths.get_loc(audio_url)
       assert sample_nr in mos
       mos_rating = mos[sample_nr]
-      result[worker_index][audio_index] = mos_rating
+      Z_all[worker_index][audio_index] = mos_rating
+      work_times_all[worker_index][audio_index] = worktime
       assert audio_url in mos_ratings
       mos_ratings[audio_url].append(mos_rating)
     kept_assignments_count += 1
@@ -128,19 +134,9 @@ def parse_df(input_df: DataFrame, output_df: DataFrame, consider_lt: Set[str], p
       f"Ignored {ignored_assignments_count} of {total_assignment_count} assignments ({ignored_assignments_count/total_assignment_count*100:.2f}%)!")
     logger.info(
       f"Considered {kept_assignments_count} of {total_assignment_count} assignments ({kept_assignments_count/total_assignment_count*100:.2f}%)!")
-
-  algo_results = list(split_algos(result, all_audio_paths, paths))
-
-  for algo_i, algo in enumerate(algo_results):
-    mos, ci95 = compute_mos_ci95_3gaussian(algo)
-    logger.info(f"MOS for alg{algo_i}: {mos} +- {ci95}")
-    std2 = np.mean(calc_worker_std2(algo))
-    std_ci95 = np.mean(calc_worker_std2(algo) * 1.95996)
-    logger.info(f"MOS for alg{algo_i}: {mos} +- {std_ci95}")
-    # logger.info(f"MOS for alg{algo_i}: {mos} +- {std2}")
-
-  return resulting_ratings
-
+  
+  return Z_all, work_times_all, workers, all_audio_paths
+  
 
 def calc_worker_std2(array: np.array) -> np.ndarray:
   # std = quality_ambiguity
@@ -151,13 +147,3 @@ def calc_worker_std2(array: np.array) -> np.ndarray:
   mos_std = std / np.sqrt(count_not_nan)
   return mos_std
 
-
-def split_algos(array: np.ndarray, audio_files: OrderedSet[str], split_paths: OrderedSet[str]) -> List[np.ndarray]:
-  for split_path in split_paths:
-    indices = [
-      audio_files.get_loc(audio_path)
-      for audio_path in audio_files
-      if audio_path.startswith(split_path)
-    ]
-    result = array[:, indices]
-    yield result

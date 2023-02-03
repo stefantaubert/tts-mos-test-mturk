@@ -3,6 +3,7 @@ from pathlib import Path
 import pandas as pd
 from ordered_set import OrderedSet
 
+from tts_mos_test_mturk.analyze_assignmens import analyze
 from tts_mos_test_mturk.csv_parser import parse_df
 from tts_mos_test_mturk_cli.logging_configuration import configure_root_logger
 
@@ -38,7 +39,7 @@ def parse_gen():
   result_csv = pd.read_csv(result_path)
   input_csv = pd.read_csv(input_csv)
 
-  parse_df(
+  Z_all, work_times_all, workers, all_audio_paths = parse_df(
     input_csv,
     result_csv,
     consider_lt={"in-ear", "over-the-ear"},
@@ -49,6 +50,15 @@ def parse_gen():
       "https://tuc.cloud/index.php/s/Fn5FzWsQwAeqRG4/download?path=/alg3",
     )),
     min_worktime_s=8 * 4 + 2,
+  )
+
+  analyze(Z_all, work_times_all, workers, all_audio_paths, paths=OrderedSet((
+      "https://tuc.cloud/index.php/s/Fn5FzWsQwAeqRG4/download?path=/alg0",
+      "https://tuc.cloud/index.php/s/Fn5FzWsQwAeqRG4/download?path=/alg1",
+      "https://tuc.cloud/index.php/s/Fn5FzWsQwAeqRG4/download?path=/alg2",
+      "https://tuc.cloud/index.php/s/Fn5FzWsQwAeqRG4/download?path=/alg3",
+    )),
+    min_worktime_s=8 * 4 + 2
   )
 
 

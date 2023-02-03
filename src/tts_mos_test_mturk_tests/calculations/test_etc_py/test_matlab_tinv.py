@@ -18,20 +18,20 @@ def test_095_from_one_to_hundered_returns_correct_values():
   ]
 
   for deg_freedom, correct_result in zip(range(1, len(correct_results) + 1), correct_results):
-    correct_results = matlab_tinv(0.95, deg_freedom)
+    correct_results = matlab_tinv(0.5 * (1 + 0.95), deg_freedom)
     assert round(correct_results, 4) == correct_result
 
 
 def test_095_200__returns_1_9718962236316089():
-  result = matlab_tinv(0.95, 200)
+  result = matlab_tinv(0.5 * (1 + 0.95), 200)
   assert result == 1.9718962236316089
 
 
 def test_095_inf__returns_1_959963984540054():
-  result = matlab_tinv(0.95, math.inf)
+  result = matlab_tinv(0.5 * (1 + 0.95), math.inf)
   assert result == 1.959963984540054
 
 
 def test_095_zero__returns_nan():
-  result = matlab_tinv(0.95, 0)
+  result = matlab_tinv(0.5 * (1 + 0.95), 0)
   assert math.isnan(result)
