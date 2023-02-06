@@ -63,8 +63,7 @@ def get_corrcoef(v: np.ndarray) -> float:
   assert len(v.shape) == 2
   assert v.shape[0] == 2
 
-  v = np.ma.masked_invalid(v)
-  nan_row_mask = v[0].mask | v[1].mask
+  nan_row_mask = np.any(np.isnan(v), axis=0)
   masked_v = v[:, ~nan_row_mask]
 
   result = np.corrcoef(masked_v)
