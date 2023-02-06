@@ -1,3 +1,4 @@
+import pandas as pd
 import math
 from logging import getLogger
 from typing import List, Set
@@ -257,4 +258,9 @@ def analyze(Z_all: np.ndarray, work_times_all: np.ndarray, listening_types_all: 
     # logger.info(f"MOS for alg{algo_i}: {mos} +- {std_ci95}")
     # logger.info(f"MOS for alg{algo_i}: {mos} +- {std2}")
 
-  return scores, ignored_workers
+  res = pd.DataFrame(
+    data=scores,
+    columns=["MOS", "CI95"],
+  )
+
+  return res, ignored_workers

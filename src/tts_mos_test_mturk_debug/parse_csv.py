@@ -68,6 +68,7 @@ def parse_gen():
     bad_worker_threshold_2=0.3,  # 0.7,
   )
   print(scores)
+  scores.to_csv(Path("examples/output-scores.csv"), index=True, index_label="Algorithm")
   Path("examples/reject-workers.txt").write_text("\n".join(sorted(ignored_workers)))
   fast_workers, bad_workers, no_bonus_workers, remaining_workers, top_50_workers, top_10_workers = compute_bonuses(Z_all, workers, all_audio_paths, paths=OrderedSet((
       "https://tuc.cloud/index.php/s/Fn5FzWsQwAeqRG4/download?path=/alg0",
