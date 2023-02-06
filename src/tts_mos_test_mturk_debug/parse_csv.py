@@ -52,7 +52,7 @@ def parse_gen():
     min_worktime_s=8 * 4 + 2,
   )
 
-  analyze(Z_all, work_times_all, listening_types_all, workers, all_audio_paths, paths=OrderedSet((
+  scores, ignored_workers = analyze(Z_all, work_times_all, listening_types_all, workers, all_audio_paths, paths=OrderedSet((
       "https://tuc.cloud/index.php/s/Fn5FzWsQwAeqRG4/download?path=/alg0",
       "https://tuc.cloud/index.php/s/Fn5FzWsQwAeqRG4/download?path=/alg1",
       "https://tuc.cloud/index.php/s/Fn5FzWsQwAeqRG4/download?path=/alg2",
@@ -63,6 +63,8 @@ def parse_gen():
     lt={"in-ear", "over-the-ear"},
     bad_worker_threshold_2=0.3,  # 0.7,
   )
+  print(scores)
+  Path("examples/reject-workers.txt").write_text("\n".join(sorted(ignored_workers)))
 
 
 parse_gen()

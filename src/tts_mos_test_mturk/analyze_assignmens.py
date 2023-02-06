@@ -105,14 +105,18 @@ def analyze(Z_all: np.ndarray, work_times_all: np.ndarray, listening_types_all: 
 
   ignored_workers = []
 
+  Z_workers = np.array(workers)
+
   # Ignore bad workers
   worker_correlations = get_worker_correlations(Z_all, alg_indices)
   bad_worker_mask: np.ndarray = worker_correlations < bad_worker_threshold
   logger.info(
     f"Ignored {np.sum(bad_worker_mask)} / {Z_all.shape[0]} bad workers, kept {Z_all.shape[0] - np.sum(bad_worker_mask)}!")
   old_count = np.nansum(Z_all.flatten() > 0)
-  ignored_workers.extend(bad_worker_mask.nonzero()[0])
+  ignored_workers.extend(Z_workers[bad_worker_mask.nonzero()[0]])
+  # ignored_workers.extend(bad_worker_mask.nonzero()[0])
   Z_all = Z_all[(~bad_worker_mask).nonzero()]
+  Z_workers = Z_workers[(~bad_worker_mask).nonzero()]
   work_times_all = work_times_all[(~bad_worker_mask).nonzero()]
   listening_types_all = listening_types_all[(~bad_worker_mask).nonzero()]
   new_count = np.nansum(Z_all.flatten() > 0)
@@ -127,8 +131,9 @@ def analyze(Z_all: np.ndarray, work_times_all: np.ndarray, listening_types_all: 
   logger.info(
     f"Ignored {np.sum(fast_worker_mask)} / {Z_all.shape[0]} too fast workers, kept {Z_all.shape[0] - np.sum(fast_worker_mask)}!")
   old_count = np.nansum(Z_all.flatten() > 0)
-  ignored_workers.extend(fast_worker_mask.nonzero()[0])
+  ignored_workers.extend(Z_workers[fast_worker_mask.nonzero()[0]])
   Z_all = Z_all[(~fast_worker_mask).nonzero()]
+  Z_workers = Z_workers[(~fast_worker_mask).nonzero()]
   work_times_all = work_times_all[(~fast_worker_mask).nonzero()]
   listening_types_all = listening_types_all[(~fast_worker_mask).nonzero()]
   new_count = np.nansum(Z_all.flatten() > 0)
@@ -154,8 +159,9 @@ def analyze(Z_all: np.ndarray, work_times_all: np.ndarray, listening_types_all: 
   logger.info(
     f"Ignored {np.sum(bad_worker_mask)} / {Z_all.shape[0]} bad workers, kept {Z_all.shape[0] - np.sum(bad_worker_mask)}!")
   old_count = np.nansum(Z_all.flatten() > 0)
-  ignored_workers.extend(bad_worker_mask.nonzero()[0])
+  ignored_workers.extend(Z_workers[bad_worker_mask.nonzero()[0]])
   Z_all = Z_all[(~bad_worker_mask).nonzero()]
+  Z_workers = Z_workers[(~bad_worker_mask).nonzero()]
   work_times_all = work_times_all[(~bad_worker_mask).nonzero()]
   listening_types_all = listening_types_all[(~bad_worker_mask).nonzero()]
   new_count = np.nansum(Z_all.flatten() > 0)
@@ -172,8 +178,9 @@ def analyze(Z_all: np.ndarray, work_times_all: np.ndarray, listening_types_all: 
   logger.info(
     f"Ignored {np.sum(low_count_mask)} / {Z_all.shape[0]} too fast workers, kept {Z_all.shape[0] - np.sum(low_count_mask)}!")
   old_count = np.nansum(Z_all.flatten() > 0)
-  ignored_workers.extend(low_count_mask.nonzero()[0])
+  ignored_workers.extend(Z_workers[low_count_mask.nonzero()[0]])
   Z_all = Z_all[(~low_count_mask).nonzero()]
+  Z_workers = Z_workers[(~low_count_mask).nonzero()]
   work_times_all = work_times_all[(~low_count_mask).nonzero()]
   listening_types_all = listening_types_all[(~low_count_mask).nonzero()]
   new_count = np.nansum(Z_all.flatten() > 0)
@@ -204,9 +211,9 @@ def analyze(Z_all: np.ndarray, work_times_all: np.ndarray, listening_types_all: 
   # new_count = np.nansum(Z_all.flatten() > 0)
   # logger.info(
   #   f"Ignored {old_count - new_count} / {new_count} assignments!")
-  
+
   scores = np.empty((n_alg, 2))
-  
+
   for algo_i, indices in enumerate(alg_indices):
     Z = Z_all[:, indices]
     scores[algo_i][0] = compute_mos(Z)
@@ -218,4 +225,4 @@ def analyze(Z_all: np.ndarray, work_times_all: np.ndarray, listening_types_all: 
     # logger.info(f"MOS for alg{algo_i}: {mos} +- {std_ci95}")
     # logger.info(f"MOS for alg{algo_i}: {mos} +- {std2}")
 
-  return scores
+  return scores, ignored_workers
