@@ -6,8 +6,9 @@ from ordered_set import OrderedSet
 from tts_mos_test_mturk.analyze_assignmens import analyze, compute_bonuses
 from tts_mos_test_mturk.api_parser import get_mturk_sandbox
 from tts_mos_test_mturk.csv_parser import parse_df
-from tts_mos_test_mturk.grand_bonuses import (generate_approve_csv, generate_bonus_csv,
-                                              generate_reject_csv)
+from tts_mos_test_mturk.grand_bonuses import (accept_reject, generate_approve_csv,
+                                              generate_bonus_csv, generate_reject_csv,
+                                              grant_bonuses)
 from tts_mos_test_mturk_cli.logging_configuration import configure_root_logger
 
 configure_root_logger()
@@ -84,20 +85,19 @@ def parse_gen():
   aws_access_key_id = "AKIAXZSPCXFHHW76X3FZ"
   aws_secret_access_key = "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"
 
-  mturk = get_mturk_sandbox(aws_access_key_id, aws_secret_access_key)
-
   approve_workers = no_bonus_workers | remaining_workers | top_50_workers | top_10_workers
   # TODO only tests
   bad_workers |= no_bonus_workers
   approve_workers -= no_bonus_workers
-  df1 = generate_approve_csv(approve_workers, worker_assignments)
+  df1 = generate_approve_csv(approve_workers, worker_assignments,
+                             "thank you for participating in our study")
   df2 = generate_reject_csv(bad_workers, worker_assignments,
                             "assignment is significantly inaccurate")
   df3 = generate_reject_csv(fast_workers, worker_assignments,
                             "assignment was submitted too quickly to be accurate")
 
-  df = pd.concat([df1, df2, df3])
-  df.to_csv(Path("examples/assignments.csv"), index=False)
+  bonuses_df = pd.concat([df1, df2, df3])
+  bonuses_df.to_csv(Path("examples/assignments.csv"), index=False)
 
   df1 = generate_bonus_csv(remaining_workers, worker_assignments,
                            "0.10", f"At least #{20} HITs completed")
@@ -108,9 +108,20 @@ def parse_gen():
   df3 = generate_bonus_csv(top_10_workers, worker_assignments,
                            "0.50", f"At least #{20} HITs completed; set in the top 10%")
 
-  df = pd.concat([df1, df2, df3])
-  df.to_csv(Path("examples/bonuses.csv"), index=False)
+  bonuses_df = pd.concat([df1, df2, df3])
+  bonuses_df.to_csv(Path("examples/bonuses.csv"), index=False)
 
+  mturk = get_mturk_sandbox(aws_access_key_id, aws_secret_access_key)
+  assignments_df = pd.read_csv(Path("examples/assignments.csv"))
+  try:
+    accept_reject(assignments_df, mturk)
+  except:
+    pass
+  bonuses_df = pd.read_csv(Path("examples/bonuses.csv"))
+  try:
+    grant_bonuses(bonuses_df, mturk)
+  except:
+    pass
   # for worker_id in remaining_workers:
   #   for assignment_id in worker_accepted_assignments[worker_id]:
   #     mturk.send_bonus(

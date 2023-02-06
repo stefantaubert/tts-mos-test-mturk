@@ -27,14 +27,16 @@ def generate_bonus_csv(workers: Set[str], assignments: Dict[str, Set[str]], bonu
   return result
 
 
-def generate_approve_csv(workers: Set[str], assignments: Dict[str, Set[str]]) -> Optional[pd.DataFrame]:
+def generate_approve_csv(workers: Set[str], assignments: Dict[str, Set[str]], reason: Optional[str]) -> Optional[pd.DataFrame]:
   results: List[Dict[str, Any]] = []
+  if reason is None:
+    reason = "x"
   for worker in sorted(workers):
     for assignment in sorted(assignments[worker]):
       line = OrderedDict((
         ("WorkerId", worker),
         ("AssignmentId", assignment),
-        ("Approve", "x"),
+        ("Approve", reason),
         ("Reject", ""),
       ))
       results.append(line)
@@ -67,14 +69,30 @@ def generate_reject_csv(workers: Set[str], assignments: Dict[str, Set[str]], rea
   return result
 
 
-def grant_bonuses(workers: OrderedSet[str], bonus: float, reason: str, mturk: MTurkClient):
-  for worker in workers:
+def grant_bonuses(df: pd.DataFrame, mturk: MTurkClient):
+  for i, row in df.iterrows():
     mturk.send_bonus(
-      WorkerId=worker,
-      BonusAmount=bonus,
-      Reason=reason,
+      WorkerId=row["WorkerId"],
+      BonusAmount=row["BonusAmount"],
+      Reason=row["Reason"],
+      AssignmentId=row["AssignmentId"],
     )
 
 
-def approve_workers(workers: OrderedSet[str], mturk: MTurkClient):
-  mturk
+def accept_reject(df: pd.DataFrame, mturk: MTurkClient):
+  for i, row in df.iterrows():
+    app_str = row["Approve"]
+    rej_str = row["Reject"]
+    if app_str != "":
+      mturk.approve_assignment(
+        AssignmentId=row["AssignmentId"],
+        RequesterFeedback=app_str,
+      )
+    else:
+      assert rej_str != ""
+      if rej_str == "x":
+        rej_str = None
+      mturk.reject_assignment(
+        AssignmentId=row["AssignmentId"],
+        RequesterFeedback=rej_str,
+      )
