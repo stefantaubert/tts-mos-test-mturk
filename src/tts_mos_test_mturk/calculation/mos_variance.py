@@ -55,6 +55,7 @@ def mos_variance(Z: np.ndarray) -> float:
       v_wu,
       v_swu,
     ])
+    v = np.linalg.solve(v, b)
     v_s = max(v[0], 0)
     v_wu = max(v[1], 0)
     v_mu = v_s * np.sum(Mi**2) / T**2 + v_wu / T
@@ -67,6 +68,7 @@ def mos_variance(Z: np.ndarray) -> float:
       v_su,
       v_swu,
     ])
+    v = np.linalg.solve(v, b)
     v_w = max(v[0], 0)
     v_su = max(v[1], 0)
     v_mu = v_w * np.sum(Nj**2) / T**2 + v_su / T

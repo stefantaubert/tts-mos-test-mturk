@@ -1,7 +1,7 @@
-from ordered_set import OrderedSet
 from typing import Generator, List
 
 import numpy as np
+from ordered_set import OrderedSet
 from scipy.stats import t
 
 
@@ -68,7 +68,7 @@ def mask_workers(mask: np.ndarray, p: float) -> np.ndarray:
 #     yield result
 
 
-def mask_algos(audio_files: OrderedSet[str], split_paths: OrderedSet[str]) -> Generator[np.ndarray, None, None]:
+def mask_algos(audio_files: OrderedSet[str], split_paths: OrderedSet[str]) -> Generator[List[int], None, None]:
   for split_path in split_paths:
     indices = [
       audio_files.get_loc(audio_path)

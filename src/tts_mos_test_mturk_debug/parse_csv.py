@@ -39,7 +39,7 @@ def parse_gen():
   result_csv = pd.read_csv(result_path)
   input_csv = pd.read_csv(input_csv)
 
-  Z_all, work_times_all, workers, all_audio_paths = parse_df(
+  Z_all, work_times_all, listening_types_all, workers, all_audio_paths = parse_df(
     input_csv,
     result_csv,
     consider_lt={"in-ear", "over-the-ear"},
@@ -52,13 +52,16 @@ def parse_gen():
     min_worktime_s=8 * 4 + 2,
   )
 
-  analyze(Z_all, work_times_all, workers, all_audio_paths, paths=OrderedSet((
+  analyze(Z_all, work_times_all, listening_types_all, workers, all_audio_paths, paths=OrderedSet((
       "https://tuc.cloud/index.php/s/Fn5FzWsQwAeqRG4/download?path=/alg0",
       "https://tuc.cloud/index.php/s/Fn5FzWsQwAeqRG4/download?path=/alg1",
       "https://tuc.cloud/index.php/s/Fn5FzWsQwAeqRG4/download?path=/alg2",
       "https://tuc.cloud/index.php/s/Fn5FzWsQwAeqRG4/download?path=/alg3",
     )),
-    min_worktime_s=8 * 4 + 2
+    fast_worker_threshold=8 * 4,
+    bad_worker_threshold=0.25,
+    lt={"in-ear", "over-the-ear"},
+    bad_worker_threshold_2=0.3,  # 0.7,
   )
 
 

@@ -1,4 +1,5 @@
 import re
+from collections import OrderedDict
 from logging import getLogger
 from pathlib import Path
 from typing import Dict, Generator, List, Set
@@ -16,6 +17,7 @@ from tts_mos_test_mturk.calculation.compute_mos_ci95_3gaussian import (compute_c
                                                                        compute_mos_ci95_3gaussian)
 from tts_mos_test_mturk.calculation.etc import (mask_lower_outliers, mask_outliers,
                                                 mask_smaller_than_val, mask_workers)
+from tts_mos_test_mturk.globals import LISTENING_TYPES
 
 MOS_PATTERN = re.compile(r"Answer\.(\d+)-mos-rating\.([1-5])")
 LT_PATTERN = re.compile(r"Answer\.listening-type\.(.+)")
@@ -89,11 +91,16 @@ def parse_df(input_df: DataFrame, output_df: DataFrame, consider_lt: Set[str], p
   workers = {row['WorkerId'] for row in df_as_dict.values()}
   workers = OrderedSet(sorted(workers))
 
-  Z_all = np.full((len(workers), len(all_audio_paths)), fill_value=np.nan, dtype=np.float16)
+  Z_all = np.full((len(workers), len(all_audio_paths)), fill_value=np.nan, dtype=np.float32)
   work_times_all = np.full((len(workers), len(all_audio_paths)),
                            fill_value=np.nan, dtype=np.float16)
+  listening_types_all = np.full((len(workers), len(all_audio_paths)),
+                                fill_value=np.nan, dtype=np.float16)
 
   for i, row in df_as_dict.items():
+    lt = parse_listening_type(row)
+    assert lt in LISTENING_TYPES
+
     if row["AssignmentStatus"] == "Rejected":
       logger.info(f"Ignored rejected assignment: {row['AssignmentId']}")
       ignored_assignments_count += 1
@@ -103,11 +110,10 @@ def parse_df(input_df: DataFrame, output_df: DataFrame, consider_lt: Set[str], p
     #   logger.info(f"Ignored too fast assignment: {row['AssignmentId']}")
     #   ignored_assignments_count += 1
     #   continue
-    lt = parse_listening_type(row)
-    if lt not in consider_lt:
-      logger.info(f"Ignored invalid listening type assignment: {row['AssignmentId']}")
-      ignored_assignments_count += 1
-      continue
+    # if lt not in consider_lt:
+    #   logger.info(f"Ignored invalid listening type assignment: {row['AssignmentId']}")
+    #   ignored_assignments_count += 1
+    #   continue
     worker_index = workers.get_loc(row['WorkerId'])
     audios = parse_audio_files(row)
     assert len(audios) == 8
@@ -120,6 +126,7 @@ def parse_df(input_df: DataFrame, output_df: DataFrame, consider_lt: Set[str], p
       mos_rating = mos[sample_nr]
       Z_all[worker_index][audio_index] = mos_rating
       work_times_all[worker_index][audio_index] = worktime
+      listening_types_all[worker_index][audio_index] = LISTENING_TYPES.get(lt)
       assert audio_url in mos_ratings
       mos_ratings[audio_url].append(mos_rating)
     kept_assignments_count += 1
@@ -134,9 +141,9 @@ def parse_df(input_df: DataFrame, output_df: DataFrame, consider_lt: Set[str], p
       f"Ignored {ignored_assignments_count} of {total_assignment_count} assignments ({ignored_assignments_count/total_assignment_count*100:.2f}%)!")
     logger.info(
       f"Considered {kept_assignments_count} of {total_assignment_count} assignments ({kept_assignments_count/total_assignment_count*100:.2f}%)!")
-  
-  return Z_all, work_times_all, workers, all_audio_paths
-  
+
+  return Z_all, work_times_all, listening_types_all, workers, all_audio_paths
+
 
 def calc_worker_std2(array: np.array) -> np.ndarray:
   # std = quality_ambiguity
@@ -146,4 +153,3 @@ def calc_worker_std2(array: np.array) -> np.ndarray:
   # std / sqrt(N), ignoring NaN
   mos_std = std / np.sqrt(count_not_nan)
   return mos_std
-

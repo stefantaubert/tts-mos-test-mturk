@@ -52,8 +52,8 @@ random_nums /= abs(np.max(random_nums.flatten()))
 #   for w in workers
 # }
 
-worker_performance = dict(zip(workers, random_nums))
 worker_performance = dict(zip(workers, [1] * len(workers)))
+worker_performance = dict(zip(workers, reversed(sorted(random_nums))))
 
 output_rows: List[Dict[str, str]] = []
 input_rows: List[Dict[str, str]] = []
