@@ -4,7 +4,6 @@ import re
 from typing import Dict, List, Set
 
 import numpy as np
-from ordered_set import OrderedSet
 from pandas import DataFrame
 
 N_ASSIGNMENTS_PER_HIT = 9
@@ -38,7 +37,7 @@ ALG_WEIGHTS = {
 
 random.seed(SEED)
 
-workers = [f"worker{x}" for x in range(N_WORKERS)]
+workers = [f"worker{str(x).zfill(len(str(N_WORKERS - 1)))}" for x in range(N_WORKERS)]
 
 
 random_nums = np.random.normal(loc=0, scale=0.5, size=N_WORKERS)

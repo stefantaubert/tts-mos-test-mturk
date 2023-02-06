@@ -1,22 +1,11 @@
 import re
-from collections import OrderedDict
 from logging import getLogger
-from pathlib import Path
-from typing import Dict, Generator, List, Set
+from typing import Dict, List, Set
 
-import boto3
-import botocore
 import numpy as np
-import pandas as pd
-import xmltodict
-from mypy_boto3_mturk.type_defs import HITTypeDef
 from ordered_set import OrderedSet
 from pandas import DataFrame
 
-from tts_mos_test_mturk.calculation.compute_mos_ci95_3gaussian import (compute_ci95, compute_mos,
-                                                                       compute_mos_ci95_3gaussian)
-from tts_mos_test_mturk.calculation.etc import (mask_lower_outliers, mask_outliers,
-                                                mask_smaller_than_val, mask_workers)
 from tts_mos_test_mturk.globals import LISTENING_TYPES
 
 MOS_PATTERN = re.compile(r"Answer\.(\d+)-mos-rating\.([1-5])")
@@ -97,12 +86,14 @@ def parse_df(input_df: DataFrame, output_df: DataFrame, consider_lt: Set[str], p
   listening_types_all = np.full((len(workers), len(all_audio_paths)),
                                 fill_value=np.nan, dtype=np.float16)
 
+  worker_accepted_assignments: Dict[str, Set[str]] = {}
+
   for i, row in df_as_dict.items():
     lt = parse_listening_type(row)
     assert lt in LISTENING_TYPES
-
+    assignment_id = row['AssignmentId']
     if row["AssignmentStatus"] == "Rejected":
-      logger.info(f"Ignored rejected assignment: {row['AssignmentId']}")
+      logger.info(f"Ignored rejected assignment: {assignment_id}")
       ignored_assignments_count += 1
       continue
     worktime = int(row["WorkTimeInSeconds"])
@@ -114,7 +105,12 @@ def parse_df(input_df: DataFrame, output_df: DataFrame, consider_lt: Set[str], p
     #   logger.info(f"Ignored invalid listening type assignment: {row['AssignmentId']}")
     #   ignored_assignments_count += 1
     #   continue
-    worker_index = workers.get_loc(row['WorkerId'])
+    worker_id = row['WorkerId']
+    worker_index = workers.get_loc(worker_id)
+    if worker_id not in worker_accepted_assignments:
+      worker_accepted_assignments[worker_id] = set()
+    worker_accepted_assignments[worker_id].add(assignment_id)
+
     audios = parse_audio_files(row)
     assert len(audios) == 8
     mos = parse_mos_answers(row)
@@ -142,7 +138,7 @@ def parse_df(input_df: DataFrame, output_df: DataFrame, consider_lt: Set[str], p
     logger.info(
       f"Considered {kept_assignments_count} of {total_assignment_count} assignments ({kept_assignments_count/total_assignment_count*100:.2f}%)!")
 
-  return Z_all, work_times_all, listening_types_all, workers, all_audio_paths
+  return Z_all, work_times_all, listening_types_all, workers, all_audio_paths, worker_accepted_assignments
 
 
 def calc_worker_std2(array: np.array) -> np.ndarray:

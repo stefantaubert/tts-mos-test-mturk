@@ -2,7 +2,6 @@ from math import sqrt
 from typing import Tuple
 
 import numpy as np
-import scipy
 
 from tts_mos_test_mturk.calculation.etc import matlab_tinv
 from tts_mos_test_mturk.calculation.mos_variance import mos_variance

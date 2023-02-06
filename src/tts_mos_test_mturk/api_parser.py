@@ -1,14 +1,11 @@
 
 
 import re
-from pathlib import Path
-from typing import Dict, List
+from typing import Dict
 
 import boto3
-import botocore
-import pandas as pd
 import xmltodict
-from mypy_boto3_mturk.type_defs import HITTypeDef
+from mypy_boto3_mturk import MTurkClient
 
 MOS_PATTERN = re.compile(r"(\d+)-mos-rating\.([1-5])")
 LT_PATTERN = re.compile(r"listening-type\.(.+)")
@@ -50,6 +47,22 @@ def answer_to_dict(answer: str) -> Dict[str, str]:
     for answer_field in xml_doc['QuestionFormAnswers']['Answer']
   }
   return tmp
+
+
+def get_mturk_sandbox(key_id: str, access_key: str) -> MTurkClient:
+  MTURK_SANDBOX = 'https://mturk-requester-sandbox.us-east-1.amazonaws.com'
+  MTURK_PRODUCTIVE = None
+
+  session = boto3.Session(
+    aws_access_key_id=key_id,
+    aws_secret_access_key=access_key,
+    region_name="us-east-1",
+  )
+
+  MTURK_ENDPOINT = MTURK_SANDBOX
+
+  mturk = session.client('mturk', endpoint_url=MTURK_ENDPOINT)
+  return mturk
 
 
 def parse_api(key_id: str, access_key: str):

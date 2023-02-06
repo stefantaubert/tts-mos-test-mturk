@@ -1,23 +1,12 @@
 import math
-import re
 from logging import getLogger
-from pathlib import Path
-from typing import Dict, Generator, List, Set
+from typing import List, Set
 
-import boto3
-import botocore
 import numpy as np
-import pandas as pd
-import xmltodict
-from mypy_boto3_mturk.type_defs import HITTypeDef
 from ordered_set import OrderedSet
-from pandas import DataFrame
 
-from tts_mos_test_mturk.calculation.compute_mos_ci95_3gaussian import (compute_ci95, compute_mos,
-                                                                       compute_mos_ci95_3gaussian)
-from tts_mos_test_mturk.calculation.corrcoef import corrcoef
-from tts_mos_test_mturk.calculation.etc import (mask_algos, mask_lower_outliers, mask_outliers,
-                                                mask_smaller_than_val, mask_workers)
+from tts_mos_test_mturk.calculation.compute_mos_ci95_3gaussian import compute_ci95, compute_mos
+from tts_mos_test_mturk.calculation.etc import mask_algos
 from tts_mos_test_mturk.globals import LISTENING_TYPES
 
 
@@ -72,6 +61,51 @@ def get_corrcoef(v: np.ndarray) -> float:
   return result
 
 
+def compute_bonuses(Z_all: np.ndarray, workers: OrderedSet[str], all_audio_paths: OrderedSet[str], paths: OrderedSet[str], min_count_ass: int):
+  logger = getLogger(__name__)
+  alg_indices = list(mask_algos(all_audio_paths, paths))
+  # TODO filter before
+  fast_workers = set()
+  bad_workers = set()
+
+  n_workers = Z_all.shape[0]
+  Z_workers = np.array(workers)
+  bonuses = np.zeros(n_workers)
+
+  # Ignore low ass count workers
+  worker_audio_counts = np.nansum(~np.isnan(Z_all), axis=1)
+  worker_assignment_counts = worker_audio_counts / 8
+  min_count_mask: np.ndarray = worker_assignment_counts >= min_count_ass
+  logger.info(
+    f"{np.sum(min_count_mask)} / {Z_all.shape[0]} workers completed at least {min_count_ass} assignments!")
+
+  all_workers = set(Z_workers)
+  consider_workers = Z_workers[min_count_mask.nonzero()]
+
+  worker_correlations = get_worker_correlations(Z_all, alg_indices)
+
+  Z_all = Z_all[min_count_mask.nonzero()[0]]
+  Z_workers = Z_workers[min_count_mask.nonzero()[0]]
+  worker_correlations = worker_correlations[min_count_mask.nonzero()[0]]
+
+  sorted_indices = np.argsort(worker_correlations)
+  sorted_indices = np.array(list(reversed(sorted_indices)))
+  correlations_sorted = worker_correlations[sorted_indices]
+  workers_sorted = Z_workers[sorted_indices]
+  n_finalists = len(workers_sorted)
+  top_10_count = math.ceil(n_finalists * 0.1)
+  top_50_count = math.ceil(n_finalists * 0.5)
+  top_50_workers = workers_sorted[top_10_count:top_50_count]
+  top_50_workers = set(top_50_workers)
+  top_10_workers = workers_sorted[:top_10_count]
+  top_10_workers = set(top_10_workers)
+
+  remaining_workers = set(consider_workers) - top_50_workers - top_10_workers
+  no_bonus_workers = all_workers - remaining_workers - top_50_workers - top_10_workers
+
+  return fast_workers, bad_workers, no_bonus_workers, remaining_workers, top_50_workers, top_10_workers
+
+
 def get_worker_correlations(Z_all: np.ndarray, alg_indices: List[List[int]]) -> np.ndarray:
 
   n_alg = len(alg_indices)
@@ -95,7 +129,6 @@ def get_worker_correlations(Z_all: np.ndarray, alg_indices: List[List[int]]) -> 
 
 def analyze(Z_all: np.ndarray, work_times_all: np.ndarray, listening_types_all: np.ndarray, workers: OrderedSet[str], all_audio_paths: OrderedSet[str], paths: OrderedSet[str], fast_worker_threshold: float, bad_worker_threshold: float, lt: Set[int], bad_worker_threshold_2: float):
   logger = getLogger(__name__)
-
   n_alg = len(paths)
   n_workers = Z_all.shape[0]
   n_sentences = int(Z_all.shape[1] / n_alg)

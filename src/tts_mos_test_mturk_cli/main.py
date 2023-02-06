@@ -1,11 +1,8 @@
 from argparse import ArgumentParser, Namespace
 from logging import Logger
-from pathlib import Path
-from typing import Any, Callable, Dict, List
+from typing import Callable
 
-from tts_mos_test_mturk_cli.argparse_helper import (parse_existing_directory, parse_existing_file,
-                                                    parse_path, parse_positive_integer)
-from tts_mos_test_mturk_cli.helper import get_all_files_in_all_subfolders
+from tts_mos_test_mturk_cli.argparse_helper import parse_existing_file
 from tts_mos_test_mturk_cli.types import ExecutionResult
 
 

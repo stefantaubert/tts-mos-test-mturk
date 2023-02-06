@@ -1,7 +1,5 @@
 import numpy as np
 
-from tts_mos_test_mturk.calculation.corrcoef import corrcoef
-
 
 def test_component():
   result = np.corrcoef(
