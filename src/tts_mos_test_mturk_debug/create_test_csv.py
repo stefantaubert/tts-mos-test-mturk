@@ -72,6 +72,7 @@ alg_audios = []
 
 mos_ground_truth = {}
 
+gt_csv_data = []
 for i_speaker in range(N_SPEAKERS):
   speaker_name = f"speaker{i_speaker}"
   for i_alg in range(N_ALG):
@@ -83,6 +84,7 @@ for i_speaker in range(N_SPEAKERS):
       alg_audios.append(file_path)
       mos = random.choices(range(1, 6), weights=alg_weights, k=1)[0]
       mos_ground_truth[file_path] = mos
+      gt_csv_data.append((file_path, alg_name, audio_name))
 
 random.shuffle(alg_audios)
 
@@ -155,6 +157,13 @@ input_df = DataFrame(
   data=[row.values() for row in input_rows],
   columns=input_rows[0].keys(),
 )
+
+gt_df = DataFrame(
+  data=gt_csv_data,
+  columns=["audio_url", "algorithm", "file"],
+)
+gt_df.to_csv("/home/mi/code/tts-mos-test-mturk/examples/gen-gt.csv", index=False)
+
 
 print(input_df)
 input_df.to_csv("/home/mi/code/tts-mos-test-mturk/examples/gen-input.csv", index=False)

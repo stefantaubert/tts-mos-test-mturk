@@ -6,3 +6,8 @@ LISTENING_TYPES = OrderedDict((
   ("desktop", 2),
   ("laptop", 3),
 ))
+
+STATE_TYPES = OrderedDict((
+  ("Accepted", 0),
+  ("Rejected", 1),
+))

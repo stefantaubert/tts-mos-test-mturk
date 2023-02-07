@@ -11,10 +11,6 @@ from tts_mos_test_mturk.calculation.etc import mask_algos
 from tts_mos_test_mturk.globals import LISTENING_TYPES
 
 
-def get_worker_correlation(worker: int, Z: np.ndarray) -> float:
-
-  pass
-
 # used for finding outliers and computing bonuses
 
 
