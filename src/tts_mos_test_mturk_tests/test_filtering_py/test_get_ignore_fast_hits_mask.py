@@ -1,6 +1,6 @@
 import numpy as np
 
-from tts_mos_test_mturk.filtering import get_too_fast_hits_mask
+from tts_mos_test_mturk.filtering_old import get_too_fast_hits_mask
 
 
 def test_comp():

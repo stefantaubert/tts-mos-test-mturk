@@ -3,14 +3,15 @@ from pathlib import Path
 import pandas as pd
 from ordered_set import OrderedSet
 
-from tts_mos_test_mturk.analyze_assignmens import analyze, compute_bonuses
+from tts_mos_test_mturk.analyze_assignmens import analyze, analyze_v2, compute_bonuses
 from tts_mos_test_mturk.api_parser import get_mturk_sandbox
 from tts_mos_test_mturk.csv_parser import parse_df
-from tts_mos_test_mturk.filtering import ignore_fast_hits
+from tts_mos_test_mturk.filtering.listening_type_filtering import ignore_non_headphones
+from tts_mos_test_mturk.filtering_old import ignore_fast_hits, ignore_rejected
 from tts_mos_test_mturk.grand_bonuses import (accept_reject, generate_approve_csv,
                                               generate_bonus_csv, generate_reject_csv,
                                               grant_bonuses)
-from tts_mos_test_mturk.types import Evaluation
+from tts_mos_test_mturk.types import Evaluation, EvaluationData
 from tts_mos_test_mturk_cli.logging_configuration import configure_root_logger
 
 configure_root_logger()
@@ -146,8 +147,30 @@ def parse_gen_v2():
 
   ev.parse_results()
 
-  ignore_fast_hits(ev, min_speed=8 * 4 + 2),
+  ignore_rejected(ev)
+  # ignore_non_headphones(ev, True, "wrong device")
+  ignore_fast_hits(ev, min_speed=8 * 4 + 2)
+
+
+def parse_v3():
+  result_path = Path("/home/mi/code/tts-mos-test-mturk/examples/gen-output.csv")
+  ground_truth = Path("/home/mi/code/tts-mos-test-mturk/examples/gen-gt.csv")
+
+  result_csv = pd.read_csv(result_path)
+  ground_truth = pd.read_csv(ground_truth)
+
+  data = EvaluationData(result_csv, ground_truth)
+  analyze_v2(
+    data,
+    fast_worker_threshold=8 * 4,
+    bad_worker_threshold=0.25,
+    lt={"in-ear", "over-the-ear"},
+    bad_worker_threshold_2=0.3,  # 0.7,
+  )
+
+
+parse_v3()
 
 
 # parse_gen()
-parse_gen_v2()
+# parse_gen_v2()

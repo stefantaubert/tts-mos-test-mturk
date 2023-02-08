@@ -24,6 +24,7 @@ boto3-stubs = {extras = ["mturk"], version = "*"}
 xmltodict = "*"
 ordered-set = "*"
 scipy = "*"
+text-selection = "*"
 
 [requires]
 python_version = "3.11"

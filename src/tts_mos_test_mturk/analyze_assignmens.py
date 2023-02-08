@@ -1,15 +1,15 @@
-import pandas as pd
 import math
 from logging import getLogger
 from typing import List, Set
 
 import numpy as np
+import pandas as pd
 from ordered_set import OrderedSet
 
 from tts_mos_test_mturk.calculation.compute_mos_ci95_3gaussian import compute_ci95, compute_mos
 from tts_mos_test_mturk.calculation.etc import mask_algos
 from tts_mos_test_mturk.globals import LISTENING_TYPES
-
+from tts_mos_test_mturk.types import EvaluationData
 
 # used for finding outliers and computing bonuses
 
@@ -43,6 +43,16 @@ def get_algorithm_mos_correlation(worker: int, Zs: np.ndarray) -> float:
     scores[1, alg_i] = compute_mos(Zs[alg_i, others, :])
 
   return get_corrcoef(scores)
+
+
+def get_algorithm_mos_correlations(Zs: np.ndarray) -> np.ndarray:
+  n_workers = Zs.shape[1]
+
+  correlations = np.empty(n_workers)
+  for worker_i in range(n_workers):
+    correlations[worker_i] = get_algorithm_mos_correlation(worker_i, Zs)
+
+  return correlations
 
 
 def get_corrcoef(v: np.ndarray) -> float:
@@ -122,6 +132,74 @@ def get_worker_correlations(Z_all: np.ndarray, alg_indices: List[List[int]]) -> 
   worker_correlations = np.nanmean(correlations, axis=0)
   # print(worker_correlations)
   return worker_correlations
+
+
+def worker_mask_to_assignment_mask(mask: np.ndarray, assignment_worker_matrix: np.ndarray):
+  pass
+
+# def get_Z_mask_for_workers(workers: np.ndarray, )
+
+
+def get_os_count(Z: np.ndarray) -> int:
+  result = np.sum(~np.isnan(Z.flatten()))
+  return result
+
+
+def analyze_v2(data: EvaluationData, fast_worker_threshold: float, bad_worker_threshold: float, lt: Set[int], bad_worker_threshold_2: float):
+  logger = getLogger(__name__)
+  rejections = {}
+
+  workers = np.array(data.workers)
+  assignments = np.array(data.assignments)
+
+  logger.info("--- Ignoring bad workers ---")
+  worker_correlations = get_algorithm_mos_correlations(data.get_os())
+  bad_worker_mask: np.ndarray = worker_correlations < bad_worker_threshold
+  bad_workers = workers[bad_worker_mask.nonzero()[0]]
+  logger.info(f"Ignored {len(bad_workers)} workers!")
+
+  assignment_worker_matrix = data.get_assignment_worker_matrix()
+  bad_assignments_mask = np.isin(assignment_worker_matrix, bad_workers)
+  bad_assignments = assignments[bad_assignments_mask.nonzero()[0]]
+  logger.info(f"Ignored {len(bad_assignments)} assignments!")
+  for bad_assignment in bad_assignments:
+    assert bad_assignment not in rejections
+    rejections[bad_assignment] = "too bad"
+
+  count_old = get_os_count(data.get_os())
+  data.apply_ignore_assignments_mask(bad_assignments_mask)
+  data.apply_ignore_os_mask(data.get_os_mask_from_assignments(bad_assignments))
+  count_new = get_os_count(data.get_os())
+
+  logger.info(
+    f"Ignored {count_old - count_new} / {count_old} opinion scores, kept {count_new}!")
+  logger.info("---------------------------")
+
+  logger.info("--- Ignoring too fast assignments ---")
+  assignment_work_times = data.get_assignment_work_times()
+  # assignment_work_times = np.nan
+  fast_assignments_mask = assignment_work_times < fast_worker_threshold
+  fast_assignments = assignments[fast_assignments_mask.nonzero()[0]]
+  logger.info(f"Ignored {len(fast_assignments)} assignments!")
+  for fast_assignment in fast_assignments:
+    assert fast_assignment not in rejections
+    rejections[fast_assignment] = "too fast"
+
+  count_old = get_os_count(data.get_os())
+  data.apply_ignore_assignments_mask(fast_assignments_mask)
+  data.apply_ignore_os_mask(data.get_os_mask_from_assignments(fast_assignments))
+  count_new = get_os_count(data.get_os())
+
+  logger.info(
+    f"Ignored {count_old - count_new} / {count_old} opinion scores, kept {count_new}!")
+
+  logger.info("---------------------------")
+
+  logger.info("--- Ignoring outliers")
+  os = data.get_os()
+  mu = np.nanmean(os)
+  s = np.nanstd(os)
+  logger.info("---------------------------")
 
 
 def analyze(Z_all: np.ndarray, work_times_all: np.ndarray, listening_types_all: np.ndarray, workers: OrderedSet[str], all_audio_paths: OrderedSet[str], paths: OrderedSet[str], fast_worker_threshold: float, bad_worker_threshold: float, lt: Set[int], bad_worker_threshold_2: float):

@@ -10,4 +10,5 @@ LISTENING_TYPES = OrderedDict((
 STATE_TYPES = OrderedDict((
   ("Accepted", 0),
   ("Rejected", 1),
+  ("Approved", 2),
 ))
