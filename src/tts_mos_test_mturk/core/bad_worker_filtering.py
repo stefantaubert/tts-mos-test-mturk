@@ -13,7 +13,8 @@ from tts_mos_test_mturk.calculation.etc import (get_workers_count, get_workers_p
                                                 get_workers_percent_mask, mask_outliers)
 from tts_mos_test_mturk.core.evaluation_data import (AssignmentMask, EvaluationData, MaskBase,
                                                      OpinionScoreMask, WorkerMask,
-                                                     get_assignment_mask_from_masks, get_assignments_worker_index_matrix,
+                                                     get_assignment_mask_from_masks,
+                                                     get_assignments_worker_index_matrix,
                                                      get_assignments_worker_matrix,
                                                      get_opinion_score_mask,
                                                      get_opinion_score_mask_from_masks,
@@ -124,7 +125,7 @@ def calc_mos(data: EvaluationData, mask_names: OrderedSet[str]) -> None:
 
 def generate_approve_csv(data: EvaluationData, mask_names: OrderedSet[str], reason: Optional[str]) -> Optional[pd.DataFrame]:
   logger = getLogger(__name__)
-  
+
   results: List[Dict[str, Any]] = []
   if reason is None:
     reason = "x"

@@ -185,12 +185,6 @@ class EvaluationData():
       worktimes[ass_i] = dp.worktime
     return worktimes
 
-  # def get_opinion_scores_masked(self, masks: List[Union[WorkerMask, AssignmentMask, OpinionScoreMask]]) -> np.ndarray:
-  #   opinion_scores = self.get_opinion_scores()
-  #   mask = get_opinion_score_mask_from_masks(masks, self.data)
-  #   opinion_scores[mask.mask] = np.nan
-  #   return opinion_scores
-
 
 def get_assignments_worker_index_matrix(data: EvaluationData) -> np.ndarray:
   res = np.full(
