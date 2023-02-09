@@ -1,13 +1,15 @@
 import math
 from logging import getLogger
-from typing import List, Set
+from typing import List, Optional, Set
 
 import numpy as np
 import pandas as pd
 from ordered_set import OrderedSet
 
 from tts_mos_test_mturk.calculation.compute_mos_ci95_3gaussian import compute_ci95, compute_mos
-from tts_mos_test_mturk.calculation.etc import mask_algos
+from tts_mos_test_mturk.calculation.etc import (get_workers_count, get_workers_percent,
+                                                get_workers_percent_mask, mask_algos, mask_outliers,
+                                                mask_workers_percent)
 from tts_mos_test_mturk.globals import LISTENING_TYPES
 from tts_mos_test_mturk.types import EvaluationData
 
@@ -145,7 +147,7 @@ def get_os_count(Z: np.ndarray) -> int:
   return result
 
 
-def analyze_v2(data: EvaluationData, fast_worker_threshold: float, bad_worker_threshold: float, lt: Set[int], bad_worker_threshold_2: float):
+def ignore_bad_workers(data: EvaluationData, bad_worker_threshold: float):
   logger = getLogger(__name__)
   rejections = {}
 
@@ -174,6 +176,14 @@ def analyze_v2(data: EvaluationData, fast_worker_threshold: float, bad_worker_th
   logger.info(
     f"Ignored {count_old - count_new} / {count_old} opinion scores, kept {count_new}!")
   logger.info("---------------------------")
+  return rejections
+
+
+def ignore_too_fast(data: EvaluationData, fast_worker_threshold: float):
+  logger = getLogger(__name__)
+  rejections = {}
+
+  assignments = np.array(data.assignments)
 
   logger.info("--- Ignoring too fast assignments ---")
   assignment_work_times = data.get_assignment_work_times()
@@ -195,11 +205,67 @@ def analyze_v2(data: EvaluationData, fast_worker_threshold: float, bad_worker_th
 
   logger.info("---------------------------")
 
+
+def ignore_outliers(data: EvaluationData, max_std_dev_diff: float, remove_workers_with_n_percent_of_diff: Optional[float]):
+  logger = getLogger(__name__)
+  rejections = {}
+
   logger.info("--- Ignoring outliers")
   os = data.get_os()
-  mu = np.nanmean(os)
-  s = np.nanstd(os)
+  count_old = get_os_count(data.get_os())
+  outlier_mask = mask_outliers(os, max_std_dev_diff)
+  data.apply_ignore_os_mask(outlier_mask)
+  count_new = get_os_count(data.get_os())
+
+  logger.info(
+    f"Ignored {count_old - count_new} / {count_old} outlying opinion scores, kept {count_new}!")
+
+  if remove_workers_with_n_percent_of_diff:
+
+    workers = np.array(data.workers)
+    assignments = np.array(data.assignments)
+
+    count_old = count_new
+    outlier_workers_count = get_workers_count(outlier_mask)
+    outlier_workers_percent = get_workers_percent(outlier_mask)
+    for w_i, worker in enumerate(data.workers):
+      logger.info(
+        f"Worker {worker} has {outlier_workers_percent[w_i]*100:.2f}% of outlying scores (#{outlier_workers_count[w_i]})")
+
+    outlier_workers_mask = get_workers_percent_mask(
+      outlier_mask, remove_workers_with_n_percent_of_diff)
+
+    bad_workers = workers[outlier_workers_mask.nonzero()[0]]
+    logger.info(f"Ignored {len(bad_workers)} workers!")
+
+    assignment_worker_matrix = data.get_assignment_worker_matrix()
+    outlier_assignments_mask = np.isin(assignment_worker_matrix, bad_workers)
+    outlier_assignments = assignments[outlier_assignments_mask.nonzero()[0]]
+    logger.info(f"Ignored {len(outlier_assignments)} assignments!")
+    for bad_assignment in outlier_assignments:
+      assert bad_assignment not in rejections
+      rejections[bad_assignment] = "too bad"
+
+    data.apply_ignore_assignments_mask(outlier_assignments_mask)
+    data.apply_ignore_os_mask(data.get_os_mask_from_assignments(outlier_assignments))
+    count_new = get_os_count(data.get_os())
+
+    logger.info(
+      f"Ignored {count_old - count_new} / {count_old} outlying opinion scores, kept {count_new}!")
+
   logger.info("---------------------------")
+
+
+def analyze_v2(data: EvaluationData, fast_worker_threshold: float, bad_worker_threshold: float, lt: Set[int], bad_worker_threshold_2: float):
+  logger = getLogger(__name__)
+  rejections = {}
+
+  workers = np.array(data.workers)
+  assignments = np.array(data.assignments)
+
+  ignore_bad_workers(data, bad_worker_threshold)
+  ignore_too_fast(data, fast_worker_threshold)
+  ignore_outliers(data, 1, 0.1)
 
 
 def analyze(Z_all: np.ndarray, work_times_all: np.ndarray, listening_types_all: np.ndarray, workers: OrderedSet[str], all_audio_paths: OrderedSet[str], paths: OrderedSet[str], fast_worker_threshold: float, bad_worker_threshold: float, lt: Set[int], bad_worker_threshold_2: float):
