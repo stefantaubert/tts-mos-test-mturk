@@ -30,7 +30,7 @@ class MaskBase():
   def __init__(self, mask: np.ndarray) -> None:
     self.mask = mask
 
-  def add_mask(self, mask: "MaskBase") -> None:
+  def combine_mask(self, mask: "MaskBase") -> None:
     self.mask = (self.mask | mask.mask)
 
   def apply_to(self, data: np.ndarray) -> None:
@@ -195,8 +195,8 @@ class EvaluationData():
 def get_assignments_worker_index_matrix(data: EvaluationData) -> np.ndarray:
   res = np.full(
     data.n_assignments,
-    fill_value=np.nan,
-    dtype=np.float32,
+    fill_value=-1,
+    dtype=np.int32,
   )
 
   for dp in data.data:
@@ -241,7 +241,7 @@ def get_opinion_score_mask_from_masks(masks: List[Union[WorkerMask, AssignmentMa
   result = data.mask_factory.get_opinion_score_mask()
   for mask in masks:
     mask = get_opinion_score_mask(mask, data)
-    result.add_mask(mask)
+    result.combine_mask(mask)
   return result
 
 
@@ -261,7 +261,7 @@ def get_assignment_mask_from_masks(masks: List[Union[WorkerMask, AssignmentMask]
     if isinstance(mask, OpinionScoreMask):
       continue
     mask = get_assignment_mask(mask, data)
-    result.add_mask(mask)
+    result.combine_mask(mask)
   return result
 
 
@@ -282,7 +282,7 @@ def get_worker_mask_from_masks(masks: List[WorkerMask], data: EvaluationData) ->
     if isinstance(mask, AssignmentMask):
       continue
     assert isinstance(mask, WorkerMask)
-    result.add_mask(mask)
+    result.combine_mask(mask)
   return result
 
 
