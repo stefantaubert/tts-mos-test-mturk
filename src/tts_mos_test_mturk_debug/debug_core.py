@@ -3,20 +3,14 @@ from pathlib import Path
 import pandas as pd
 from ordered_set import OrderedSet
 
-from tts_mos_test_mturk.analyze_assignmens import analyze, analyze_v2, compute_bonuses
-from tts_mos_test_mturk.api_parser import get_mturk_sandbox
 from tts_mos_test_mturk.core.bad_worker_filtering import (calc_mos, generate_approve_csv,
                                                           ignore_bad_workers,
+                                                          ignore_bad_workers_percent,
                                                           ignore_masked_count_opinion_scores,
                                                           ignore_outlier_opinion_scores,
                                                           ignore_too_fast_assignments)
 from tts_mos_test_mturk.core.evaluation_data import EvaluationData
 from tts_mos_test_mturk.core.stats import print_stats
-from tts_mos_test_mturk.csv_parser import parse_df
-from tts_mos_test_mturk.filtering.listening_type_filtering import ignore_non_headphones
-from tts_mos_test_mturk.filtering_old import ignore_fast_hits, ignore_rejected
-from tts_mos_test_mturk.grand_bonuses import (accept_reject, generate_bonus_csv,
-                                              generate_reject_csv, grant_bonuses)
 from tts_mos_test_mturk_cli.logging_configuration import configure_root_logger
 
 configure_root_logger()
@@ -29,21 +23,34 @@ def parse_v3():
   result_csv = pd.read_csv(result_path)
   ground_truth = pd.read_csv(ground_truth)
 
-  data = EvaluationData(result_csv, ground_truth, "base")
+  data = EvaluationData(result_csv, ground_truth)
 
-  calc_mos(data, OrderedSet(("base",)))
-  ignore_too_fast_assignments(data, OrderedSet(("base",)), 30, "too_fast_1")
-  generate_approve_csv(data, OrderedSet(("base", "too_fast_1",)), "good")
+  data.save(Path("/tmp/data.pkl"))
+  data = EvaluationData.load(Path("/tmp/data.pkl"))
 
-  ignore_outlier_opinion_scores(data, OrderedSet(("base",)), 1, "outliers")
-  ignore_masked_count_opinion_scores(data, OrderedSet(("base",)), "outliers", 0.05, "outliers_0.1")
-  calc_mos(data, OrderedSet(("base", "outliers", "outliers_0.1")))
+  calc_mos(data, OrderedSet())
+  ignore_bad_workers(data, OrderedSet(), 0.25, "bad_workers")
+  ignore_bad_workers_percent(data, OrderedSet(("bad_workers",)), 0.0, 0.5, "bonus_50_1")
+  print_stats(data, set(), {"bad_workers", "bonus_50_1"})
+  ignore_bad_workers_percent(data, OrderedSet(
+    ("bad_workers",)), 0.9, 1.1, "bonus_50_2")
+  print_stats(data, set(), {"bad_workers", "bonus_50_1", "bonus_50_2"})
+  ignore_bad_workers_percent(data, OrderedSet(
+    ("bad_workers",)), 0.0, 0.9, "bonus_10")
+  print_stats(data, set(), {"bad_workers", "bonus_10"})
 
-  ignore_bad_workers(data, OrderedSet(("base", "too_fast_1")), 0.25, "bad_workers")
-  # ignore_bad_workers(data, OrderedSet(("base", "bad_workers")), 0.25, "bad_workers_2")
-  ignore_too_fast_assignments(data, OrderedSet(("base", "bad_workers")), 30, "too_fast")
-  ignore_too_fast_assignments(data, OrderedSet(
-    ("base", "bad_workers", "too_fast")), 30, "too_fast_2")
+  generate_approve_csv(data, OrderedSet(("too_fast_1",)), "good")
+
+  ignore_too_fast_assignments(data, OrderedSet(), 30, "too_fast_1")
+
+  ignore_outlier_opinion_scores(data, OrderedSet(), 1, "outliers")
+  ignore_masked_count_opinion_scores(data, OrderedSet(), "outliers", 0.05, "outliers_0.1")
+  calc_mos(data, OrderedSet(("outliers", "outliers_0.1")))
+
+  ignore_bad_workers(data, OrderedSet(("too_fast_1",)), 0.25, "bad_workers")
+  # ignore_bad_workers(data, OrderedSet(( "bad_workers")), 0.25, "bad_workers_2")
+  ignore_too_fast_assignments(data, OrderedSet(("bad_workers",)), 30, "too_fast")
+  ignore_too_fast_assignments(data, OrderedSet(("bad_workers", "too_fast")), 30, "too_fast_2")
 
 
 parse_v3()

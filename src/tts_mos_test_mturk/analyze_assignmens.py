@@ -8,8 +8,7 @@ from ordered_set import OrderedSet
 
 from tts_mos_test_mturk.calculation.compute_mos_ci95_3gaussian import compute_ci95, compute_mos
 from tts_mos_test_mturk.calculation.etc import (get_workers_count, get_workers_percent,
-                                                get_workers_percent_mask, mask_algos, mask_outliers,
-                                                mask_workers_percent)
+                                                get_workers_percent_mask, mask_algos, mask_outliers)
 from tts_mos_test_mturk.globals import LISTENING_TYPES
 from tts_mos_test_mturk.types import EvaluationData
 

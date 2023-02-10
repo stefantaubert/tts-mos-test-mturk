@@ -4,7 +4,6 @@ from typing import Any, Dict, List, Optional, Set
 
 import pandas as pd
 from mypy_boto3_mturk import MTurkClient
-from ordered_set import OrderedSet
 
 
 def generate_bonus_csv(workers: Set[str], assignments: Dict[str, Set[str]], bonus: float, reason: str) -> Optional[pd.DataFrame]:

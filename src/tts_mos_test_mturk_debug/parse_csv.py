@@ -6,7 +6,6 @@ from ordered_set import OrderedSet
 from tts_mos_test_mturk.analyze_assignmens import analyze, analyze_v2, compute_bonuses
 from tts_mos_test_mturk.api_parser import get_mturk_sandbox
 from tts_mos_test_mturk.csv_parser import parse_df
-from tts_mos_test_mturk.filtering.listening_type_filtering import ignore_non_headphones
 from tts_mos_test_mturk.filtering_old import ignore_fast_hits, ignore_rejected
 from tts_mos_test_mturk.grand_bonuses import (accept_reject, generate_approve_csv,
                                               generate_bonus_csv, generate_reject_csv,

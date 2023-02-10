@@ -1,10 +1,8 @@
-import re
 from logging import getLogger
-from typing import Dict, Optional
 
 import numpy as np
 
-from tts_mos_test_mturk.globals import LISTENING_TYPES, STATE_TYPES
+from tts_mos_test_mturk.globals import STATE_TYPES
 from tts_mos_test_mturk.types import Evaluation
 
 

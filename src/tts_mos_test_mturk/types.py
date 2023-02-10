@@ -1,12 +1,9 @@
 import re
-from logging import getLogger
-from typing import Dict, Generator, List, Set
+from typing import Dict
 
 import numpy as np
 from ordered_set import OrderedSet
 from pandas import DataFrame
-
-from tts_mos_test_mturk.globals import LISTENING_TYPES, STATE_TYPES
 
 
 class Evaluation():
