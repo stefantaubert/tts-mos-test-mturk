@@ -1,3 +1,4 @@
+from ordered_set import OrderedSet
 import argparse
 import codecs
 from argparse import ArgumentTypeError
@@ -6,6 +7,13 @@ from pathlib import Path
 from typing import Callable, List, Optional, TypeVar
 
 T = TypeVar("T")
+
+
+class ConvertToOrderedSetAction(argparse._StoreAction):
+  def __call__(self, parser: argparse.ArgumentParser, namespace: argparse.Namespace, values: Optional[List], option_string: Optional[str] = None):
+    if values is not None:
+      values = OrderedSet(values)
+    super().__call__(parser, namespace, values, option_string)
 
 
 class ConvertToSetAction(argparse._StoreAction):

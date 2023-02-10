@@ -17,10 +17,10 @@ def print_stats(data: EvaluationData, mask_names: Set[str], added_mask_names: Se
 
 
 def print_stats_masks(data: EvaluationData, masks: List[MaskBase], added_masks: List[MaskBase]) -> None:
-  if any(isinstance(m, WorkerMask) for m in added_masks):
+  if len(added_masks) == 0 or any(isinstance(m, WorkerMask) for m in added_masks):
     print_worker_stats(data, masks, added_masks)
 
-  if any(isinstance(m, (WorkerMask, AssignmentMask)) for m in added_masks):
+  if len(added_masks) == 0 or any(isinstance(m, (WorkerMask, AssignmentMask)) for m in added_masks):
     print_assignment_stats(data, masks, added_masks)
 
   print_opinion_score_stats(data, masks, added_masks)

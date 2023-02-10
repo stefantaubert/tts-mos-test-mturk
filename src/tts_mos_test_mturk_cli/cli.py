@@ -16,6 +16,16 @@ from tts_mos_test_mturk_cli.logging_configuration import (configure_root_logger,
                                                           init_and_return_loggers,
                                                           try_init_file_buffer_logger)
 from tts_mos_test_mturk_cli.main import init_from_mel_parser
+from tts_mos_test_mturk_cli.parsers.approve_parser import get_approve_parser
+from tts_mos_test_mturk_cli.parsers.bad_workers_parser import get_bad_workers_parser
+from tts_mos_test_mturk_cli.parsers.bad_workers_percent_parser import get_bad_workers_percent_parser
+from tts_mos_test_mturk_cli.parsers.bonus_parser import get_bonus_parser
+from tts_mos_test_mturk_cli.parsers.calculation_parser import get_calculation_parser
+from tts_mos_test_mturk_cli.parsers.init_parser import get_init_parser
+from tts_mos_test_mturk_cli.parsers.outlier_parser import get_outlier_parser
+from tts_mos_test_mturk_cli.parsers.reject_parser import get_reject_parser
+from tts_mos_test_mturk_cli.parsers.stats_parser import get_stats_parser
+from tts_mos_test_mturk_cli.parsers.too_fast_parser import get_too_fast_parser
 from tts_mos_test_mturk_cli.types import ExecutionResult
 
 __APP_NAME = "tts-mos-test-mturk"
@@ -31,13 +41,22 @@ def formatter(prog):
 
 
 def get_parsers():
-  yield "from-wav", "calculate MCD from two .wav files", init_from_mel_parser
+  yield "init", "initialize project", get_init_parser
+  yield "calc-mos", "calculate MOS with CI95", get_calculation_parser
+  yield "stats", "print statistics", get_stats_parser
+  yield "approve", "approve", get_approve_parser
+  yield "reject", "reject", get_reject_parser
+  yield "bonus", "bonus assignments", get_bonus_parser
+  yield "ignore-too-fast", "ignore too fast assignments", get_too_fast_parser
+  yield "ignore-bad-workers", "ignore too bad workers", get_bad_workers_parser
+  yield "ignore-bad-workers-percent", "ignore bad workers by percentage", get_bad_workers_percent_parser
+  yield "ignore-outliers", "ignore outlieres", get_outlier_parser
 
 
 def _init_parser():
   main_parser = ArgumentParser(
     formatter_class=formatter,
-    description="Command-line interface (CLI) to calculate MCD.",
+    description="CLI to evaluate MOS results from MTurk and approve/reject workers.",
   )
   main_parser.add_argument('-v', '--version', action='version', version='%(prog)s ' + __version__)
   subparsers = main_parser.add_subparsers(help="description")

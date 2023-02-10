@@ -16,11 +16,9 @@ from tts_mos_test_mturk.core.stats import print_stats_masks
 
 
 def ignore_bad_workers(data: EvaluationData, mask_names: OrderedSet[str], threshold: float, mask_name: str):
-  logger = getLogger(__name__)
   masks = [data.masks[mask_name] for mask_name in mask_names]
   factory = data.get_mask_factory()
 
-  logger.info("--- Ignoring bad workers ---")
   opinion_scores = data.get_os()
   opinion_scores_mask = factory.merge_masks_into_omask(masks)
   opinion_scores_mask.apply_by_nan(opinion_scores)
@@ -34,11 +32,9 @@ def ignore_bad_workers(data: EvaluationData, mask_names: OrderedSet[str], thresh
 
 
 def ignore_bad_workers_percent(data: EvaluationData, mask_names: OrderedSet[str], from_percent_incl: float, to_percent_excl: float, mask_name: str):
-  logger = getLogger(__name__)
   masks = [data.masks[mask_name] for mask_name in mask_names]
   factory = data.get_mask_factory()
 
-  logger.info("--- Ignoring bad workers ---")
   os = data.get_os()
   omask = factory.merge_masks_into_omask(masks)
   omask.apply_by_nan(os)
@@ -76,11 +72,9 @@ def ignore_bad_workers_percent(data: EvaluationData, mask_names: OrderedSet[str]
 
 
 def ignore_too_fast_assignments(data: EvaluationData, mask_names: OrderedSet[str], threshold: float, mask_name: str):
-  logger = getLogger(__name__)
   masks = [data.masks[mask_name] for mask_name in mask_names]
   factory = data.get_mask_factory()
 
-  logger.info("--- Ignoring fast assignments ---")
   worktimes = data.get_worktimes()
   worktimes_mask = factory.merge_masks_into_amask(masks)
   worktimes_mask.apply_by_nan(worktimes)
@@ -93,11 +87,9 @@ def ignore_too_fast_assignments(data: EvaluationData, mask_names: OrderedSet[str
 
 
 def ignore_outlier_opinion_scores(data: EvaluationData, mask_names: OrderedSet[str], max_std_dev_diff: float, mask_name: str):
-  logger = getLogger(__name__)
   masks = [data.masks[mask_name] for mask_name in mask_names]
   factory = data.get_mask_factory()
 
-  logger.info("--- Ignoring outliers ---")
   os = data.get_os()
   omask = factory.merge_masks_into_omask(masks)
   omask.apply_by_nan(os)
@@ -116,7 +108,6 @@ def ignore_masked_count_opinion_scores(data: EvaluationData, mask_names: Ordered
   ref_mask = data.masks[ref_mask_name]
   ref_omask = factory.convert_mask_to_omask(ref_mask)
 
-  logger.info("--- Ignoring count masked ---")
   os = data.get_os()
   omask = factory.merge_masks_into_omask(masks)
   omask.apply_by_nan(os)
@@ -133,12 +124,10 @@ def ignore_masked_count_opinion_scores(data: EvaluationData, mask_names: Ordered
   print_stats_masks(data, masks, [outlier_wmask])
 
 
-def calc_mos(data: EvaluationData, mask_names: OrderedSet[str]) -> None:
-  logger = getLogger(__name__)
+def calc_mos(data: EvaluationData, mask_names: OrderedSet[str]) -> pd.DataFrame:
   masks = [data.masks[mask_name] for mask_name in mask_names]
   factory = data.get_mask_factory()
 
-  logger.info("--- Ignoring count masked ---")
   os = data.get_os()
   omask = factory.merge_masks_into_omask(masks)
   omask.apply_by_nan(os)
@@ -157,12 +146,10 @@ def calc_mos(data: EvaluationData, mask_names: OrderedSet[str]) -> None:
     columns=scores[0].keys(),
   )
 
-  print(res)
+  return res
 
 
 def generate_approve_csv(data: EvaluationData, mask_names: OrderedSet[str], reason: Optional[str]) -> Optional[pd.DataFrame]:
-  logger = getLogger(__name__)
-
   results: List[Dict[str, Any]] = []
   if reason is None:
     reason = "x"
@@ -192,5 +179,66 @@ def generate_approve_csv(data: EvaluationData, mask_names: OrderedSet[str], reas
     data=[x.values() for x in results],
     columns=results[0].keys(),
   )
-  print(result)
+  return result
+
+
+def generate_reject_csv(data: EvaluationData, mask_names: OrderedSet[str], reason: str) -> Optional[pd.DataFrame]:
+  results: List[Dict[str, Any]] = []
+
+  masks = [data.masks[mask_name] for mask_name in mask_names]
+  factory = data.get_mask_factory()
+
+  worktimes_amask = factory.merge_masks_into_amask(masks)
+  assignment_indices = worktimes_amask.masked_indices
+  assignments_worker_matrix = factory.get_assignments_worker_index_matrix()
+
+  for assignment_index in sorted(assignment_indices):
+    assignment_id = data.assignments[assignment_index]
+    worker_index = assignments_worker_matrix[assignment_index]
+    worker_id = data.workers[worker_index]
+    line = OrderedDict((
+      ("AssignmentId", assignment_id),
+      ("WorkerId", worker_id),
+      ("Approve", ""),
+      ("Reject", reason),
+    ))
+    results.append(line)
+
+  if len(results) == 0:
+    return None
+  result = pd.DataFrame(
+    data=[x.values() for x in results],
+    columns=results[0].keys(),
+  )
+  return result
+
+
+def generate_bonus_csv(data: EvaluationData, mask_names: OrderedSet[str], bonus: float, reason: str) -> Optional[pd.DataFrame]:
+  results: List[Dict[str, Any]] = []
+
+  masks = [data.masks[mask_name] for mask_name in mask_names]
+  factory = data.get_mask_factory()
+
+  worktimes_amask = factory.merge_masks_into_amask(masks)
+  assignment_indices = worktimes_amask.unmasked_indices
+  assignments_worker_matrix = factory.get_assignments_worker_index_matrix()
+
+  for assignment_index in sorted(assignment_indices):
+    assignment_id = data.assignments[assignment_index]
+    worker_index = assignments_worker_matrix[assignment_index]
+    worker_id = data.workers[worker_index]
+    line = OrderedDict((
+      ("AssignmentId", assignment_id),
+      ("WorkerId", worker_id),
+      ("BonusAmount", bonus),
+      ("Reason", reason),
+    ))
+    results.append(line)
+
+  if len(results) == 0:
+    return None
+  result = pd.DataFrame(
+    data=[x.values() for x in results],
+    columns=results[0].keys(),
+  )
   return result

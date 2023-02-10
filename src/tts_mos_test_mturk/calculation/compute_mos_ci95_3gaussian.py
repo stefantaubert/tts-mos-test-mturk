@@ -5,7 +5,6 @@ import numpy as np
 
 from tts_mos_test_mturk.calculation.etc import matlab_tinv
 from tts_mos_test_mturk.calculation.mos_variance import mos_variance
-from tts_mos_test_mturk.calculation.remove_outliers import remove_outliers
 
 
 def compute_mos(Z: np.ndarray) -> float:
@@ -29,7 +28,7 @@ def compute_mos_ci95_3gaussian(Z: np.ndarray) -> Tuple[float, float]:
   # F. Ribeiro, D. Florencio, C. Zhang and M. Seltzer, "crowdMOS: An Approach for
   # Crowdsourcing Mean Opinion Score Studies", submitted to ICASSP 2011.
 
-  Z = remove_outliers(Z)
+  # Z = remove_outliers(Z)
   mos = np.nanmean(Z.flatten())
 
   v_mu = mos_variance(Z)
