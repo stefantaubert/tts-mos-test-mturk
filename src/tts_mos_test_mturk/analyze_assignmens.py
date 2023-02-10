@@ -30,6 +30,23 @@ def get_sentence_mos_correlation(worker: int, Z: np.ndarray) -> float:
   return get_corrcoef(scores)
 
 
+def get_sentence_mos_correlation_3dim(worker: int, Zs: np.ndarray) -> float:
+  assert len(Zs.shape) == 3
+  Z = np.concatenate(Zs, axis=1)
+  return get_sentence_mos_correlation(worker, Z)
+
+
+def get_sentence_mos_correlations_3dim(Zs: np.ndarray) -> np.ndarray:
+  n_workers = Zs.shape[1]
+  Z = np.concatenate(Zs, axis=1)
+
+  correlations = np.empty(n_workers)
+  for worker_i in range(n_workers):
+    correlations[worker_i] = get_sentence_mos_correlation(worker_i, Z)
+
+  return correlations
+
+
 def get_algorithm_mos_correlation(worker: int, Zs: np.ndarray) -> float:
   assert len(Zs.shape) == 3
   n_alg = Zs.shape[0]

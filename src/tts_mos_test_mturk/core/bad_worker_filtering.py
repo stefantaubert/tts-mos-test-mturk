@@ -7,7 +7,9 @@ import numpy as np
 import pandas as pd
 from ordered_set import OrderedSet
 
-from tts_mos_test_mturk.analyze_assignmens import get_algorithm_mos_correlations
+from tts_mos_test_mturk.analyze_assignmens import (get_algorithm_mos_correlations,
+                                                   get_sentence_mos_correlation_3dim,
+                                                   get_sentence_mos_correlations_3dim)
 from tts_mos_test_mturk.calculation.compute_mos_ci95_3gaussian import compute_ci95, compute_mos
 from tts_mos_test_mturk.calculation.etc import (get_workers_count, get_workers_percent,
                                                 get_workers_percent_mask, mask_outliers)
@@ -23,6 +25,8 @@ def ignore_bad_workers(data: EvaluationData, mask_names: OrderedSet[str], thresh
   opinion_scores_mask = factory.merge_masks_into_omask(masks)
   opinion_scores_mask.apply_by_nan(opinion_scores)
 
+  # TODO: continue here
+  sentence_correlations = get_sentence_mos_correlations_3dim(opinion_scores)
   worker_correlations = get_algorithm_mos_correlations(opinion_scores)
   bad_worker_np_mask = worker_correlations < threshold
   bad_worker_mask = factory.convert_ndarray_to_wmask(bad_worker_np_mask)

@@ -22,6 +22,7 @@ from tts_mos_test_mturk_cli.parsers.bad_workers_percent_parser import get_bad_wo
 from tts_mos_test_mturk_cli.parsers.bonus_parser import get_bonus_parser
 from tts_mos_test_mturk_cli.parsers.calculation_parser import get_calculation_parser
 from tts_mos_test_mturk_cli.parsers.init_parser import get_init_parser
+from tts_mos_test_mturk_cli.parsers.os_count_parser import get_os_count_parser
 from tts_mos_test_mturk_cli.parsers.outlier_parser import get_outlier_parser
 from tts_mos_test_mturk_cli.parsers.reject_parser import get_reject_parser
 from tts_mos_test_mturk_cli.parsers.stats_parser import get_stats_parser
@@ -51,6 +52,7 @@ def get_parsers():
   yield "ignore-bad-workers", "ignore too bad workers", get_bad_workers_parser
   yield "ignore-bad-workers-percent", "ignore bad workers by percentage", get_bad_workers_percent_parser
   yield "ignore-outliers", "ignore outlieres", get_outlier_parser
+  yield "ignore-os-count", "ignore workers who overreach a specific percentage of all masked opinion scores", get_os_count_parser
 
 
 def _init_parser():
