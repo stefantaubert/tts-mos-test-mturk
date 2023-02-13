@@ -1,23 +1,14 @@
-from collections import OrderedDict
-from dataclasses import dataclass, field
-from logging import getLogger
-from typing import Dict, List, Set
+from typing import List, Set
 
 import numpy as np
-import pandas as pd
 
-from tts_mos_test_mturk.analyze_assignmens import (get_algorithm_mos_correlation,
-                                                   get_sentence_mos_correlation,
-                                                   get_sentence_mos_correlation_3dim)
-from tts_mos_test_mturk.core.data_point import (DEVICE_DESKTOP, DEVICE_IN_EAR, DEVICE_LAPTOP,
-                                                DEVICE_ON_EAR, STATE_ACCEPTED, STATE_APPROVED,
-                                                STATE_REJECTED)
 from tts_mos_test_mturk.core.evaluation_data import EvaluationData
+from tts_mos_test_mturk.core.logging import get_detail_logger, get_logger
 from tts_mos_test_mturk.core.masks import AssignmentMask, MaskBase, WorkerMask
 
 
 def print_stats(data: EvaluationData, mask_names: Set[str], added_mask_names: Set[str]) -> None:
-  logger = getLogger(__name__)
+  logger = get_logger()
   logger.info("--- Stats ---")
   masks = [data.masks[mask_name] for mask_name in mask_names]
   added_masks = [data.masks[mask_name] for mask_name in added_mask_names]
@@ -36,7 +27,7 @@ def print_stats_masks(data: EvaluationData, masks: List[MaskBase], added_masks: 
 
 
 def print_opinion_score_stats(data: EvaluationData, masks: List[MaskBase], added_masks: List[MaskBase]) -> None:
-  logger = getLogger(__name__)
+  logger = get_logger()
   factory = data.get_mask_factory()
 
   opinion_scores = data.get_os()
@@ -53,7 +44,7 @@ def print_opinion_score_stats(data: EvaluationData, masks: List[MaskBase], added
 
 
 def print_assignment_stats(data: EvaluationData, masks: List[MaskBase], added_masks: List[MaskBase]) -> None:
-  logger = getLogger(__name__)
+  logger = get_logger()
   factory = data.get_mask_factory()
 
   assignments_mask_before = factory.merge_masks_into_amask(masks)
@@ -68,12 +59,12 @@ def print_assignment_stats(data: EvaluationData, masks: List[MaskBase], added_ma
 
   logger.info(f"Ignored {old_count - new_count} / {old_count} assignments, kept {new_count}!")
   if len(ignored_assignments) > 0:
-    # logger.info(f"Ignored assignments: {', '.join(ignored_assignments)}")
-    pass
+    dlogger = get_detail_logger()
+    dlogger.info(f"Ignored assignments: {', '.join(ignored_assignments)}")
 
 
 def print_worker_stats(data: EvaluationData, masks: List[MaskBase], added_masks: List[MaskBase]) -> None:
-  logger = getLogger(__name__)
+  logger = get_logger()
   factory = data.get_mask_factory()
 
   workers_mask_before = factory.merge_masks_into_wmask(masks)
@@ -87,6 +78,5 @@ def print_worker_stats(data: EvaluationData, masks: List[MaskBase], added_masks:
 
   logger.info(f"Ignored {old_count - new_count} / {old_count} workers, kept {new_count}!")
   if len(ignored_workers) > 0:
-    # logger.info(f"Ignored workers: {', '.join(ignored_workers)}")
-    pass
-
+    dlogger = get_detail_logger()
+    dlogger.info(f"Ignored workers: {', '.join(ignored_workers)}")

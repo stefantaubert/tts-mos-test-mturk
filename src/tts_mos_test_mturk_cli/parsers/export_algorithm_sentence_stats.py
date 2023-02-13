@@ -1,18 +1,9 @@
 from argparse import ArgumentParser, Namespace
 from logging import Logger
 
-import pandas as pd
-
-from tts_mos_test_mturk.core.bad_worker_filtering import (calc_mos, generate_approve_csv,
-                                                          generate_ground_truth_table,
-                                                          generate_reject_csv)
 from tts_mos_test_mturk.core.evaluation_data import EvaluationData
 from tts_mos_test_mturk.core.statistics.algorithm_sentence_stats import get_algorithm_sentence_stats
-from tts_mos_test_mturk.core.statistics.algorithm_worker_stats import get_worker_algorithm_stats
-from tts_mos_test_mturk.core.statistics.worker_assignment_stats import get_worker_assignment_stats
-from tts_mos_test_mturk.core.stats import print_stats
-from tts_mos_test_mturk_cli.argparse_helper import (ConvertToOrderedSetAction, ConvertToSetAction,
-                                                    get_optional, parse_existing_file,
+from tts_mos_test_mturk_cli.argparse_helper import (ConvertToSetAction, parse_existing_file,
                                                     parse_non_empty_or_whitespace, parse_path)
 from tts_mos_test_mturk_cli.types import ExecutionResult
 

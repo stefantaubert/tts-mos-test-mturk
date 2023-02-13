@@ -1,16 +1,11 @@
 from argparse import ArgumentParser, Namespace
 from logging import Logger
 
-import pandas as pd
-
-from tts_mos_test_mturk.core.bad_worker_filtering import (calc_mos, ignore_bad_workers,
-                                                          ignore_too_fast_assignments)
+from tts_mos_test_mturk.core.bad_worker_filtering import ignore_bad_workers
 from tts_mos_test_mturk.core.evaluation_data import EvaluationData
-from tts_mos_test_mturk_cli.argparse_helper import (ConvertToOrderedSetAction, get_optional,
-                                                    parse_existing_file,
+from tts_mos_test_mturk_cli.argparse_helper import (ConvertToOrderedSetAction, parse_existing_file,
                                                     parse_non_empty_or_whitespace,
-                                                    parse_non_negative_integer, parse_path,
-                                                    parse_positive_float, parse_positive_integer)
+                                                    parse_positive_float)
 from tts_mos_test_mturk_cli.default_args import add_dry_argument
 from tts_mos_test_mturk_cli.types import ExecutionResult
 

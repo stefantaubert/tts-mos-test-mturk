@@ -1,21 +1,18 @@
 import math
 from collections import OrderedDict
-from logging import getLogger
-from typing import Any, Counter, Dict, List, Literal, Optional, Set
+from typing import Any, Dict, List, Literal, Optional, Set
 
 import numpy as np
 import pandas as pd
 from ordered_set import OrderedSet
 
 from tts_mos_test_mturk.analyze_assignmens import (get_algorithm_mos_correlations,
-                                                   get_mos_correlations,
-                                                   get_sentence_mos_correlation_3dim,
-                                                   get_sentence_mos_correlations_3dim,
-                                                   get_worker_mos_correlations)
+                                                   get_mos_correlations)
 from tts_mos_test_mturk.calculation.compute_mos_ci95_3gaussian import compute_ci95, compute_mos
 from tts_mos_test_mturk.calculation.etc import (get_workers_count, get_workers_percent,
                                                 get_workers_percent_mask, mask_outliers)
 from tts_mos_test_mturk.core.evaluation_data import EvaluationData
+from tts_mos_test_mturk.core.logging import get_detail_logger
 from tts_mos_test_mturk.core.stats import print_stats_masks
 
 
@@ -148,7 +145,7 @@ def ignore_outlier_opinion_scores(data: EvaluationData, mask_names: OrderedSet[s
 
 
 def ignore_masked_count_opinion_scores(data: EvaluationData, mask_names: OrderedSet[str], ref_mask_name: str, percent: float, mask_name: str):
-  logger = getLogger(__name__)
+  logger = get_detail_logger()
   factory = data.get_mask_factory()
   masks = [data.masks[mask_name] for mask_name in mask_names]
   ref_mask = data.masks[ref_mask_name]
@@ -323,4 +320,3 @@ def generate_ground_truth_table(data: EvaluationData, mask_names: OrderedSet[str
     columns=results[0].keys(),
   )
   return result
-

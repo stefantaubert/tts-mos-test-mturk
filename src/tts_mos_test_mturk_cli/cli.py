@@ -11,11 +11,11 @@ from tempfile import gettempdir
 from time import perf_counter
 from typing import Callable, List
 
+from tts_mos_test_mturk.core.logging import get_detail_logger, get_logger
 from tts_mos_test_mturk_cli.argparse_helper import get_optional, parse_path, parse_positive_integer
 from tts_mos_test_mturk_cli.logging_configuration import (configure_root_logger, get_file_logger,
                                                           init_and_return_loggers,
                                                           try_init_file_buffer_logger)
-from tts_mos_test_mturk_cli.main import init_from_mel_parser
 from tts_mos_test_mturk_cli.parsers.approve_parser import get_approve_parser
 from tts_mos_test_mturk_cli.parsers.bad_workers_parser import get_bad_workers_parser
 from tts_mos_test_mturk_cli.parsers.bad_workers_percent_parser import get_bad_workers_percent_parser
@@ -172,6 +172,11 @@ def parse_args(args: List[str]) -> None:
   cmd_flogger, cmd_logger = init_and_return_loggers(__name__)
 
   # success, changed_anything = invoke_handler(ns, cmd_logger, cmd_flogger)
+  core_main_logger = get_logger()
+  core_main_logger.parent = cmd_logger
+  core_detail_logger = get_detail_logger()
+  core_detail_logger.parent = cmd_flogger
+
   try:
     success = invoke_handler(ns, cmd_logger, cmd_flogger)
   except ValueError as error:

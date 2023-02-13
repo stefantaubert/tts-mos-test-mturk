@@ -1,10 +1,11 @@
-from ordered_set import OrderedSet
 import argparse
 import codecs
 from argparse import ArgumentTypeError
 from functools import partial
 from pathlib import Path
 from typing import Callable, List, Optional, TypeVar
+
+from ordered_set import OrderedSet
 
 T = TypeVar("T")
 

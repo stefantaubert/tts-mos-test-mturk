@@ -1,19 +1,14 @@
-from collections import Counter, OrderedDict
+from collections import Counter
 from dataclasses import dataclass, field
-from logging import getLogger
 from typing import Dict, List, Set
 
 import numpy as np
 import pandas as pd
 
-from tts_mos_test_mturk.analyze_assignmens import (get_algorithm_mos_correlation,
-                                                   get_sentence_mos_correlation,
-                                                   get_sentence_mos_correlation_3dim)
 from tts_mos_test_mturk.core.data_point import (DEVICE_DESKTOP, DEVICE_IN_EAR, DEVICE_LAPTOP,
-                                                DEVICE_ON_EAR, STATE_ACCEPTED, STATE_APPROVED,
-                                                STATE_REJECTED)
+                                                DEVICE_ON_EAR)
 from tts_mos_test_mturk.core.evaluation_data import EvaluationData
-from tts_mos_test_mturk.core.masks import AssignmentMask, MaskBase, WorkerMask
+from tts_mos_test_mturk.core.masks import MaskBase
 
 COL_ALG = "Algorithm"
 COL_SENT = "Sentence"
