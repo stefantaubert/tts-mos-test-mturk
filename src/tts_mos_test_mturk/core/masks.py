@@ -12,7 +12,11 @@ class MaskBase():
     self.mask = mask
 
   def combine_mask(self, mask: "MaskBase") -> None:
-    self.mask = (self.mask | mask.mask)
+    self.combine_mask_np(mask.mask)
+
+  def combine_mask_np(self, mask: np.ndarray) -> None:
+    assert mask.shape == self.mask.shape
+    self.mask = (self.mask | mask)
 
   def mask_indices(self, indices: np.ndarray) -> None:
     self.mask[indices] = True

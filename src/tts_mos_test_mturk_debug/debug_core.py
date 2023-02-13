@@ -8,8 +8,12 @@ from tts_mos_test_mturk.core.bad_worker_filtering import (calc_mos, generate_app
                                                           ignore_bad_workers_percent,
                                                           ignore_masked_count_opinion_scores,
                                                           ignore_outlier_opinion_scores,
-                                                          ignore_too_fast_assignments)
+                                                          ignore_too_fast_assignments,
+                                                          mask_assignments_by_lt)
 from tts_mos_test_mturk.core.evaluation_data import EvaluationData
+from tts_mos_test_mturk.core.statistics.algorithm_sentence_stats import get_algorithm_sentence_stats
+from tts_mos_test_mturk.core.statistics.algorithm_worker_stats import get_worker_algorithm_stats
+from tts_mos_test_mturk.core.statistics.worker_assignment_stats import get_worker_assignment_stats
 from tts_mos_test_mturk.core.stats import print_stats
 from tts_mos_test_mturk_cli.logging_configuration import configure_root_logger
 
@@ -25,9 +29,16 @@ def parse_v3():
 
   data = EvaluationData(result_csv, ground_truth)
 
-  data.save(Path("/tmp/data.pkl"))
-  data = EvaluationData.load(Path("/tmp/data.pkl"))
+  data.save(Path("/tmp/data-2.pkl"))
+  data = EvaluationData.load(Path("/tmp/data-2.pkl"))
 
+  mask_assignments_by_lt(data, OrderedSet(), {"desktop"}, "lt_bad")
+  df = get_algorithm_sentence_stats(data, {"lt_bad"})
+  print(df)
+  df = get_worker_algorithm_stats(data, {"lt_bad"})
+  print(df)
+  df = get_worker_assignment_stats(data, masks)
+  print(df)
   calc_mos(data, OrderedSet())
   ignore_bad_workers(data, OrderedSet(), 0.25, "bad_workers")
   ignore_bad_workers_percent(data, OrderedSet(("bad_workers",)), 0.0, 0.5, "bonus_50_1")

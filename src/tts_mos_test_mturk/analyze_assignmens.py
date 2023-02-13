@@ -1,6 +1,6 @@
 import math
 from logging import getLogger
-from typing import List, Optional, Set
+from typing import List, Literal, Optional, Set
 
 import numpy as np
 import pandas as pd
@@ -36,9 +36,9 @@ def get_sentence_mos_correlation_3dim(worker: int, Zs: np.ndarray) -> float:
   return get_sentence_mos_correlation(worker, Z)
 
 
-def get_sentence_mos_correlations_3dim(Zs: np.ndarray) -> np.ndarray:
-  n_workers = Zs.shape[1]
-  Z = np.concatenate(Zs, axis=1)
+def get_sentence_mos_correlations_3dim(opinion_scores: np.ndarray) -> np.ndarray:
+  n_workers = opinion_scores.shape[1]
+  Z = np.concatenate(opinion_scores, axis=1)
 
   correlations = np.empty(n_workers)
   for worker_i in range(n_workers):
@@ -47,28 +47,38 @@ def get_sentence_mos_correlations_3dim(Zs: np.ndarray) -> np.ndarray:
   return correlations
 
 
-def get_algorithm_mos_correlation(worker: int, Zs: np.ndarray) -> float:
-  assert len(Zs.shape) == 3
-  n_alg = Zs.shape[0]
-  n_workers = Zs.shape[1]
+def get_algorithm_mos_correlation(worker: int, opinion_scores: np.ndarray) -> float:
+  assert len(opinion_scores.shape) == 3
+  n_alg = opinion_scores.shape[0]
+  n_workers = opinion_scores.shape[1]
   # n_sentences = Zs.shape[2]
 
   scores = np.empty((2, n_alg))
   others = [w_i for w_i in range(n_workers) if w_i != worker]
 
   for alg_i in range(n_alg):
-    scores[0, alg_i] = compute_mos(Zs[alg_i, worker, :])
-    scores[1, alg_i] = compute_mos(Zs[alg_i, others, :])
+    scores[0, alg_i] = compute_mos(opinion_scores[alg_i, worker, :])
+    scores[1, alg_i] = compute_mos(opinion_scores[alg_i, others, :])
 
   return get_corrcoef(scores)
 
 
-def get_algorithm_mos_correlations(Zs: np.ndarray) -> np.ndarray:
-  n_workers = Zs.shape[1]
+def get_mos_correlations(opinion_scores: np.ndarray, mode: Literal["sentence", "algorithm", "both"]) -> np.ndarray:
+  if mode == "sentence":
+    return get_sentence_mos_correlations_3dim(opinion_scores)
+  if mode == "algorithm":
+    return get_algorithm_mos_correlations(opinion_scores)
+  if mode == "both":
+    return get_worker_mos_correlations(opinion_scores)
+  raise NotImplementedError()
+
+
+def get_algorithm_mos_correlations(opinion_scores: np.ndarray) -> np.ndarray:
+  n_workers = opinion_scores.shape[1]
 
   correlations = np.empty(n_workers)
   for worker_i in range(n_workers):
-    correlations[worker_i] = get_algorithm_mos_correlation(worker_i, Zs)
+    correlations[worker_i] = get_algorithm_mos_correlation(worker_i, opinion_scores)
 
   return correlations
 
@@ -107,7 +117,7 @@ def compute_bonuses(Z_all: np.ndarray, workers: OrderedSet[str], all_audio_paths
   all_workers = set(Z_workers)
   consider_workers = Z_workers[min_count_mask.nonzero()]
 
-  worker_correlations = get_worker_correlations(Z_all, alg_indices)
+  worker_correlations = get_worker_correlations_old(Z_all, alg_indices)
 
   Z_all = Z_all[min_count_mask.nonzero()[0]]
   Z_workers = Z_workers[min_count_mask.nonzero()[0]]
@@ -131,7 +141,20 @@ def compute_bonuses(Z_all: np.ndarray, workers: OrderedSet[str], all_audio_paths
   return fast_workers, bad_workers, no_bonus_workers, remaining_workers, top_50_workers, top_10_workers
 
 
-def get_worker_correlations(Z_all: np.ndarray, alg_indices: List[List[int]]) -> np.ndarray:
+def get_worker_mos_correlations(opinion_scores: np.ndarray) -> np.ndarray:
+  n_workers = opinion_scores.shape[1]
+
+  correlations = np.empty((2, n_workers))
+  correlations[0, :] = get_algorithm_mos_correlations(opinion_scores)
+  correlations[1, :] = get_sentence_mos_correlations_3dim(opinion_scores)
+
+  # print(correlations)
+  worker_correlations = np.nanmean(correlations, axis=0)
+  # print(worker_correlations)
+  return worker_correlations
+
+
+def get_worker_correlations_old(Z_all: np.ndarray, alg_indices: List[List[int]]) -> np.ndarray:
 
   n_alg = len(alg_indices)
   n_workers = Z_all.shape[0]
@@ -297,7 +320,7 @@ def analyze(Z_all: np.ndarray, work_times_all: np.ndarray, listening_types_all: 
   Z_workers = np.array(workers)
 
   # Ignore bad workers
-  worker_correlations = get_worker_correlations(Z_all, alg_indices)
+  worker_correlations = get_worker_correlations_old(Z_all, alg_indices)
   bad_worker_mask: np.ndarray = worker_correlations < bad_worker_threshold
   logger.info(
     f"Ignored {np.sum(bad_worker_mask)} / {Z_all.shape[0]} bad workers, kept {Z_all.shape[0] - np.sum(bad_worker_mask)}!")
@@ -343,7 +366,7 @@ def analyze(Z_all: np.ndarray, work_times_all: np.ndarray, listening_types_all: 
     f"Ignored {old_count - new_count} / {old_count} assignments, kept {new_count}! (listening-type)")
 
   # Ignore bad workers part 2
-  worker_correlations = get_worker_correlations(Z_all, alg_indices)
+  worker_correlations = get_worker_correlations_old(Z_all, alg_indices)
   bad_worker_mask: np.ndarray = worker_correlations < bad_worker_threshold_2
   logger.info(
     f"Ignored {np.sum(bad_worker_mask)} / {Z_all.shape[0]} bad workers, kept {Z_all.shape[0] - np.sum(bad_worker_mask)}!")

@@ -13,6 +13,7 @@ from tts_mos_test_mturk_cli.argparse_helper import (ConvertToOrderedSetAction, g
                                                     parse_non_empty_or_whitespace,
                                                     parse_non_negative_integer, parse_path,
                                                     parse_positive_float, parse_positive_integer)
+from tts_mos_test_mturk_cli.default_args import add_dry_argument
 from tts_mos_test_mturk_cli.types import ExecutionResult
 
 
@@ -29,6 +30,7 @@ def get_os_count_parser(parser: ArgumentParser):
                       help=f"ignore workers who have at least PERCENT % of all masked opinion scores")
   parser.add_argument("output_mask", type=parse_non_empty_or_whitespace,
                       metavar="OUTPUT-MASK", help="name of the output mask")
+  add_dry_argument(parser)
   return main
 
 
@@ -41,6 +43,9 @@ def main(ns: Namespace, logger: Logger, flogger: Logger) -> ExecutionResult:
     return False
 
   ignore_masked_count_opinion_scores(project, ns.masks, ns.ref_mask, ns.percent, ns.output_mask)
+
+  if ns.dry:
+    return True
 
   try:
     project.save(ns.project)

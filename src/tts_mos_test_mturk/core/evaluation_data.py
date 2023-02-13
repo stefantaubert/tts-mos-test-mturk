@@ -92,3 +92,13 @@ class EvaluationData():
       ass_i = self.assignments.get_loc(dp.assignment_id)
       worktimes[ass_i] = dp.worktime
     return worktimes
+
+  def get_listening_devices(self) -> np.ndarray:
+    worktimes = [np.nan] * self.n_assignments
+
+    for dp in self.data:
+      ass_i = self.assignments.get_loc(dp.assignment_id)
+      if worktimes[ass_i] != dp.listening_device:
+        worktimes[ass_i] = dp.listening_device
+    worktimes_np = np.array(worktimes)
+    return worktimes_np

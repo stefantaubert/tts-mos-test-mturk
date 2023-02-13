@@ -21,12 +21,20 @@ from tts_mos_test_mturk_cli.parsers.bad_workers_parser import get_bad_workers_pa
 from tts_mos_test_mturk_cli.parsers.bad_workers_percent_parser import get_bad_workers_percent_parser
 from tts_mos_test_mturk_cli.parsers.bonus_parser import get_bonus_parser
 from tts_mos_test_mturk_cli.parsers.calculation_parser import get_calculation_parser
+from tts_mos_test_mturk_cli.parsers.export_algorithm_sentence_stats import \
+  get_export_as_stats_parser
+from tts_mos_test_mturk_cli.parsers.export_algorithm_worker_stats import get_export_aw_stats_parser
+from tts_mos_test_mturk_cli.parsers.export_ground_truth_parser import get_export_gt_parser
+from tts_mos_test_mturk_cli.parsers.export_worker_assignment_stats_parser import \
+  get_export_wa_stats_parser
 from tts_mos_test_mturk_cli.parsers.init_parser import get_init_parser
+from tts_mos_test_mturk_cli.parsers.listening_device_parser import get_listening_device_parser
 from tts_mos_test_mturk_cli.parsers.os_count_parser import get_os_count_parser
 from tts_mos_test_mturk_cli.parsers.outlier_parser import get_outlier_parser
 from tts_mos_test_mturk_cli.parsers.reject_parser import get_reject_parser
 from tts_mos_test_mturk_cli.parsers.stats_parser import get_stats_parser
 from tts_mos_test_mturk_cli.parsers.too_fast_parser import get_too_fast_parser
+from tts_mos_test_mturk_cli.parsers.too_few_parser import get_too_few_parser
 from tts_mos_test_mturk_cli.types import ExecutionResult
 
 __APP_NAME = "tts-mos-test-mturk"
@@ -42,16 +50,23 @@ def formatter(prog):
 
 
 def get_parsers():
-  yield "init", "initialize project", get_init_parser
-  yield "calc-mos", "calculate MOS with CI95", get_calculation_parser
-  yield "stats", "print statistics", get_stats_parser
-  yield "approve", "approve", get_approve_parser
-  yield "reject", "reject", get_reject_parser
-  yield "bonus", "bonus assignments", get_bonus_parser
-  yield "ignore-too-fast", "ignore too fast assignments", get_too_fast_parser
-  yield "ignore-bad-workers", "ignore too bad workers", get_bad_workers_parser
+  yield "init", "initialize project", get_init_parser  # initialize
+  yield "export-ground-truth", "export ground truth", get_export_gt_parser
+  yield "calc-mos", "calculate MOS with CI95", get_calculation_parser  # calculate-mos
+  yield "stats", "print statistics", get_stats_parser  # print-statistics
+  yield "stats-worker-assignments", "export worker assignment stats", get_export_wa_stats_parser
+  yield "stats-algorithm-worker", "export algorithm worker stats", get_export_aw_stats_parser
+  yield "stats-algorithm-sentences", "export algorithm sentence stats", get_export_as_stats_parser
+  yield "approve", "approve", get_approve_parser  # assignments create-approve-csv
+  yield "reject", "reject", get_reject_parser  # assignments create-reject-csv
+  yield "bonus", "bonus assignments", get_bonus_parser  # assignments create-bonus-csv
+  yield "ignore-too-fast", "ignore too fast assignments", get_too_fast_parser  # mask-by-worktime
+  yield "ignore-too-few", "ignore workers with to few assignments", get_too_few_parser  # assignments mask-by-count
+  yield "ignore-by-listening-device", "ignore by device", get_listening_device_parser
+  yield "ignore-bad-workers", "ignore too bad workers", get_bad_workers_parser  # workers mask-by-correlation
   yield "ignore-bad-workers-percent", "ignore bad workers by percentage", get_bad_workers_percent_parser
-  yield "ignore-outliers", "ignore outlieres", get_outlier_parser
+  yield "ignore-outliers", "ignore outliers", get_outlier_parser  # opinions mask-by-std
+  # opinions mask-by-masked-count
   yield "ignore-os-count", "ignore workers who overreach a specific percentage of all masked opinion scores", get_os_count_parser
 
 

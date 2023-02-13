@@ -13,6 +13,7 @@ from tts_mos_test_mturk_cli.argparse_helper import (ConvertToOrderedSetAction, g
                                                     parse_non_negative_float,
                                                     parse_non_negative_integer, parse_path,
                                                     parse_positive_float, parse_positive_integer)
+from tts_mos_test_mturk_cli.default_args import add_dry_argument
 from tts_mos_test_mturk_cli.types import ExecutionResult
 
 
@@ -28,6 +29,7 @@ def get_bad_workers_percent_parser(parser: ArgumentParser):
                       help="exclusive top boundary")
   parser.add_argument("output_mask", type=parse_non_empty_or_whitespace,
                       metavar="OUTPUT-MASK", help="name of the output mask")
+  add_dry_argument(parser)
   return main
 
 
@@ -40,6 +42,9 @@ def main(ns: Namespace, logger: Logger, flogger: Logger) -> ExecutionResult:
     return False
 
   ignore_bad_workers_percent(project, ns.masks, ns.from_percent, ns.to_percent, ns.output_mask)
+
+  if ns.dry:
+    return True
 
   try:
     project.save(ns.project)
