@@ -6,9 +6,9 @@ import numpy as np
 import pandas as pd
 from ordered_set import OrderedSet
 
+from tts_mos_test_mturk.__old.etc import (get_workers_count, get_workers_percent,
+                                          get_workers_percent_mask, mask_algos, mask_outliers)
 from tts_mos_test_mturk.calculation.compute_mos_ci95_3gaussian import compute_ci95, compute_mos
-from tts_mos_test_mturk.calculation.etc import (get_workers_count, get_workers_percent,
-                                                get_workers_percent_mask, mask_algos, mask_outliers)
 from tts_mos_test_mturk.globals import LISTENING_TYPES
 from tts_mos_test_mturk.types import EvaluationData
 
@@ -139,19 +139,6 @@ def compute_bonuses(Z_all: np.ndarray, workers: OrderedSet[str], all_audio_paths
   no_bonus_workers = all_workers - remaining_workers - top_50_workers - top_10_workers
 
   return fast_workers, bad_workers, no_bonus_workers, remaining_workers, top_50_workers, top_10_workers
-
-
-def get_worker_mos_correlations(opinion_scores: np.ndarray) -> np.ndarray:
-  n_workers = opinion_scores.shape[1]
-
-  correlations = np.empty((2, n_workers))
-  correlations[0, :] = get_algorithm_mos_correlations(opinion_scores)
-  correlations[1, :] = get_sentence_mos_correlations_3dim(opinion_scores)
-
-  # print(correlations)
-  worker_correlations = np.nanmean(correlations, axis=0)
-  # print(worker_correlations)
-  return worker_correlations
 
 
 def get_worker_correlations_old(Z_all: np.ndarray, alg_indices: List[List[int]]) -> np.ndarray:

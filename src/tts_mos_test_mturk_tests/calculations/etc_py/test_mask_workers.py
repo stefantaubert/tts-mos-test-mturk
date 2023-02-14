@@ -1,6 +1,6 @@
 import numpy as np
 
-from tts_mos_test_mturk.calculation.etc import mask_workers
+from tts_mos_test_mturk.__old.etc import mask_workers
 
 
 def test_component_25():

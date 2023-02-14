@@ -1,6 +1,6 @@
 import numpy as np
 
-from tts_mos_test_mturk.calculation.etc import mask_outliers
+from tts_mos_test_mturk.__old.etc import mask_outliers
 
 
 def test_component():

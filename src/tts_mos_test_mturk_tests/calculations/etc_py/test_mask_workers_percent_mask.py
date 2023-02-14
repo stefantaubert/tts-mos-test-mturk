@@ -1,6 +1,6 @@
 import numpy as np
 
-from tts_mos_test_mturk.calculation.etc import get_workers_percent_mask
+from tts_mos_test_mturk.__old.etc import get_workers_percent_mask
 
 
 def test_component_25():

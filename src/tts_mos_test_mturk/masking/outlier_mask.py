@@ -1,9 +1,20 @@
 
 from typing import Set
 
-from tts_mos_test_mturk.calculation.etc import mask_outliers
+import numpy as np
+
 from tts_mos_test_mturk.evaluation_data import EvaluationData
 from tts_mos_test_mturk.statistics.update_stats import print_stats_masks
+
+
+def mask_outliers(Z: np.ndarray, max_std_dev_diff: float) -> np.ndarray:
+  mu = np.nanmean(Z)
+  s = np.nanstd(Z)
+
+  mu_norm = abs(Z - mu) / s
+  outlying_scores: np.ndarray = mu_norm > max_std_dev_diff
+
+  return outlying_scores
 
 
 def mask_outlying_scores(data: EvaluationData, mask_names: Set[str], max_std_dev_diff: float, output_mask_name: str):

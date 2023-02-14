@@ -3,7 +3,7 @@ from typing import Literal, Set
 
 import numpy as np
 
-from tts_mos_test_mturk.analyze_assignmens import get_mos_correlations
+from tts_mos_test_mturk.calculation.correlations import get_mos_correlations
 from tts_mos_test_mturk.evaluation_data import EvaluationData
 from tts_mos_test_mturk.statistics.update_stats import print_stats_masks
 

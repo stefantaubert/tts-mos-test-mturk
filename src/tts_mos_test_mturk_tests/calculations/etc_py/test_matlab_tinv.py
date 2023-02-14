@@ -1,6 +1,6 @@
 import math
 
-from tts_mos_test_mturk.calculation.etc import matlab_tinv
+from tts_mos_test_mturk.__old.etc import matlab_tinv
 
 
 def test_095_from_one_to_hundered_returns_correct_values():

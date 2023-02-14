@@ -2,7 +2,6 @@ from typing import Generator, List
 
 import numpy as np
 from ordered_set import OrderedSet
-from scipy.stats import t
 
 
 def get_assignment_count(assignments: np.ndarray) -> int:
@@ -14,24 +13,10 @@ def compute_bonuses(min_assignments: int):
   pass
 
 
-def matlab_tinv(p: float, df: int) -> float:
-  result = -t.isf(p, df)
-  return result
-
 
 def mask_smaller_than_val(Z: np.ndarray, val: float) -> np.ndarray:
   result = Z < val
   return result
-
-
-def mask_outliers(Z: np.ndarray, max_std_dev_diff: float) -> np.ndarray:
-  mu = np.nanmean(Z)
-  s = np.nanstd(Z)
-
-  mu_norm = abs(Z - mu) / s
-  outlying_scores: np.ndarray = mu_norm > max_std_dev_diff
-
-  return outlying_scores
 
 
 def mask_lower_outliers(Z: np.ndarray, max_std_dev_diff: float) -> np.ndarray:
@@ -65,14 +50,6 @@ def mask_workers_percent(Z_mask: np.ndarray, p: float) -> np.ndarray:
   Z_mask[:, outlying_workers, :] = True
   return Z_mask
 
-
-def get_workers_percent_mask(Z_mask: np.ndarray, p: float) -> np.ndarray:
-  sums = np.sum(Z_mask, axis=2)
-  sums2 = np.sum(sums, axis=0)
-  total = np.sum(Z_mask.flatten())
-
-  outlying_workers: np.ndarray = (total > 0) & (sums2 >= p * total)
-  return outlying_workers
 
 
 def get_workers_percent(Z_mask: np.ndarray) -> np.ndarray:
