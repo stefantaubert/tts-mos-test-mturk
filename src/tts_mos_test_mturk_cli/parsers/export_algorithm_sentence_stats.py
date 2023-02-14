@@ -3,17 +3,15 @@ from logging import Logger
 
 from tts_mos_test_mturk.core.evaluation_data import EvaluationData
 from tts_mos_test_mturk.core.statistics.algorithm_sentence_stats import get_algorithm_sentence_stats
-from tts_mos_test_mturk_cli.argparse_helper import (ConvertToSetAction, parse_existing_file,
-                                                    parse_non_empty_or_whitespace, parse_path)
+from tts_mos_test_mturk_cli.argparse_helper import parse_path
+from tts_mos_test_mturk_cli.default_args import add_masks_argument, add_project_argument
 from tts_mos_test_mturk_cli.types import ExecutionResult
 
 
 def get_export_as_stats_parser(parser: ArgumentParser):
   parser.description = "Write algorithm sentence statistics CSV."
-  parser.add_argument("project", type=parse_existing_file, metavar="PROJECT-PATH",
-                      help="project file (.pkl)")
-  parser.add_argument("masks", type=parse_non_empty_or_whitespace,
-                      nargs="*", metavar="MASK", help="apply these masks", action=ConvertToSetAction)
+  add_project_argument(parser)
+  add_masks_argument(parser)
   parser.add_argument("output", type=parse_path,
                       help="write CSV to this path", metavar="OUTPUT-CSV")
   return main

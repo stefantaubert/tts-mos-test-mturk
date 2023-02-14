@@ -1,20 +1,18 @@
 from argparse import ArgumentParser, Namespace
 from logging import Logger
 
-from tts_mos_test_mturk.core.bad_worker_filtering import generate_approve_csv
+from tts_mos_test_mturk.core.df_generation import generate_approve_csv
 from tts_mos_test_mturk.core.evaluation_data import EvaluationData
-from tts_mos_test_mturk_cli.argparse_helper import (ConvertToOrderedSetAction, get_optional,
-                                                    parse_existing_file,
-                                                    parse_non_empty_or_whitespace, parse_path)
+from tts_mos_test_mturk_cli.argparse_helper import (get_optional, parse_non_empty_or_whitespace,
+                                                    parse_path)
+from tts_mos_test_mturk_cli.default_args import add_masks_argument, add_project_argument
 from tts_mos_test_mturk_cli.types import ExecutionResult
 
 
 def get_approve_parser(parser: ArgumentParser):
   parser.description = "Write approvement CSV of all unmasked assignments."
-  parser.add_argument("project", type=parse_existing_file, metavar="PROJECT-PATH",
-                      help="project file (.pkl)")
-  parser.add_argument("masks", type=parse_non_empty_or_whitespace,
-                      nargs="*", metavar="MASK", help="apply these masks", action=ConvertToOrderedSetAction)
+  add_project_argument(parser)
+  add_masks_argument(parser)
   parser.add_argument("output", type=parse_path,
                       help="write CSV to this path", metavar="OUTPUT-CSV")
   parser.add_argument("--reason", type=get_optional(parse_non_empty_or_whitespace), metavar="REASON",

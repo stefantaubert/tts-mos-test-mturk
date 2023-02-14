@@ -3,15 +3,12 @@ from pathlib import Path
 import pandas as pd
 from ordered_set import OrderedSet
 
-from tts_mos_test_mturk.core.bad_worker_filtering import (calc_mos, generate_approve_csv,
-                                                          ignore_bad_workers,
-                                                          ignore_bad_workers_percent,
-                                                          ignore_masked_count_opinion_scores,
-                                                          ignore_outlier_opinion_scores,
-                                                          ignore_too_fast_assignments,
-                                                          mask_assignments_by_lt)
 from tts_mos_test_mturk.core.evaluation_data import EvaluationData
 from tts_mos_test_mturk.core.logging import get_detail_logger, get_logger
+from tts_mos_test_mturk.core.masking.worker_correlation_mask import (
+  calc_mos, generate_approve_csv, ignore_bad_workers_percent, ignore_masked_count_opinion_scores,
+  ignore_outlier_opinion_scores, ignore_too_fast_assignments, mask_assignments_by_lt,
+  mask_workers_by_correlation)
 from tts_mos_test_mturk.core.statistics.algorithm_sentence_stats import get_algorithm_sentence_stats
 from tts_mos_test_mturk.core.statistics.algorithm_worker_stats import get_worker_algorithm_stats
 from tts_mos_test_mturk.core.statistics.worker_assignment_stats import get_worker_assignment_stats
@@ -42,7 +39,7 @@ def parse_v3():
 
   mask_assignments_by_lt(data, OrderedSet(), {"desktop"}, "lt_bad")
   # mask_assignments_by_lt(data, {"lt_bad"}, {"laptop"}, "lt_bad_2")
-  ignore_bad_workers(data, {"lt_bad"}, 0.25, "sentence", "bad_workers")
+  mask_workers_by_correlation(data, {"lt_bad"}, 0.25, "sentence", "bad_workers")
   print_stats(data, set(), {"lt_bad", "bad_workers"})
 
   df = get_algorithm_sentence_stats(data, {"lt_bad"})
@@ -52,7 +49,7 @@ def parse_v3():
   df = get_worker_assignment_stats(data, masks)
   print(df)
   calc_mos(data, OrderedSet())
-  ignore_bad_workers(data, OrderedSet(), 0.25, "bad_workers")
+  mask_workers_by_correlation(data, OrderedSet(), 0.25, "bad_workers")
   ignore_bad_workers_percent(data, OrderedSet(("bad_workers",)), 0.0, 0.5, "bonus_50_1")
   print_stats(data, set(), {"bad_workers", "bonus_50_1"})
   ignore_bad_workers_percent(data, OrderedSet(
@@ -70,7 +67,7 @@ def parse_v3():
   ignore_masked_count_opinion_scores(data, OrderedSet(), "outliers", 0.05, "outliers_0.1")
   calc_mos(data, OrderedSet(("outliers", "outliers_0.1")))
 
-  ignore_bad_workers(data, OrderedSet(("too_fast_1",)), 0.25, "bad_workers")
+  mask_workers_by_correlation(data, OrderedSet(("too_fast_1",)), 0.25, "bad_workers")
   # ignore_bad_workers(data, OrderedSet(( "bad_workers")), 0.25, "bad_workers_2")
   ignore_too_fast_assignments(data, OrderedSet(("bad_workers",)), 30, "too_fast")
   ignore_too_fast_assignments(data, OrderedSet(("bad_workers", "too_fast")), 30, "too_fast_2")

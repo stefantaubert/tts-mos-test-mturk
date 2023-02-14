@@ -1,20 +1,18 @@
 from argparse import ArgumentParser, Namespace
 from logging import Logger
 
-from tts_mos_test_mturk.core.bad_worker_filtering import generate_bonus_csv
+from tts_mos_test_mturk.core.df_generation import generate_bonus_csv
 from tts_mos_test_mturk.core.evaluation_data import EvaluationData
-from tts_mos_test_mturk_cli.argparse_helper import (ConvertToOrderedSetAction, parse_existing_file,
-                                                    parse_non_empty_or_whitespace,
+from tts_mos_test_mturk_cli.argparse_helper import (parse_non_empty_or_whitespace,
                                                     parse_non_negative_float, parse_path)
+from tts_mos_test_mturk_cli.default_args import add_masks_argument, add_project_argument
 from tts_mos_test_mturk_cli.types import ExecutionResult
 
 
 def get_bonus_parser(parser: ArgumentParser):
   parser.description = "Write bonus CSV of all unmasked assignments."
-  parser.add_argument("project", type=parse_existing_file, metavar="PROJECT-PATH",
-                      help="project file (.pkl)")
-  parser.add_argument("masks", type=parse_non_empty_or_whitespace,
-                      nargs="*", metavar="MASK", help="apply these masks", action=ConvertToOrderedSetAction)
+  add_project_argument(parser)
+  add_masks_argument(parser)
   parser.add_argument("amount", type=parse_non_negative_float,
                       metavar="AMOUNT", help="bonus amount in $")
   parser.add_argument("reason", type=parse_non_empty_or_whitespace, metavar="REASON",

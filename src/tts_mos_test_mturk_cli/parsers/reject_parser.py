@@ -1,19 +1,17 @@
 from argparse import ArgumentParser, Namespace
 from logging import Logger
 
-from tts_mos_test_mturk.core.bad_worker_filtering import generate_reject_csv
+from tts_mos_test_mturk.core.df_generation import generate_reject_csv
 from tts_mos_test_mturk.core.evaluation_data import EvaluationData
-from tts_mos_test_mturk_cli.argparse_helper import (ConvertToOrderedSetAction, parse_existing_file,
-                                                    parse_non_empty_or_whitespace, parse_path)
+from tts_mos_test_mturk_cli.argparse_helper import parse_non_empty_or_whitespace, parse_path
+from tts_mos_test_mturk_cli.default_args import add_masks_argument, add_project_argument
 from tts_mos_test_mturk_cli.types import ExecutionResult
 
 
 def get_reject_parser(parser: ArgumentParser):
   parser.description = "Write rejectment CSV of all masked assignments."
-  parser.add_argument("project", type=parse_existing_file, metavar="PROJECT-PATH",
-                      help="project file (.pkl)")
-  parser.add_argument("masks", type=parse_non_empty_or_whitespace,
-                      nargs="*", metavar="MASK", help="apply these masks", action=ConvertToOrderedSetAction)
+  add_project_argument(parser)
+  add_masks_argument(parser)
   parser.add_argument("reason", type=parse_non_empty_or_whitespace, metavar="REASON",
                       help="use this reason")
   parser.add_argument("output", type=parse_path,
@@ -30,7 +28,7 @@ def main(ns: Namespace, logger: Logger, flogger: Logger) -> ExecutionResult:
     return False
 
   result_df = generate_reject_csv(project, ns.masks, ns.reason)
-  
+
   if result_df is None:
     logger.info("No assignments exist to reject!")
     return True

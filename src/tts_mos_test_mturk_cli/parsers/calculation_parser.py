@@ -1,20 +1,17 @@
 from argparse import ArgumentParser, Namespace
 from logging import Logger
 
-from tts_mos_test_mturk.core.bad_worker_filtering import calc_mos
+from tts_mos_test_mturk.core.df_generation import get_mos_df
 from tts_mos_test_mturk.core.evaluation_data import EvaluationData
-from tts_mos_test_mturk_cli.argparse_helper import (ConvertToOrderedSetAction, get_optional,
-                                                    parse_existing_file,
-                                                    parse_non_empty_or_whitespace, parse_path)
+from tts_mos_test_mturk_cli.argparse_helper import get_optional, parse_path
+from tts_mos_test_mturk_cli.default_args import add_masks_argument, add_project_argument
 from tts_mos_test_mturk_cli.types import ExecutionResult
 
 
 def get_calculation_parser(parser: ArgumentParser):
   parser.description = "Calculate MOS for each algorithm"
-  parser.add_argument("project", type=parse_existing_file, metavar="PROJECT-PATH",
-                      help="project file (.pkl)")
-  parser.add_argument("masks", type=parse_non_empty_or_whitespace,
-                      nargs="*", metavar="MASK", help="apply these masks", action=ConvertToOrderedSetAction)
+  add_project_argument(parser)
+  add_masks_argument(parser)
   parser.add_argument("--output", type=get_optional(parse_path),
                       help="write results to this CSV", metavar="OUTPUT-CSV", default=None)
   return main
@@ -28,7 +25,7 @@ def main(ns: Namespace, logger: Logger, flogger: Logger) -> ExecutionResult:
     logger.error(f"Project \"{ns.project.absolute()}\" couldn't be loaded!")
     return False
 
-  result_df = calc_mos(project, ns.masks)
+  result_df = get_mos_df(project, ns.masks)
 
   if ns.output:
     try:

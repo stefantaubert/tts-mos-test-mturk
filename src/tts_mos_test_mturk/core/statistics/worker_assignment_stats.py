@@ -35,6 +35,12 @@ class WorkerEntry:
 
   @property
   def correlation_mean(self) -> float:
+    if self.sentence_corr is None:
+      if self.algorithm_corr is None:
+        return None
+      return self.algorithm_corr
+    if self.algorithm_corr is None:
+      return self.sentence_corr
     return np.mean([self.sentence_corr, self.algorithm_corr])
 
 
@@ -121,19 +127,12 @@ def stats_to_df(stats: Dict[str, WorkerEntry]) -> pd.DataFrame:
       ("Masked", entry.masked),
     ))
     csv_data.append(data_entry)
-
-  if len(csv_data) == 0:
-    return None
-  result = pd.DataFrame(
-    data=[x.values() for x in csv_data],
-    columns=csv_data[0].keys(),
-  )
-
+  result = pd.DataFrame.from_records(csv_data)
   return result
 
 
 def add_all_row(df: pd.DataFrame) -> pd.DataFrame:
-  df = df.append(OrderedDict((
+  row = OrderedDict((
     ("WorkerId", "All"),
     ("Total Assignments", df["Total Assignments"].sum()),
     ("Rejected Assignments", df["Rejected Assignments"].sum()),
@@ -150,12 +149,13 @@ def add_all_row(df: pd.DataFrame) -> pd.DataFrame:
     ("Correlation", df["Correlation"].mean()),
     ("Masked Assignments", df["Masked Assignments"].sum()),
     ("Masked", df["Masked"].sum()),
-  )), ignore_index=True)
+  ))
+  df = pd.concat([df, pd.DataFrame.from_records([row])], ignore_index=True)
   return df
 
 
 def get_worker_assignment_stats(data: EvaluationData, mask_names: Set[str]):
-  masks = [data.masks[mask_name] for mask_name in mask_names]
+  masks = data.get_masks_from_names(mask_names)
   stats = get_data(data, masks)
   df = stats_to_df(stats)
   if df is None:

@@ -10,7 +10,7 @@ from tts_mos_test_mturk.core.masks import AssignmentMask, MaskBase, WorkerMask
 def print_stats(data: EvaluationData, mask_names: Set[str], added_mask_names: Set[str]) -> None:
   logger = get_logger()
   logger.info("--- Stats ---")
-  masks = [data.masks[mask_name] for mask_name in mask_names]
+  masks = data.get_masks_from_names(mask_names)
   added_masks = [data.masks[mask_name] for mask_name in added_mask_names]
   print_stats_masks(data, masks, added_masks)
   logger.info("----------")

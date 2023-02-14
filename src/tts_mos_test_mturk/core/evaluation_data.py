@@ -2,6 +2,7 @@ from collections import OrderedDict
 from pathlib import Path
 from typing import Dict, List
 from typing import OrderedDict as ODType
+from typing import Set
 
 import numpy as np
 from ordered_set import OrderedSet
@@ -65,6 +66,10 @@ class EvaluationData():
   @property
   def n_files(self) -> int:
     return len(self.files)
+
+  def get_masks_from_names(self, mask_names: Set[str]) -> List[MaskBase]:
+    masks = [self.masks[mask_name] for mask_name in mask_names]
+    return masks
 
   def add_or_update_mask(self, name: str, mask: MaskBase) -> None:
     self.masks[name] = mask

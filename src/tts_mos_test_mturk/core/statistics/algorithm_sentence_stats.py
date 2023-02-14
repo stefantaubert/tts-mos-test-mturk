@@ -148,20 +148,14 @@ def stats_to_df(stats: Dict[str, Dict[str, FileEntry]]) -> pd.DataFrame:
         COL_MASKED: entry.masked,
       }
       csv_data.append(data_entry)
-
-  if len(csv_data) == 0:
-    return None
-  result = pd.DataFrame(
-    data=[x.values() for x in csv_data],
-    columns=COLS,
-  )
+  result = pd.DataFrame.from_records(csv_data, columns=COLS)
   return result
 
 
 def add_all_to_df(df: pd.DataFrame) -> pd.DataFrame:
   algorithms = df[COL_ALG].unique()
 
-  df = df.append({
+  row = {
     COL_ALG: COL_ALL,
     COL_SENT: COL_ALL,
     COL_MIN: df[COL_MIN].min(),
@@ -178,11 +172,12 @@ def add_all_to_df(df: pd.DataFrame) -> pd.DataFrame:
     COL_MOS4: df[COL_MOS4].sum(),
     COL_MOS5: df[COL_MOS5].sum(),
     COL_MASKED: df[COL_MASKED].sum(),
-  }, ignore_index=True)
+  }
+  df = pd.concat([df, pd.DataFrame.from_records([row])], ignore_index=True)
 
   for algorithm in algorithms:
     subset: pd.DataFrame = df.loc[df[COL_ALG] == algorithm]
-    df = df.append({
+    row = {
       COL_ALG: algorithm,
       COL_SENT: COL_ALL,
       COL_MIN: subset[COL_MIN].min(),
@@ -199,13 +194,14 @@ def add_all_to_df(df: pd.DataFrame) -> pd.DataFrame:
       COL_MOS4: subset[COL_MOS4].sum(),
       COL_MOS5: subset[COL_MOS5].sum(),
       COL_MASKED: subset[COL_MASKED].sum(),
-    }, ignore_index=True)
+    }
+    df = pd.concat([df, pd.DataFrame.from_records([row])], ignore_index=True)
 
   return df
 
 
 def get_algorithm_sentence_stats(data: EvaluationData, mask_names: Set[str]):
-  masks = [data.masks[mask_name] for mask_name in mask_names]
+  masks = data.get_masks_from_names(mask_names)
   stats = get_worker_stats(data, masks)
   df = stats_to_df(stats)
   if df is None:

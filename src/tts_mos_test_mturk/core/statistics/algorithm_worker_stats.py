@@ -110,20 +110,14 @@ def stats_to_df(stats: Dict[str, Dict[str, WorkerEntry]]) -> pd.DataFrame:
         ("Masked", entry.masked),
       ))
       csv_data.append(data_entry)
-
-  if len(csv_data) == 0:
-    return None
-  result = pd.DataFrame(
-    data=[x.values() for x in csv_data],
-    columns=csv_data[0].keys(),
-  )
+  result = pd.DataFrame.from_records(csv_data)
   return result
 
 
 def add_all_to_df(df: pd.DataFrame) -> pd.DataFrame:
   algorithms = df["Algorithm"].unique()
 
-  df = df.append(OrderedDict((
+  row = OrderedDict((
     ("Algorithm", "All"),
     ("WorkerId", "All"),
     ("Min", df["Min"].min()),
@@ -140,11 +134,12 @@ def add_all_to_df(df: pd.DataFrame) -> pd.DataFrame:
     ("Score 4", df["Score 4"].sum()),
     ("Score 5", df["Score 5"].sum()),
     ("Masked", df["Masked"].sum()),
-  )), ignore_index=True)
+  ))
+  df = pd.concat([df, pd.DataFrame.from_records([row])], ignore_index=True)
 
   for algorithm in algorithms:
     subset: pd.DataFrame = df.loc[df['Algorithm'] == algorithm]
-    df = df.append(OrderedDict((
+    row = OrderedDict((
       ("Algorithm", algorithm),
       ("WorkerId", "All"),
       ("Min", subset["Min"].min()),
@@ -161,13 +156,14 @@ def add_all_to_df(df: pd.DataFrame) -> pd.DataFrame:
       ("Score 4", subset["Score 4"].sum()),
       ("Score 5", subset["Score 5"].sum()),
       ("Masked", subset["Masked"].sum()),
-    )), ignore_index=True)
+    ))
+    df = pd.concat([df, pd.DataFrame.from_records([row])], ignore_index=True)
 
   return df
 
 
 def get_worker_algorithm_stats(data: EvaluationData, mask_names: Set[str]):
-  masks = [data.masks[mask_name] for mask_name in mask_names]
+  masks = data.get_masks_from_names(mask_names)
   stats = get_worker_stats(data, masks)
   df = stats_to_df(stats)
   if df is None:
