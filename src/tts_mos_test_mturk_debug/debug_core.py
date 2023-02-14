@@ -12,7 +12,7 @@ from tts_mos_test_mturk.core.masking.worker_correlation_mask import (
 from tts_mos_test_mturk.core.statistics.algorithm_sentence_stats import get_algorithm_sentence_stats
 from tts_mos_test_mturk.core.statistics.algorithm_worker_stats import get_worker_algorithm_stats
 from tts_mos_test_mturk.core.statistics.worker_assignment_stats import get_worker_assignment_stats
-from tts_mos_test_mturk.core.stats import print_stats
+from tts_mos_test_mturk.core.statistics.update_stats import print_stats
 from tts_mos_test_mturk_cli.logging_configuration import (configure_root_logger,
                                                           init_and_return_loggers)
 

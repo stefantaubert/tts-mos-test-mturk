@@ -2,7 +2,7 @@
 from typing import Set
 
 from tts_mos_test_mturk.core.evaluation_data import EvaluationData
-from tts_mos_test_mturk.core.stats import print_stats_masks
+from tts_mos_test_mturk.core.statistics.update_stats import print_stats_masks
 
 
 def mask_assignments_by_listening_device(data: EvaluationData, mask_names: Set[str], listening_types: Set[str], output_mask_name: str):
