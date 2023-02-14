@@ -11,13 +11,21 @@ from tts_mos_test_mturk.core.bad_worker_filtering import (calc_mos, generate_app
                                                           ignore_too_fast_assignments,
                                                           mask_assignments_by_lt)
 from tts_mos_test_mturk.core.evaluation_data import EvaluationData
+from tts_mos_test_mturk.core.logging import get_detail_logger, get_logger
 from tts_mos_test_mturk.core.statistics.algorithm_sentence_stats import get_algorithm_sentence_stats
 from tts_mos_test_mturk.core.statistics.algorithm_worker_stats import get_worker_algorithm_stats
 from tts_mos_test_mturk.core.statistics.worker_assignment_stats import get_worker_assignment_stats
 from tts_mos_test_mturk.core.stats import print_stats
-from tts_mos_test_mturk_cli.logging_configuration import configure_root_logger
+from tts_mos_test_mturk_cli.logging_configuration import (configure_root_logger,
+                                                          init_and_return_loggers)
 
 configure_root_logger()
+cmd_flogger, cmd_logger = init_and_return_loggers(__name__)
+
+core_main_logger = get_logger()
+core_main_logger.parent = cmd_logger
+core_detail_logger = get_detail_logger()
+core_detail_logger.parent = cmd_flogger
 
 
 def parse_v3():
@@ -33,6 +41,10 @@ def parse_v3():
   data = EvaluationData.load(Path("/tmp/data-2.pkl"))
 
   mask_assignments_by_lt(data, OrderedSet(), {"desktop"}, "lt_bad")
+  # mask_assignments_by_lt(data, {"lt_bad"}, {"laptop"}, "lt_bad_2")
+  ignore_bad_workers(data, {"lt_bad"}, 0.25, "sentence", "bad_workers")
+  print_stats(data, set(), {"lt_bad", "bad_workers"})
+
   df = get_algorithm_sentence_stats(data, {"lt_bad"})
   print(df)
   df = get_worker_algorithm_stats(data, {"lt_bad"})

@@ -59,6 +59,10 @@ class EvaluationData():
     return len(self.workers)
 
   @property
+  def n_opinion_scores(self) -> int:
+    return len(self.data)
+
+  @property
   def n_files(self) -> int:
     return len(self.files)
 
