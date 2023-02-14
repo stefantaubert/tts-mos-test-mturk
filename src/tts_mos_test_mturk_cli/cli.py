@@ -11,7 +11,7 @@ from tempfile import gettempdir
 from time import perf_counter
 from typing import Callable, List
 
-from tts_mos_test_mturk.core.logging import get_detail_logger, get_logger
+from tts_mos_test_mturk.logging import get_detail_logger, get_logger
 from tts_mos_test_mturk_cli.argparse_helper import get_optional, parse_path, parse_positive_integer
 from tts_mos_test_mturk_cli.logging_configuration import (configure_root_logger, get_file_logger,
                                                           init_and_return_loggers,

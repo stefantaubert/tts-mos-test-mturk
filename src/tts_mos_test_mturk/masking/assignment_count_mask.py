@@ -2,8 +2,8 @@ from typing import Set
 
 import numpy as np
 
-from tts_mos_test_mturk.core.evaluation_data import EvaluationData
-from tts_mos_test_mturk.core.statistics.update_stats import print_stats_masks
+from tts_mos_test_mturk.evaluation_data import EvaluationData
+from tts_mos_test_mturk.statistics.update_stats import print_stats_masks
 
 
 def mask_workers_by_assignment_count(data: EvaluationData, mask_names: Set[str], threshold: int, output_mask_name: str):

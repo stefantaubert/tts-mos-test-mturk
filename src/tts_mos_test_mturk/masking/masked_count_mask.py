@@ -2,9 +2,9 @@ from typing import Set
 
 from tts_mos_test_mturk.calculation.etc import (get_workers_count, get_workers_percent,
                                                 get_workers_percent_mask)
-from tts_mos_test_mturk.core.evaluation_data import EvaluationData
-from tts_mos_test_mturk.core.logging import get_detail_logger
-from tts_mos_test_mturk.core.statistics.update_stats import print_stats_masks
+from tts_mos_test_mturk.evaluation_data import EvaluationData
+from tts_mos_test_mturk.logging import get_detail_logger
+from tts_mos_test_mturk.statistics.update_stats import print_stats_masks
 
 
 def mask_scores_by_masked_count(data: EvaluationData, mask_names: Set[str], ref_mask_name: str, percent: float, output_mask_name: str):

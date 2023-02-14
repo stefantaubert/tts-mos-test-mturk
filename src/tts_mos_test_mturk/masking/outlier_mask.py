@@ -2,8 +2,8 @@
 from typing import Set
 
 from tts_mos_test_mturk.calculation.etc import mask_outliers
-from tts_mos_test_mturk.core.evaluation_data import EvaluationData
-from tts_mos_test_mturk.core.statistics.update_stats import print_stats_masks
+from tts_mos_test_mturk.evaluation_data import EvaluationData
+from tts_mos_test_mturk.statistics.update_stats import print_stats_masks
 
 
 def mask_outlying_scores(data: EvaluationData, mask_names: Set[str], max_std_dev_diff: float, output_mask_name: str):

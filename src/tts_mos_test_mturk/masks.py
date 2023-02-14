@@ -4,7 +4,7 @@ from typing import List
 import numpy as np
 from ordered_set import OrderedSet
 
-from tts_mos_test_mturk.core.data_point import DataPoint
+from tts_mos_test_mturk.data_point import DataPoint
 
 
 class MaskBase():

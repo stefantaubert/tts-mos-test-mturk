@@ -3,16 +3,19 @@ from pathlib import Path
 import pandas as pd
 from ordered_set import OrderedSet
 
-from tts_mos_test_mturk.core.evaluation_data import EvaluationData
-from tts_mos_test_mturk.core.logging import get_detail_logger, get_logger
-from tts_mos_test_mturk.core.masking.worker_correlation_mask import (
-  calc_mos, generate_approve_csv, ignore_bad_workers_percent, ignore_masked_count_opinion_scores,
-  ignore_outlier_opinion_scores, ignore_too_fast_assignments, mask_assignments_by_lt,
-  mask_workers_by_correlation)
-from tts_mos_test_mturk.core.statistics.algorithm_sentence_stats import get_algorithm_sentence_stats
-from tts_mos_test_mturk.core.statistics.algorithm_worker_stats import get_worker_algorithm_stats
-from tts_mos_test_mturk.core.statistics.worker_assignment_stats import get_worker_assignment_stats
-from tts_mos_test_mturk.core.statistics.update_stats import print_stats
+from tts_mos_test_mturk.evaluation_data import EvaluationData
+from tts_mos_test_mturk.logging import get_detail_logger, get_logger
+from tts_mos_test_mturk.masking.worker_correlation_mask import (calc_mos, generate_approve_csv,
+                                                                ignore_bad_workers_percent,
+                                                                ignore_masked_count_opinion_scores,
+                                                                ignore_outlier_opinion_scores,
+                                                                ignore_too_fast_assignments,
+                                                                mask_assignments_by_lt,
+                                                                mask_workers_by_correlation)
+from tts_mos_test_mturk.statistics.algorithm_sentence_stats import get_algorithm_sentence_stats
+from tts_mos_test_mturk.statistics.algorithm_worker_stats import get_worker_algorithm_stats
+from tts_mos_test_mturk.statistics.update_stats import print_stats
+from tts_mos_test_mturk.statistics.worker_assignment_stats import get_worker_assignment_stats
 from tts_mos_test_mturk_cli.logging_configuration import (configure_root_logger,
                                                           init_and_return_loggers)
 

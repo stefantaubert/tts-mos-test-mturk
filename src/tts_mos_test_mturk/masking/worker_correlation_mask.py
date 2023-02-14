@@ -4,14 +4,11 @@ from typing import Literal, Set
 import numpy as np
 
 from tts_mos_test_mturk.analyze_assignmens import get_mos_correlations
-from tts_mos_test_mturk.calculation.etc import (get_workers_count, get_workers_percent,
-                                                get_workers_percent_mask, mask_outliers)
-from tts_mos_test_mturk.core.evaluation_data import EvaluationData
-from tts_mos_test_mturk.core.logging import get_detail_logger
-from tts_mos_test_mturk.core.statistics.update_stats import print_stats_masks
+from tts_mos_test_mturk.evaluation_data import EvaluationData
+from tts_mos_test_mturk.statistics.update_stats import print_stats_masks
 
 
-def ignore_bad_workers(data: EvaluationData, mask_names: Set[str], threshold: float, mode: Literal["sentence", "algorithm", "both"], output_mask_name: str):
+def mask_workers_by_correlation(data: EvaluationData, mask_names: Set[str], threshold: float, mode: Literal["sentence", "algorithm", "both"], output_mask_name: str):
   masks = data.get_masks_from_names(mask_names)
   factory = data.get_mask_factory()
 
@@ -66,6 +63,3 @@ def ignore_bad_workers_percent(data: EvaluationData, mask_names: Set[str], from_
   data.add_or_update_mask(output_mask_name, res_wmask)
 
   print_stats_masks(data, masks, [res_wmask])
-
-
-

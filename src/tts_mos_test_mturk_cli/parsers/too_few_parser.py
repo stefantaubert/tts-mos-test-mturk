@@ -1,8 +1,8 @@
 from argparse import ArgumentParser, Namespace
 from logging import Logger
 
-from tts_mos_test_mturk.core.evaluation_data import EvaluationData
-from tts_mos_test_mturk.core.masking.assignment_count_mask import mask_workers_by_assignment_count
+from tts_mos_test_mturk.evaluation_data import EvaluationData
+from tts_mos_test_mturk.masking.assignment_count_mask import mask_workers_by_assignment_count
 from tts_mos_test_mturk_cli.argparse_helper import parse_positive_integer
 from tts_mos_test_mturk_cli.default_args import (add_dry_argument, add_masks_argument,
                                                  add_output_mask_argument, add_project_argument)

@@ -1,9 +1,8 @@
 from argparse import ArgumentParser, Namespace
 from logging import Logger
 
-from tts_mos_test_mturk.core.evaluation_data import EvaluationData
-from tts_mos_test_mturk.core.masking.listening_device_mask import \
-  mask_assignments_by_listening_device
+from tts_mos_test_mturk.evaluation_data import EvaluationData
+from tts_mos_test_mturk.masking.listening_device_mask import mask_assignments_by_listening_device
 from tts_mos_test_mturk_cli.argparse_helper import ConvertToSetAction
 from tts_mos_test_mturk_cli.default_args import (add_dry_argument, add_masks_argument,
                                                  add_output_mask_argument, add_project_argument)

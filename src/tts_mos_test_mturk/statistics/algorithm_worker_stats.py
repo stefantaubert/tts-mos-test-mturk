@@ -5,10 +5,10 @@ from typing import Dict, List, Set
 import numpy as np
 import pandas as pd
 
-from tts_mos_test_mturk.core.data_point import (DEVICE_DESKTOP, DEVICE_IN_EAR, DEVICE_LAPTOP,
-                                                DEVICE_ON_EAR)
-from tts_mos_test_mturk.core.evaluation_data import EvaluationData
-from tts_mos_test_mturk.core.masks import MaskBase
+from tts_mos_test_mturk.data_point import (DEVICE_DESKTOP, DEVICE_IN_EAR, DEVICE_LAPTOP,
+                                           DEVICE_ON_EAR)
+from tts_mos_test_mturk.evaluation_data import EvaluationData
+from tts_mos_test_mturk.masks import MaskBase
 
 
 @dataclass

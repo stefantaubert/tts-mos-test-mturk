@@ -1,8 +1,8 @@
 from argparse import ArgumentParser, Namespace
 from logging import Logger
 
-from tts_mos_test_mturk.core.evaluation_data import EvaluationData
-from tts_mos_test_mturk.core.statistics.update_stats import print_stats
+from tts_mos_test_mturk.evaluation_data import EvaluationData
+from tts_mos_test_mturk.statistics.update_stats import print_stats
 from tts_mos_test_mturk_cli.default_args import add_masks_argument, add_project_argument
 from tts_mos_test_mturk_cli.types import ExecutionResult
 

@@ -3,7 +3,7 @@ from logging import Logger
 
 import pandas as pd
 
-from tts_mos_test_mturk.core.evaluation_data import EvaluationData
+from tts_mos_test_mturk.evaluation_data import EvaluationData
 from tts_mos_test_mturk_cli.argparse_helper import parse_existing_file, parse_path
 from tts_mos_test_mturk_cli.types import ExecutionResult
 

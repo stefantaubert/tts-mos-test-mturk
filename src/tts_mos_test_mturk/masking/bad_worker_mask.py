@@ -4,11 +4,11 @@ from typing import Literal, Set
 import numpy as np
 
 from tts_mos_test_mturk.analyze_assignmens import get_mos_correlations
-from tts_mos_test_mturk.core.evaluation_data import EvaluationData
-from tts_mos_test_mturk.core.statistics.update_stats import print_stats_masks
+from tts_mos_test_mturk.evaluation_data import EvaluationData
+from tts_mos_test_mturk.statistics.update_stats import print_stats_masks
 
 
-def mask_workers_by_correlation(data: EvaluationData, mask_names: Set[str], threshold: float, mode: Literal["sentence", "algorithm", "both"], output_mask_name: str):
+def ignore_bad_workers(data: EvaluationData, mask_names: Set[str], threshold: float, mode: Literal["sentence", "algorithm", "both"], output_mask_name: str):
   masks = data.get_masks_from_names(mask_names)
   factory = data.get_mask_factory()
 

@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional, Set
 import pandas as pd
 
 from tts_mos_test_mturk.calculation.compute_mos_ci95_3gaussian import compute_ci95, compute_mos
-from tts_mos_test_mturk.core.evaluation_data import EvaluationData
+from tts_mos_test_mturk.evaluation_data import EvaluationData
 
 
 def get_mos_df(data: EvaluationData, mask_names: Set[str]) -> pd.DataFrame:

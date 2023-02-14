@@ -8,10 +8,9 @@ import numpy as np
 from ordered_set import OrderedSet
 from pandas import DataFrame
 
-from tts_mos_test_mturk.core.data_point import (DataPoint, get_n_urls_per_assignment,
-                                                parse_data_points)
-from tts_mos_test_mturk.core.io import load_obj, save_obj
-from tts_mos_test_mturk.core.masks import MaskBase, MaskFactory
+from tts_mos_test_mturk.data_point import DataPoint, get_n_urls_per_assignment, parse_data_points
+from tts_mos_test_mturk.io import load_obj, save_obj
+from tts_mos_test_mturk.masks import MaskBase, MaskFactory
 
 
 class EvaluationData():
