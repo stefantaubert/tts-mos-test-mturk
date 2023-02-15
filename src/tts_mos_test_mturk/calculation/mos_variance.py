@@ -1,4 +1,29 @@
+from math import sqrt
+
 import numpy as np
+from scipy.stats import t
+
+
+def matlab_tinv(p: float, df: int) -> float:
+  result = -t.isf(p, df)
+  return result
+
+
+def compute_mos(Z: np.ndarray) -> float:
+  mos = np.nanmean(Z.flatten())
+  return mos
+
+
+def compute_ci95(Z: np.ndarray) -> float:
+  # Computes the 95% confidence interval for the mean, using a sum of 3 Gaussians model.
+  # For more details, see
+  #
+  # F. Ribeiro, D. Florencio, C. Zhang and M. Seltzer, "crowdMOS: An Approach for
+  # Crowdsourcing Mean Opinion Score Studies", submitted to ICASSP 2011.
+  v_mu = mos_variance(Z)
+  t = matlab_tinv(.5 * (1 + .95), min(Z.shape) - 1)
+  ci95 = t * sqrt(v_mu)
+  return ci95
 
 
 def mos_variance(Z: np.ndarray) -> float:
@@ -76,6 +101,8 @@ def mos_variance(Z: np.ndarray) -> float:
     assert np.isnan(v_su) and np.isnan(v_wu)
     v_mu = v_swu / T
   return v_mu
+
+# def get_v_mu_from_v_su()
 
 
 def vertical_var(Z: np.ndarray):

@@ -1,4 +1,3 @@
-
 from typing import Set
 
 import numpy as np
@@ -7,11 +6,11 @@ from tts_mos_test_mturk.evaluation_data import EvaluationData
 from tts_mos_test_mturk.statistics.update_stats import print_stats_masks
 
 
-def mask_outliers(Z: np.ndarray, max_std_dev_diff: float) -> np.ndarray:
-  mu = np.nanmean(Z)
-  s = np.nanstd(Z)
+def mask_outliers(opinion_scores: np.ndarray, max_std_dev_diff: float) -> np.ndarray:
+  mu = np.nanmean(opinion_scores)
+  s = np.nanstd(opinion_scores)
 
-  mu_norm = abs(Z - mu) / s
+  mu_norm = abs(opinion_scores - mu) / s
   outlying_scores: np.ndarray = mu_norm > max_std_dev_diff
 
   return outlying_scores

@@ -54,18 +54,15 @@ class MaskBase():
 
 
 class OpinionScoreMask(MaskBase):
-  def __init__(self, mask: np.ndarray) -> None:
-    super().__init__(mask)
+  pass
 
 
 class AssignmentMask(MaskBase):
-  def __init__(self, mask: np.ndarray) -> None:
-    super().__init__(mask)
+  pass
 
 
 class WorkerMask(MaskBase):
-  def __init__(self, mask: np.ndarray) -> None:
-    super().__init__(mask)
+  pass
 
 
 class MaskFactory():

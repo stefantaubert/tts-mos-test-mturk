@@ -2,7 +2,7 @@ from typing import Literal
 
 import numpy as np
 
-from tts_mos_test_mturk.calculation.compute_mos_ci95_3gaussian import compute_mos
+from tts_mos_test_mturk.calculation.mos_variance import compute_mos
 
 
 def get_sentence_mos_correlation(worker: int, Z: np.ndarray) -> float:
@@ -20,9 +20,9 @@ def get_sentence_mos_correlation(worker: int, Z: np.ndarray) -> float:
   return get_corrcoef(scores)
 
 
-def get_sentence_mos_correlation_3dim(worker: int, Zs: np.ndarray) -> float:
-  assert len(Zs.shape) == 3
-  Z = np.concatenate(Zs, axis=1)
+def get_sentence_mos_correlation_3dim(worker: int, opinion_scores: np.ndarray) -> float:
+  assert len(opinion_scores.shape) == 3
+  Z = np.concatenate(opinion_scores, axis=1)
   return get_sentence_mos_correlation(worker, Z)
 
 
@@ -41,7 +41,6 @@ def get_algorithm_mos_correlation(worker: int, opinion_scores: np.ndarray) -> fl
   assert len(opinion_scores.shape) == 3
   n_alg = opinion_scores.shape[0]
   n_workers = opinion_scores.shape[1]
-  # n_sentences = Zs.shape[2]
 
   scores = np.empty((2, n_alg))
   others = [w_i for w_i in range(n_workers) if w_i != worker]
@@ -90,8 +89,8 @@ def get_corrcoef(v: np.ndarray) -> float:
   assert len(v.shape) == 2
   assert v.shape[0] == 2
 
-  nan_row_mask = np.any(np.isnan(v), axis=0)
-  masked_v = v[:, ~nan_row_mask]
+  nan_rows_mask = np.any(np.isnan(v), axis=0)
+  masked_v = v[:, ~nan_rows_mask]
 
   result = np.corrcoef(masked_v)
   result = result[0, 1]

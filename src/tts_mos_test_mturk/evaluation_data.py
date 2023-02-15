@@ -13,18 +13,33 @@ from tts_mos_test_mturk.io import load_obj, save_obj
 from tts_mos_test_mturk.masks import MaskBase, MaskFactory
 
 
+def get_file_dict_from_df(ground_truth_df: DataFrame) -> Dict[str, str]:
+  ground_truth_dict = ground_truth_df.to_dict("index")
+  file_dict: Dict[str, str] = {}
+
+  for row in ground_truth_dict.values():
+    audio_url = row["audio_url"]
+    file_dict[audio_url] = row["file"]
+  return file_dict
+
+
+def get_alg_dict_from_df(ground_truth_df: DataFrame) -> Dict[str, str]:
+  ground_truth_dict = ground_truth_df.to_dict("index")
+  alg_dict: Dict[str, str] = {}
+
+  for row in ground_truth_dict.values():
+    audio_url = row["audio_url"]
+    alg_dict[audio_url] = row["algorithm"]
+  return alg_dict
+
+
 class EvaluationData():
   def __init__(self, results_df: DataFrame, ground_truth_df: DataFrame):
     super().__init__()
-    ground_truth_dict = ground_truth_df.to_dict("index")
     results_dict = results_df.to_dict("index")
 
-    alg_dict: Dict[str, str] = {}
-    file_dict: Dict[str, str] = {}
-    for row in ground_truth_dict.values():
-      audio_url = row["audio_url"]
-      alg_dict[audio_url] = row["algorithm"]
-      file_dict[audio_url] = row["file"]
+    alg_dict = get_alg_dict_from_df(ground_truth_df)
+    file_dict = get_file_dict_from_df(ground_truth_df)
 
     self.audio_urls = OrderedSet(sorted(alg_dict.keys()))
     self.algorithms = OrderedSet(sorted(alg_dict.values()))
@@ -33,9 +48,6 @@ class EvaluationData():
     self.workers = OrderedSet(sorted(set(dp.worker_id for dp in self.data)))
     self.assignments = OrderedSet(sorted(set(dp.assignment_id for dp in self.data)))
     self.n_urls_per_assignment = get_n_urls_per_assignment(self.data)
-    # self.mask_factory = MaskFactory(self.n_algorithms, self.n_workers,
-    #                                 self.n_files, self.n_assignments)
-
     self.masks: ODType[str, MaskBase] = OrderedDict()
 
   @classmethod
@@ -89,24 +101,3 @@ class EvaluationData():
       file_i = self.files.get_loc(dp.file)
       Z[alg_i, worker_i, file_i] = dp.opinion_score
     return Z
-
-  def get_worktimes(self) -> np.ndarray:
-    worktimes = np.full(
-      self.n_assignments,
-      fill_value=np.nan,
-      dtype=np.float32,
-    )
-    for dp in self.data:
-      ass_i = self.assignments.get_loc(dp.assignment_id)
-      worktimes[ass_i] = dp.worktime
-    return worktimes
-
-  def get_listening_devices(self) -> np.ndarray:
-    worktimes = [np.nan] * self.n_assignments
-
-    for dp in self.data:
-      ass_i = self.assignments.get_loc(dp.assignment_id)
-      if worktimes[ass_i] != dp.listening_device:
-        worktimes[ass_i] = dp.listening_device
-    worktimes_np = np.array(worktimes)
-    return worktimes_np

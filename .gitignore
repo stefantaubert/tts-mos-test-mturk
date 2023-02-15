@@ -136,11 +136,8 @@ dmypy.json
 playground*
 
 # Own examples
-797*
-inferred.wav
-original.wav
 deploy-PyPI.sh
 TODO.txt
-template/template.html
-src/tts_mos_test_mturk_debug/parse_api.py
+mturk-template/template.html
 examples/
+*_debug/

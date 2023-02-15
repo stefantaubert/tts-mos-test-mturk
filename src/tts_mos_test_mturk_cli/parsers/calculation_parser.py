@@ -26,6 +26,7 @@ def main(ns: Namespace, logger: Logger, flogger: Logger) -> ExecutionResult:
     return False
 
   result_df = get_mos_df(project, ns.masks)
+  print(result_df)
 
   if ns.output:
     try:
@@ -35,7 +36,5 @@ def main(ns: Namespace, logger: Logger, flogger: Logger) -> ExecutionResult:
       logger.error(f"Output CSV \"{ns.output.absolute()}\" couldn't be saved!")
       return False
     logger.info(f"Written output to: \"{ns.output.absolute()}\"")
-  else:
-    print(result_df)
 
   return True

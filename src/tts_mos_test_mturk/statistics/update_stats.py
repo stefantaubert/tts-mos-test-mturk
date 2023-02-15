@@ -11,9 +11,9 @@ def print_stats(data: EvaluationData, mask_names: Set[str], added_mask_names: Se
   logger = get_logger()
   logger.info("--- Stats ---")
   masks = data.get_masks_from_names(mask_names)
-  added_masks = [data.masks[mask_name] for mask_name in added_mask_names]
+  added_masks = data.get_masks_from_names(added_mask_names)
   print_stats_masks(data, masks, added_masks)
-  logger.info("----------")
+  logger.info("-------------")
 
 
 def print_stats_masks(data: EvaluationData, masks: List[MaskBase], added_masks: List[MaskBase]) -> None:

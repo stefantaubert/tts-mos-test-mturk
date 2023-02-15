@@ -18,7 +18,7 @@ keywords = [
   "Mean Opinion Score",
   "Amazon Mechanical Turk",
   "Language",
-  "Linguistics"
+  "Linguistics",
 ]
 classifiers = [
   "Development Status :: 2 - Pre-Alpha",
@@ -30,6 +30,7 @@ classifiers = [
   "Operating System :: Unix",
   "Operating System :: Microsoft :: Windows",
   "Programming Language :: Python",
+  "Programming Language :: Python :: 3 :: Only",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.8",
   "Programming Language :: Python :: 3.9",
@@ -43,6 +44,8 @@ dependencies = [
   "boto3",
   "boto3-stubs",
   "xmltodict",
+  "ordered-set>=4.1.0",
+  "scipy",
 ]
 
 [project.urls]
@@ -58,11 +61,13 @@ include = [
   "tts_mos_test_mturk",
   "tts_mos_test_mturk.*",
   "tts_mos_test_mturk_cli",
-  "tts_mos_test_mturk_cli.*"
+  "tts_mos_test_mturk_cli.*",
+  "tts_mos_test_mturk_tests",
+  "tts_mos_test_mturk_tests.*",
 ]
 exclude = [
-  "tts_mos_test_mturk_tests",
-  "tts_mos_test_mturk_debug"
+  "tts_mos_test_mturk_debug",
+  "tts_mos_test_mturk_debug.*",
 ]
 namespaces = true
 
@@ -83,7 +88,8 @@ line_length = 100
 indent = 2
 known_first_party = [
   "tts_mos_test_mturk",
-  "tts_mos_test_mturk_cli"
+  "tts_mos_test_mturk_cli",
+  "tts_mos_test_mturk_tests",
 ]
 
 [tool.tox]
