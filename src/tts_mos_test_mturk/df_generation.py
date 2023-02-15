@@ -3,7 +3,8 @@ from typing import Any, Dict, List, Optional, Set
 
 import pandas as pd
 
-from tts_mos_test_mturk.calculation.mos_variance import compute_ci95, compute_mos
+from tts_mos_test_mturk.calculation.mos_variance import (compute_alg_mos_ci95, compute_ci95,
+                                                         compute_mos)
 from tts_mos_test_mturk.evaluation_data import EvaluationData
 
 
@@ -14,13 +15,15 @@ def get_mos_df(data: EvaluationData, mask_names: Set[str]) -> pd.DataFrame:
   os = data.get_os()
   omask = factory.merge_masks_into_omask(masks)
   omask.apply_by_nan(os)
+  
+  alg_mos_ci95 = compute_alg_mos_ci95(os)
 
   scores: List[Dict] = []
   for algo_i, alg_name in enumerate(data.algorithms):
     row = OrderedDict((
       ("Algorithm", alg_name),
-      ("MOS", compute_mos(os[algo_i])),
-      ("CI95", compute_ci95(os[algo_i])),
+      ("MOS", alg_mos_ci95[0, algo_i]),
+      ("CI95", alg_mos_ci95[1, algo_i]),
     ))
     scores.append(row)
   result = pd.DataFrame.from_records(scores)

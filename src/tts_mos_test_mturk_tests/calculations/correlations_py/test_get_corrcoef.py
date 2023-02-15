@@ -3,7 +3,7 @@ import numpy as np
 from tts_mos_test_mturk.calculation.correlations import get_corrcoef
 
 
-def test_component():
+def test_0_999999999():
   v = np.array([
     [
       1,
@@ -22,3 +22,5 @@ def test_component():
   ])
 
   res = get_corrcoef(v)
+
+  assert res == 0.9999999999999999
