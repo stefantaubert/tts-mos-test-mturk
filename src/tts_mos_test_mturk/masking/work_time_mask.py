@@ -32,7 +32,7 @@ def get_work_times(data: EvaluationData) -> np.ndarray:
     fill_value=np.nan,
     dtype=np.float32,
   )
-  for dp in data.data:
-    ass_i = data.assignments.get_loc(dp.assignment_id)
-    work_times[ass_i] = dp.work_time
+  for data_point in data.data:
+    ass_i = data.assignments.get_loc(data_point.assignment_id)
+    work_times[ass_i] = data_point.work_time
   return work_times

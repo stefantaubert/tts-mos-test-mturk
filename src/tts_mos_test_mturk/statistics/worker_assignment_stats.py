@@ -59,16 +59,16 @@ def get_data(data: EvaluationData, masks: List[MaskBase]):
   for worker in data.workers:
     stats[worker] = WorkerEntry()
 
-  for dp in data.data:
-    entry = stats[dp.worker_id]
+  for data_point in data.data:
+    entry = stats[data_point.worker_id]
 
     skip = False
-    w_i = data.workers.get_loc(dp.worker_id)
+    w_i = data.workers.get_loc(data_point.worker_id)
     w_is_masked = wmask.mask[w_i]
     if w_is_masked:
       entry.masked = True
       skip = True
-    a_i = data.assignments.get_loc(dp.assignment_id)
+    a_i = data.assignments.get_loc(data_point.assignment_id)
     a_is_masked = amask.mask[a_i]
     if a_is_masked:
       entry.masked_assignments += 1
@@ -77,25 +77,25 @@ def get_data(data: EvaluationData, masks: List[MaskBase]):
     if skip:
       continue
 
-    entry = stats[dp.worker_id]
-    if dp.listening_device == DEVICE_IN_EAR:
+    entry = stats[data_point.worker_id]
+    if data_point.listening_device == DEVICE_IN_EAR:
       entry.in_ear += 1
-    elif dp.listening_device == DEVICE_ON_EAR:
+    elif data_point.listening_device == DEVICE_ON_EAR:
       entry.over_ear += 1
-    elif dp.listening_device == DEVICE_LAPTOP:
+    elif data_point.listening_device == DEVICE_LAPTOP:
       entry.laptop += 1
     else:
-      assert dp.listening_device == DEVICE_DESKTOP
+      assert data_point.listening_device == DEVICE_DESKTOP
       entry.desktop += 1
 
-    if dp.state == STATE_ACCEPTED:
+    if data_point.state == STATE_ACCEPTED:
       entry.accepted_assignments += 1
-    elif dp.state == STATE_REJECTED:
+    elif data_point.state == STATE_REJECTED:
       entry.rejected_assignments += 1
     else:
-      assert dp.state == STATE_APPROVED
+      assert data_point.state == STATE_APPROVED
       entry.approved_assignments += 1
-    entry.work_times.append(dp.work_time)
+    entry.work_times.append(data_point.work_time)
 
     if entry.algorithm_corr is None:
       entry.algorithm_corr = get_algorithm_mos_correlation(w_i, os)

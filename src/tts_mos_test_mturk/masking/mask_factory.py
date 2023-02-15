@@ -83,11 +83,11 @@ class MaskFactory():
       dtype=np.float32,
     )
 
-    for dp in self.data_points:
-      alg_i = self.algorithms.get_loc(dp.algorithm)
-      worker_i = self.workers.get_loc(dp.worker_id)
-      file_i = self.files.get_loc(dp.file)
-      ass_i = self.assignments.get_loc(dp.assignment_id)
+    for data_point in self.data_points:
+      alg_i = self.algorithms.get_loc(data_point.algorithm)
+      worker_i = self.workers.get_loc(data_point.worker_id)
+      file_i = self.files.get_loc(data_point.file)
+      ass_i = self.assignments.get_loc(data_point.assignment_id)
       res[alg_i, worker_i, file_i] = ass_i
     return res
 
@@ -122,9 +122,9 @@ class MaskFactory():
       dtype=np.int32,
     )
 
-    for dp in self.data_points:
-      ass_i = self.assignments.get_loc(dp.assignment_id)
-      worker_i = self.workers.get_loc(dp.worker_id)
+    for data_point in self.data_points:
+      ass_i = self.assignments.get_loc(data_point.assignment_id)
+      worker_i = self.workers.get_loc(data_point.worker_id)
       res[ass_i] = worker_i
     return res
 

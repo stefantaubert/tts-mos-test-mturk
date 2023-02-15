@@ -93,9 +93,9 @@ def parse_listening_type(row: Dict[str, str]) -> str:
 
 def get_n_urls_per_assignment(data: List[DataPoint]) -> int:
   tmp = {}
-  for dp in data:
-    if dp.assignment_id not in tmp:
-      tmp[dp.assignment_id] = 0
-    tmp[dp.assignment_id] += 1
+  for data_point in data:
+    if data_point.assignment_id not in tmp:
+      tmp[data_point.assignment_id] = 0
+    tmp[data_point.assignment_id] += 1
   result = max(tmp.values())
   return result

@@ -10,8 +10,8 @@ from pandas import DataFrame
 
 from tts_mos_test_mturk.data_point import DataPoint, get_n_urls_per_assignment, parse_data_points
 from tts_mos_test_mturk.io import load_obj, save_obj
-from tts_mos_test_mturk.masking.masks import MaskBase
 from tts_mos_test_mturk.masking.mask_factory import MaskFactory
+from tts_mos_test_mturk.masking.masks import MaskBase
 
 
 def get_file_dict_from_df(ground_truth_df: DataFrame) -> Dict[str, str]:
@@ -46,8 +46,8 @@ class EvaluationData():
     self.algorithms = OrderedSet(sorted(alg_dict.values()))
     self.files = OrderedSet(sorted(file_dict.values()))
     self.data: List[DataPoint] = list(parse_data_points(results_dict, alg_dict, file_dict))
-    self.workers = OrderedSet(sorted(set(dp.worker_id for dp in self.data)))
-    self.assignments = OrderedSet(sorted(set(dp.assignment_id for dp in self.data)))
+    self.workers = OrderedSet(sorted(set(data_point.worker_id for data_point in self.data)))
+    self.assignments = OrderedSet(sorted(set(data_point.assignment_id for data_point in self.data)))
     self.n_urls_per_assignment = get_n_urls_per_assignment(self.data)
     self.masks: ODType[str, MaskBase] = OrderedDict()
 
@@ -100,9 +100,9 @@ class EvaluationData():
       fill_value=np.nan,
       dtype=np.float32
     )
-    for dp in self.data:
-      alg_i = self.algorithms.get_loc(dp.algorithm)
-      worker_i = self.workers.get_loc(dp.worker_id)
-      file_i = self.files.get_loc(dp.file)
-      Z[alg_i, worker_i, file_i] = dp.opinion_score
+    for data_point in self.data:
+      alg_i = self.algorithms.get_loc(data_point.algorithm)
+      worker_i = self.workers.get_loc(data_point.worker_id)
+      file_i = self.files.get_loc(data_point.file)
+      Z[alg_i, worker_i, file_i] = data_point.opinion_score
     return Z

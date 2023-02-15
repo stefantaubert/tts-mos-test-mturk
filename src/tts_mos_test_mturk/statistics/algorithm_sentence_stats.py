@@ -98,28 +98,28 @@ def get_worker_stats(data: EvaluationData, masks: List[MaskBase]):
     for file in data.files:
       stats[algorithm][file] = FileEntry()
 
-  for dp in data.data:
-    entry = stats[dp.algorithm][dp.file]
+  for data_point in data.data:
+    entry = stats[data_point.algorithm][data_point.file]
 
-    w_i = data.workers.get_loc(dp.worker_id)
-    a_i = data.algorithms.get_loc(dp.algorithm)
-    f_i = data.files.get_loc(dp.file)
+    w_i = data.workers.get_loc(data_point.worker_id)
+    a_i = data.algorithms.get_loc(data_point.algorithm)
+    f_i = data.files.get_loc(data_point.file)
     o_is_masked = omask.mask[a_i, w_i, f_i]
     if o_is_masked:
       entry.masked += 1
       continue
 
-    if dp.listening_device == DEVICE_IN_EAR:
+    if data_point.listening_device == DEVICE_IN_EAR:
       entry.in_ear += 1
-    elif dp.listening_device == DEVICE_ON_EAR:
+    elif data_point.listening_device == DEVICE_ON_EAR:
       entry.over_ear += 1
-    elif dp.listening_device == DEVICE_LAPTOP:
+    elif data_point.listening_device == DEVICE_LAPTOP:
       entry.laptop += 1
     else:
-      assert dp.listening_device == DEVICE_DESKTOP
+      assert data_point.listening_device == DEVICE_DESKTOP
       entry.desktop += 1
 
-    entry.opinion_scores.append(dp.opinion_score)
+    entry.opinion_scores.append(data_point.opinion_score)
 
   return stats
 

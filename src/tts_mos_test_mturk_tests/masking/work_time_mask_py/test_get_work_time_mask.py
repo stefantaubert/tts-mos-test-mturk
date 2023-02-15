@@ -5,10 +5,10 @@ from tts_mos_test_mturk.masking.work_time_mask import get_work_time_mask
 
 def test_component():
   work_times = np.array([
-    21,  # 0
-    22,  # 1
-    23,  # 2
-    24,  # 3
+    21,
+    22,
+    23,
+    24,
     np.nan,
   ])
 

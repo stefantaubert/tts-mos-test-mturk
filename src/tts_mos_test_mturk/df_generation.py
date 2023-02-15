@@ -109,22 +109,22 @@ def generate_ground_truth_table(data: EvaluationData, mask_names: Set[str]) -> O
   omask = factory.merge_masks_into_omask(masks)
 
   results: List[Dict[str, Any]] = []
-  for dp in data.data:
-    w_i = data.workers.get_loc(dp.worker_id)
-    a_i = data.algorithms.get_loc(dp.algorithm)
-    s_i = data.files.get_loc(dp.file)
+  for data_point in data.data:
+    w_i = data.workers.get_loc(data_point.worker_id)
+    a_i = data.algorithms.get_loc(data_point.algorithm)
+    s_i = data.files.get_loc(data_point.file)
     is_masked = omask.mask[a_i, w_i, s_i]
     line = OrderedDict((
-        ("WorkerId", dp.worker_id),
-        ("Algorithm", dp.algorithm),
-        ("File", dp.file),
-        ("Score", dp.opinion_score),
-        ("AssignmentWorktime (s)", dp.work_time),
-        ("Device", dp.listening_device),
-        ("AssignmentState", dp.state),
-        ("AssignmentId", dp.assignment_id),
+        ("WorkerId", data_point.worker_id),
+        ("Algorithm", data_point.algorithm),
+        ("File", data_point.file),
+        ("Score", data_point.opinion_score),
+        ("AssignmentWorktime (s)", data_point.work_time),
+        ("Device", data_point.listening_device),
+        ("AssignmentState", data_point.state),
+        ("AssignmentId", data_point.assignment_id),
         ("Masked", is_masked),
-        ("Audio-URL", dp.audio_url),
+        ("Audio-URL", data_point.audio_url),
       ))
     results.append(line)
   result = pd.DataFrame.from_records(results)
