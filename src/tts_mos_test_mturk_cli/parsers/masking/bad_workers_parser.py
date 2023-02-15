@@ -1,7 +1,6 @@
 from argparse import ArgumentParser, Namespace
 from logging import Logger
 
-from tts_mos_test_mturk.evaluation_data import EvaluationData
 from tts_mos_test_mturk.masking.worker_correlation_mask import mask_workers_by_correlation
 from tts_mos_test_mturk_cli.argparse_helper import parse_positive_float
 from tts_mos_test_mturk_cli.default_args import (add_dry_argument, add_masks_argument,
@@ -23,20 +22,13 @@ def get_bad_workers_parser(parser: ArgumentParser):
 
 
 def main(ns: Namespace, logger: Logger, flogger: Logger) -> ExecutionResult:
-  try:
-    project = EvaluationData.load(ns.project)
-  except Exception as ex:
-    flogger.debug(ex)
-    logger.error(f"Project \"{ns.project.absolute()}\" couldn't be loaded!")
-    return False
-
-  mask_workers_by_correlation(project, ns.masks, ns.threshold, ns.mode, ns.output_mask)
+  mask_workers_by_correlation(ns.project, ns.masks, ns.threshold, ns.mode, ns.output_mask)
 
   if ns.dry:
     return True
 
   try:
-    project.save(ns.project)
+    ns.project.save(ns.project)
   except Exception as ex:
     flogger.debug(ex)
     logger.error(f"Project \"{ns.project.absolute()}\" couldn't be saved!")

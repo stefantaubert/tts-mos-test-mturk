@@ -63,22 +63,6 @@ def test_blizzard_crowdmos2_ls():
   ], rtol=1e-7, atol=1e-8)
 
 
-def test_blizzard_online_volunteers():
-  path = Path("src/tts_mos_test_mturk_tests/calculations/mos_variance_py/blizzard_online_volunteers.json")
-  opinion_scores = load_opinion_scores_from_json(path)
-
-  result = compute_alg_mos_ci95(opinion_scores)
-
-  np.testing.assert_allclose(result, [
-    [
-      4.903226, 3.1935484, 2.935484, 2.8064516, 2.8064516, 3.096774, 3.1935484, 2.7096775, 4.0, 3.2258065, 2.3225806, 2.612903, 2.3225806, 2.6451614, 2.3548386, 4.096774, 2.3225806, 2.451613
-    ],
-    [
-      0.14559552, 0.33556616, 0.4504665, 0.50650746, 0.50103223, 0.44746563, 0.39197063, 0.41166425, 0.3736052, 0.5040992, 0.3752356, 0.5318231, 0.43948394, 0.466249, 0.428413, 0.33752534, 0.46237212, 0.50864595
-    ]
-  ], rtol=1e-7, atol=1e-8)
-
-
 def test_blizzard_paid_participants():
   path = Path("src/tts_mos_test_mturk_tests/calculations/mos_variance_py/blizzard_paid_participants.json")
   opinion_scores = load_opinion_scores_from_json(path)
@@ -91,5 +75,21 @@ def test_blizzard_paid_participants():
     ],
     [
       0.17842996, 0.485494, 0.3627819, 0.24821484, 0.35267782, 0.32353535, 0.29889312, 0.39418054, 0.27424592, 0.43140996, 0.21034686, 0.25633854, 0.32016677, 0.26781017, 0.43821582, 0.22357036, 0.25432304, 0.21712728
+    ]
+  ], rtol=1e-7, atol=1e-8)
+
+
+def test_blizzard_online_volunteers():
+  path = Path("src/tts_mos_test_mturk_tests/calculations/mos_variance_py/blizzard_online_volunteers.json")
+  opinion_scores = load_opinion_scores_from_json(path)
+
+  result = compute_alg_mos_ci95(opinion_scores)
+
+  np.testing.assert_allclose(result, [
+    [
+      4.903226, 3.1935484, 2.935484, 2.8064516, 2.8064516, 3.096774, 3.1935484, 2.7096775, 4.0, 3.2258065, 2.3225806, 2.612903, 2.3225806, 2.6451614, 2.3548386, 4.096774, 2.3225806, 2.451613
+    ],
+    [
+      0.14559552, 0.33556616, 0.4504665, 0.50650746, 0.50103223, 0.44746563, 0.39197063, 0.41166425, 0.3736052, 0.5040992, 0.3752356, 0.5318231, 0.43948394, 0.466249, 0.428413, 0.33752534, 0.46237212, 0.50864595
     ]
   ], rtol=1e-7, atol=1e-8)

@@ -24,20 +24,13 @@ def get_os_count_parser(parser: ArgumentParser):
 
 
 def main(ns: Namespace, logger: Logger, flogger: Logger) -> ExecutionResult:
-  try:
-    project = EvaluationData.load(ns.project)
-  except Exception as ex:
-    flogger.debug(ex)
-    logger.error(f"Project \"{ns.project.absolute()}\" couldn't be loaded!")
-    return False
-
-  mask_scores_by_masked_count(project, ns.masks, ns.ref_mask, ns.percent, ns.output_mask)
+  mask_scores_by_masked_count(ns.project, ns.masks, ns.ref_mask, ns.percent, ns.output_mask)
 
   if ns.dry:
     return True
 
   try:
-    project.save(ns.project)
+    ns.project.save(ns.project)
   except Exception as ex:
     flogger.debug(ex)
     logger.error(f"Project \"{ns.project.absolute()}\" couldn't be saved!")

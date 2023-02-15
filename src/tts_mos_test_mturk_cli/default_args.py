@@ -4,7 +4,7 @@ from multiprocessing import cpu_count
 from tts_mos_test_mturk_cli.argparse_helper import (ConvertToOrderedSetAction, ConvertToSetAction,
                                                     get_optional, parse_codec, parse_existing_file,
                                                     parse_non_empty_or_whitespace,
-                                                    parse_positive_integer)
+                                                    parse_positive_integer, parse_project)
 
 DEFAULT_N_JOBS = cpu_count()
 DEFAULT_CHUNKSIZE = 1_000_000
@@ -17,7 +17,7 @@ def add_from_and_to_subsets_arguments(parser: ArgumentParser) -> None:
 
 
 def add_project_argument(parser: ArgumentParser) -> None:
-  parser.add_argument("project", type=parse_existing_file, metavar="PROJECT-PATH",
+  parser.add_argument("project", type=parse_project, metavar="PROJECT-PATH",
                       help="project file (.pkl)")
 
 

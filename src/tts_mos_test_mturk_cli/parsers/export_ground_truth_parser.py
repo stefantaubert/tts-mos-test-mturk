@@ -18,14 +18,7 @@ def get_export_gt_parser(parser: ArgumentParser):
 
 
 def main(ns: Namespace, logger: Logger, flogger: Logger) -> ExecutionResult:
-  try:
-    project = EvaluationData.load(ns.project)
-  except Exception as ex:
-    flogger.debug(ex)
-    logger.error(f"Project \"{ns.project.absolute()}\" couldn't be loaded!")
-    return False
-
-  result_df = generate_ground_truth_table(project, ns.masks)
+  result_df = generate_ground_truth_table(ns.project, ns.masks)
 
   if result_df is None:
     logger.info("No data exist to export!")

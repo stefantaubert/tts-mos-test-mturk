@@ -33,6 +33,7 @@ class ConsoleFormatter(logging.Formatter):
     }
 
   def format(self, record):
+    # print(record.name)
     log_fmt = self.fmts.get(record.levelno)
     formatter = logging.Formatter(log_fmt, self.datefmt)
 

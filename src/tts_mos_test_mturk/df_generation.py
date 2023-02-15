@@ -3,8 +3,7 @@ from typing import Any, Dict, List, Optional, Set
 
 import pandas as pd
 
-from tts_mos_test_mturk.calculation.mos_variance import (compute_alg_mos_ci95, compute_ci95,
-                                                         compute_mos)
+from tts_mos_test_mturk.calculation.mos_variance import compute_alg_mos_ci95
 from tts_mos_test_mturk.evaluation_data import EvaluationData
 
 

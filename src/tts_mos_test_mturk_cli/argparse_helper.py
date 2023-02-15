@@ -5,7 +5,10 @@ from functools import partial
 from pathlib import Path
 from typing import Callable, List, Optional, TypeVar
 
+import pandas as pd
 from ordered_set import OrderedSet
+
+from tts_mos_test_mturk.evaluation_data import EvaluationData
 
 T = TypeVar("T")
 
@@ -22,6 +25,24 @@ class ConvertToSetAction(argparse._StoreAction):
     if values is not None:
       values = set(values)
     super().__call__(parser, namespace, values, option_string)
+
+
+def parse_project(value: str) -> EvaluationData:
+  path = parse_path(value)
+  try:
+    project = EvaluationData.load(path)
+  except Exception as ex:
+    raise ArgumentTypeError("File couldn't be parsed!") from ex
+  return project
+
+
+def parse_data_frame(value: str) -> pd.DataFrame:
+  path = parse_path(value)
+  try:
+    df = pd.read_csv(path)
+  except Exception as ex:
+    raise ArgumentTypeError("File couldn't be parsed!") from ex
+  return df
 
 
 def parse_codec(value: str) -> str:

@@ -25,21 +25,14 @@ def get_bad_workers_percent_parser(parser: ArgumentParser):
 
 
 def main(ns: Namespace, logger: Logger, flogger: Logger) -> ExecutionResult:
-  try:
-    project = EvaluationData.load(ns.project)
-  except Exception as ex:
-    flogger.debug(ex)
-    logger.error(f"Project \"{ns.project.absolute()}\" couldn't be loaded!")
-    return False
-
-  ignore_bad_workers_percent(project, ns.masks, ns.from_percent,
+  ignore_bad_workers_percent(ns.project, ns.masks, ns.from_percent,
                              ns.to_percent, ns.mode, ns.output_mask)
 
   if ns.dry:
     return True
 
   try:
-    project.save(ns.project)
+    ns.project.save(ns.project)
   except Exception as ex:
     flogger.debug(ex)
     logger.error(f"Project \"{ns.project.absolute()}\" couldn't be saved!")
