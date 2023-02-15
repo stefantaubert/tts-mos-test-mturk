@@ -200,12 +200,11 @@ def add_all_to_df(df: pd.DataFrame) -> pd.DataFrame:
   return df
 
 
-def get_algorithm_sentence_stats(data: EvaluationData, mask_names: Set[str]):
+def get_algorithm_sentence_stats(data: EvaluationData, mask_names: Set[str]) -> pd.DataFrame:
   masks = data.get_masks_from_names(mask_names)
   stats = get_worker_stats(data, masks)
   df = stats_to_df(stats)
-  if df is None:
-    return None
-  df = add_all_to_df(df)
-  df.sort_values([COL_ALG, COL_SENT], inplace=True)
+  if len(df.index) > 0:
+    df = add_all_to_df(df)
+    df.sort_values([COL_ALG, COL_SENT], inplace=True)
   return df

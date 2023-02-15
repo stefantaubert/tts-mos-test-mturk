@@ -15,13 +15,5 @@ def get_stats_parser(parser: ArgumentParser):
 
 
 def main(ns: Namespace, logger: Logger, flogger: Logger) -> ExecutionResult:
-  try:
-    project = EvaluationData.load(ns.project)
-  except Exception as ex:
-    flogger.debug(ex)
-    logger.error(f"Project \"{ns.project.absolute()}\" couldn't be loaded!")
-    return False
-
-  print_stats(project, set(), ns.masks)
-
+  print_stats(ns.project, set(), ns.masks)
   return True

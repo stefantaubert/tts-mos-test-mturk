@@ -5,6 +5,7 @@ import pandas as pd
 
 from tts_mos_test_mturk.evaluation_data import EvaluationData
 from tts_mos_test_mturk_cli.argparse_helper import parse_data_frame, parse_existing_file, parse_path
+from tts_mos_test_mturk_cli.helper import save_project
 from tts_mos_test_mturk_cli.types import ExecutionResult
 
 
@@ -21,12 +22,7 @@ def get_init_parser(parser: ArgumentParser):
 
 def main(ns: Namespace, logger: Logger, flogger: Logger) -> ExecutionResult:
   data = EvaluationData(ns.results_path, ns.ground_truth_path)
+  data.file_path = ns.output
 
-  try:
-    data.save(ns.output)
-  except Exception as ex:
-    flogger.debug(ex)
-    logger.error(f"File \"{ns.output.absolute()}\" couldn't be saved!")
-    return False
-  logger.info(f"Written project to: \"{ns.output.absolute()}\"")
-  return True
+  success = save_project(data, logger, flogger)
+  return success

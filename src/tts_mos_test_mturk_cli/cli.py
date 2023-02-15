@@ -23,24 +23,28 @@ from tts_mos_test_mturk_cli.parsers.api.api_bonus_parser import get_api_bonus_pa
 from tts_mos_test_mturk_cli.parsers.api.api_reject_parser import get_api_reject_parser
 from tts_mos_test_mturk_cli.parsers.api.approve_parser import get_approve_parser
 from tts_mos_test_mturk_cli.parsers.api.bonus_parser import get_bonus_parser
+from tts_mos_test_mturk_cli.parsers.api.reject_parser import get_reject_parser
+from tts_mos_test_mturk_cli.parsers.export_ground_truth_parser import get_export_gt_parser
+from tts_mos_test_mturk_cli.parsers.init_parser import get_init_parser
+from tts_mos_test_mturk_cli.parsers.masking.mask_assignments_by_listening_device_parser import \
+  get_mask_assignments_by_listening_device_parser
+from tts_mos_test_mturk_cli.parsers.masking.mask_assignments_by_work_time_parser import \
+  get_mask_assignments_by_work_time_parser
+from tts_mos_test_mturk_cli.parsers.masking.mask_outlying_scores_parser import \
+  get_mask_outlying_scores_parser
+from tts_mos_test_mturk_cli.parsers.masking.mask_scores_by_masked_count_parser import \
+  get_mask_scores_by_masked_count_parser
+from tts_mos_test_mturk_cli.parsers.masking.mask_workers_by_assignment_count_parser import \
+  get_mask_workers_by_assignment_count_parser
+from tts_mos_test_mturk_cli.parsers.masking.mask_workers_by_correlation_parser import (
+  get_mask_workers_by_correlation_parser, get_mask_workers_by_correlation_percent_parser)
 from tts_mos_test_mturk_cli.parsers.statistics.calculation_parser import get_calculation_parser
 from tts_mos_test_mturk_cli.parsers.statistics.export_algorithm_sentence_stats import \
   get_export_as_stats_parser
-from tts_mos_test_mturk_cli.parsers.statistics.export_algorithm_worker_stats import get_export_aw_stats_parser
-from tts_mos_test_mturk_cli.parsers.export_ground_truth_parser import get_export_gt_parser
+from tts_mos_test_mturk_cli.parsers.statistics.export_algorithm_worker_stats import \
+  get_export_aw_stats_parser
 from tts_mos_test_mturk_cli.parsers.statistics.export_worker_assignment_stats_parser import \
   get_export_wa_stats_parser
-from tts_mos_test_mturk_cli.parsers.init_parser import get_init_parser
-from tts_mos_test_mturk_cli.parsers.masking.bad_workers_parser import get_bad_workers_parser
-from tts_mos_test_mturk_cli.parsers.masking.bad_workers_percent_parser import \
-  get_bad_workers_percent_parser
-from tts_mos_test_mturk_cli.parsers.masking.listening_device_parser import \
-  get_listening_device_parser
-from tts_mos_test_mturk_cli.parsers.masking.os_count_parser import get_os_count_parser
-from tts_mos_test_mturk_cli.parsers.masking.outlier_parser import get_outlier_parser
-from tts_mos_test_mturk_cli.parsers.masking.too_fast_parser import get_too_fast_parser
-from tts_mos_test_mturk_cli.parsers.masking.too_few_parser import get_too_few_parser
-from tts_mos_test_mturk_cli.parsers.api.reject_parser import get_reject_parser
 from tts_mos_test_mturk_cli.parsers.statistics.stats_parser import get_stats_parser
 from tts_mos_test_mturk_cli.types import ExecutionResult
 
@@ -67,14 +71,16 @@ def get_parsers():
   yield "approve", "approve", get_approve_parser  # assignments create-approve-csv
   yield "reject", "reject", get_reject_parser  # assignments create-reject-csv
   yield "bonus", "bonus assignments", get_bonus_parser  # assignments create-bonus-csv
-  yield "ignore-too-fast", "ignore too fast assignments", get_too_fast_parser  # mask-by-work_time
-  yield "ignore-too-few", "ignore workers with to few assignments", get_too_few_parser  # assignments mask-by-count
-  yield "ignore-by-listening-device", "ignore by device", get_listening_device_parser
-  yield "ignore-bad-workers", "ignore too bad workers", get_bad_workers_parser  # workers mask-by-correlation
-  yield "ignore-bad-workers-percent", "ignore bad workers by percentage", get_bad_workers_percent_parser
-  yield "ignore-outliers", "ignore outliers", get_outlier_parser  # opinions mask-by-std
+  yield "ignore-too-fast", "ignore too fast assignments", get_mask_assignments_by_work_time_parser  # mask-by-work_time
+  # assignments mask-by-count
+  yield "ignore-too-few", "ignore workers with to few assignments", get_mask_workers_by_assignment_count_parser
+  yield "ignore-by-listening-device", "ignore by device", get_mask_assignments_by_listening_device_parser
+  # workers mask-by-correlation
+  yield "ignore-bad-workers", "ignore too bad workers", get_mask_workers_by_correlation_parser
+  yield "ignore-bad-workers-percent", "ignore bad workers by percentage", get_mask_workers_by_correlation_percent_parser
+  yield "ignore-outliers", "ignore outliers", get_mask_outlying_scores_parser  # opinions mask-by-std
   # opinions mask-by-masked-count
-  yield "ignore-os-count", "ignore workers who overreach a specific percentage of all masked opinion scores", get_os_count_parser
+  yield "ignore-os-count", "ignore workers who overreach a specific percentage of all masked opinion scores", get_mask_scores_by_masked_count_parser
   yield "approve-via-api", "approve via API", get_api_approve_parser
   yield "reject-via-api", "reject via API", get_api_reject_parser
   yield "bonus-via-api", "bonus via API", get_api_bonus_parser

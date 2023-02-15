@@ -6,10 +6,11 @@ from tts_mos_test_mturk.masking.work_time_mask import mask_assignments_by_work_t
 from tts_mos_test_mturk_cli.argparse_helper import parse_positive_integer
 from tts_mos_test_mturk_cli.default_args import (add_dry_argument, add_masks_argument,
                                                  add_output_mask_argument, add_project_argument)
+from tts_mos_test_mturk_cli.helper import save_project
 from tts_mos_test_mturk_cli.types import ExecutionResult
 
 
-def get_too_fast_parser(parser: ArgumentParser):
+def get_mask_assignments_by_work_time_parser(parser: ArgumentParser):
   parser.description = "Reject too fast assignments"
   add_project_argument(parser)
   add_masks_argument(parser)
@@ -26,12 +27,5 @@ def main(ns: Namespace, logger: Logger, flogger: Logger) -> ExecutionResult:
   if ns.dry:
     return True
 
-  try:
-    ns.project.save(ns.project)
-  except Exception as ex:
-    flogger.debug(ex)
-    logger.error(f"Project \"{ns.project.absolute()}\" couldn't be saved!")
-    return False
-  logger.info(f"Updated project at: \"{ns.project.absolute()}\"")
-
-  return True
+  success = save_project(ns.project, logger, flogger)
+  return success

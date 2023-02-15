@@ -25,7 +25,7 @@ def mask_workers_by_correlation(data: EvaluationData, mask_names: Set[str], thre
   print_stats_masks(data, masks, [bad_worker_mask])
 
 
-def ignore_bad_workers_percent(data: EvaluationData, mask_names: Set[str], from_percent_incl: float, to_percent_excl: float, mode: Literal["sentence", "algorithm", "both"], output_mask_name: str):
+def mask_workers_by_correlation_percent(data: EvaluationData, mask_names: Set[str], from_percent_incl: float, to_percent_excl: float, mode: Literal["sentence", "algorithm", "both"], output_mask_name: str):
   masks = data.get_masks_from_names(mask_names)
   factory = data.get_mask_factory()
 

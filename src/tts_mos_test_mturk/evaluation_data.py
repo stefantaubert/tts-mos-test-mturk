@@ -1,8 +1,8 @@
 from collections import OrderedDict
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Optional
 from typing import OrderedDict as ODType
-from typing import Set
+from typing import Set, cast
 
 import numpy as np
 from ordered_set import OrderedSet
@@ -50,14 +50,21 @@ class EvaluationData():
     self.assignments = OrderedSet(sorted(set(data_point.assignment_id for data_point in self.data)))
     self.n_urls_per_assignment = get_n_urls_per_assignment(self.data)
     self.masks: ODType[str, MaskBase] = OrderedDict()
+    self.file_path: Optional[Path] = None
 
   @classmethod
   def load(cls, path: Path):
-    result = load_obj(path)
+    result = cast(EvaluationData, load_obj(path))
+    result.file_path = path
     return result
 
-  def save(self, path: Path) -> None:
+  def save_to(self, path: Path) -> None:
     save_obj(self, path)
+
+  def save(self) -> None:
+    if self.file_path is None:
+      raise ValueError("Project needs to be loaded from file before!")
+    self.save_to(self.file_path)
 
   @property
   def n_assignments(self) -> int:
