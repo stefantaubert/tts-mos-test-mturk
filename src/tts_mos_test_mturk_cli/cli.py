@@ -60,7 +60,7 @@ def get_parsers():
   yield "approve", "approve", get_approve_parser  # assignments create-approve-csv
   yield "reject", "reject", get_reject_parser  # assignments create-reject-csv
   yield "bonus", "bonus assignments", get_bonus_parser  # assignments create-bonus-csv
-  yield "ignore-too-fast", "ignore too fast assignments", get_too_fast_parser  # mask-by-worktime
+  yield "ignore-too-fast", "ignore too fast assignments", get_too_fast_parser  # mask-by-work_time
   yield "ignore-too-few", "ignore workers with to few assignments", get_too_few_parser  # assignments mask-by-count
   yield "ignore-by-listening-device", "ignore by device", get_listening_device_parser
   yield "ignore-bad-workers", "ignore too bad workers", get_bad_workers_parser  # workers mask-by-correlation

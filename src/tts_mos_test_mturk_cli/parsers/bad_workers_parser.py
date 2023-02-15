@@ -14,7 +14,7 @@ def get_bad_workers_parser(parser: ArgumentParser):
   add_project_argument(parser)
   add_masks_argument(parser)
   parser.add_argument("threshold", type=parse_positive_float, metavar="THRESHOLD",
-                      help="ignore all assignments, which have a worktime smaller than THRESHOLD")
+                      help="ignore all assignments, which have a work_time smaller than THRESHOLD")
   parser.add_argument("--mode", type=str, choices=["sentence", "algorithm",
                       "both"], default="both", help="Mode to calculate the correlations")
   add_output_mask_argument(parser)

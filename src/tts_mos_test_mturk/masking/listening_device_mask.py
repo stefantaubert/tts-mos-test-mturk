@@ -31,11 +31,11 @@ def get_listening_devices_amask(listening_devices: np.ndarray, mask_listening_de
 
 
 def get_listening_devices(data: EvaluationData) -> np.ndarray:
-  worktimes = [np.nan] * data.n_assignments
+  work_times = [np.nan] * data.n_assignments
 
   for dp in data.data:
     ass_i = data.assignments.get_loc(dp.assignment_id)
-    if worktimes[ass_i] != dp.listening_device:
-      worktimes[ass_i] = dp.listening_device
-  worktimes_np = np.array(worktimes)
-  return worktimes_np
+    if work_times[ass_i] != dp.listening_device:
+      work_times[ass_i] = dp.listening_device
+  work_times_np = np.array(work_times)
+  return work_times_np

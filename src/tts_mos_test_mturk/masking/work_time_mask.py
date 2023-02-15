@@ -11,14 +11,14 @@ def mask_assignments_by_work_time(data: EvaluationData, mask_names: Set[str], th
   factory = data.get_mask_factory()
 
   work_times = get_work_times(data)
-  worktimes_mask = factory.merge_masks_into_amask(masks)
-  worktimes_mask.apply_by_nan(work_times)
+  work_times_mask = factory.merge_masks_into_amask(masks)
+  work_times_mask.apply_by_nan(work_times)
 
-  too_fast_worktimes_np_mask = get_work_time_mask(work_times, threshold)
-  too_fast_worktimes_mask = factory.convert_ndarray_to_amask(too_fast_worktimes_np_mask)
-  data.add_or_update_mask(output_mask_name, too_fast_worktimes_mask)
+  too_fast_work_times_np_mask = get_work_time_mask(work_times, threshold)
+  too_fast_work_times_mask = factory.convert_ndarray_to_amask(too_fast_work_times_np_mask)
+  data.add_or_update_mask(output_mask_name, too_fast_work_times_mask)
 
-  print_stats_masks(data, masks, [too_fast_worktimes_mask])
+  print_stats_masks(data, masks, [too_fast_work_times_mask])
 
 
 def get_work_time_mask(work_times: np.ndarray, threshold: float) -> np.ndarray:
@@ -27,12 +27,12 @@ def get_work_time_mask(work_times: np.ndarray, threshold: float) -> np.ndarray:
 
 
 def get_work_times(data: EvaluationData) -> np.ndarray:
-  worktimes = np.full(
+  work_times = np.full(
     data.n_assignments,
     fill_value=np.nan,
     dtype=np.float32,
   )
   for dp in data.data:
     ass_i = data.assignments.get_loc(dp.assignment_id)
-    worktimes[ass_i] = dp.work_time
-  return worktimes
+    work_times[ass_i] = dp.work_time
+  return work_times

@@ -14,7 +14,7 @@ def get_too_fast_parser(parser: ArgumentParser):
   add_project_argument(parser)
   add_masks_argument(parser)
   parser.add_argument("threshold", type=parse_positive_integer, metavar="THRESHOLD",
-                      help="ignore all assignments, which have a worktime smaller than THRESHOLD")
+                      help="ignore all assignments, which have a work_time smaller than THRESHOLD")
   add_output_mask_argument(parser)
   add_dry_argument(parser)
   return main

@@ -31,8 +31,8 @@ def generate_approve_csv(data: EvaluationData, mask_names: Set[str], reason: Opt
   masks = data.get_masks_from_names(mask_names)
   factory = data.get_mask_factory()
 
-  worktimes_amask = factory.merge_masks_into_amask(masks)
-  assignment_indices = worktimes_amask.unmasked_indices
+  work_times_amask = factory.merge_masks_into_amask(masks)
+  assignment_indices = work_times_amask.unmasked_indices
   assignments_worker_matrix = factory.get_assignments_worker_index_matrix()
 
   if reason is None:
@@ -58,8 +58,8 @@ def generate_reject_csv(data: EvaluationData, mask_names: Set[str], reason: str)
   masks = data.get_masks_from_names(mask_names)
   factory = data.get_mask_factory()
 
-  worktimes_amask = factory.merge_masks_into_amask(masks)
-  assignment_indices = worktimes_amask.masked_indices
+  work_times_amask = factory.merge_masks_into_amask(masks)
+  assignment_indices = work_times_amask.masked_indices
   assignments_worker_matrix = factory.get_assignments_worker_index_matrix()
 
   results: List[Dict[str, Any]] = []
@@ -82,8 +82,8 @@ def generate_bonus_csv(data: EvaluationData, mask_names: Set[str], bonus: float,
   masks = data.get_masks_from_names(mask_names)
   factory = data.get_mask_factory()
 
-  worktimes_amask = factory.merge_masks_into_amask(masks)
-  assignment_indices = worktimes_amask.unmasked_indices
+  work_times_amask = factory.merge_masks_into_amask(masks)
+  assignment_indices = work_times_amask.unmasked_indices
   assignments_worker_matrix = factory.get_assignments_worker_index_matrix()
 
   results: List[Dict[str, Any]] = []
