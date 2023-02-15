@@ -11,7 +11,7 @@ from tts_mos_test_mturk_cli.parsers.api.api_reject_parser import get_api_reject_
 from tts_mos_test_mturk_cli.parsers.api.approve_parser import get_approve_parser
 from tts_mos_test_mturk_cli.parsers.api.bonus_parser import get_bonus_parser
 from tts_mos_test_mturk_cli.parsers.api.reject_parser import get_reject_parser
-from tts_mos_test_mturk_cli.parsers.export_ground_truth_parser import get_export_gt_parser
+from tts_mos_test_mturk_cli.parsers.statistics.export_ground_truth_parser import get_export_gt_parser
 from tts_mos_test_mturk_cli.parsers.init_parser import get_init_parser
 from tts_mos_test_mturk_cli.parsers.masking.mask_assignments_by_listening_device_parser import \
   get_mask_assignments_by_listening_device_parser
