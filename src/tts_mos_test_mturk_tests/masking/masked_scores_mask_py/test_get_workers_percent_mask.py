@@ -1,6 +1,6 @@
 import numpy as np
 
-from tts_mos_test_mturk.__old.etc import get_workers_percent_mask
+from tts_mos_test_mturk.masking.masked_count_mask import get_workers_percent_mask
 
 
 def test_component_25():
@@ -61,14 +61,16 @@ def test_all_false():
 
 def test_component_50():
   mask = np.array([
-    [False, False, False, False],
-    [True, False, False, False],  # 1
-    [False, False, False, False],
-    [True, True, False, False],  # 2
-    [True, False, False, False],  # 1
+    [
+      [False, False, False, False],
+      [True, False, False, False],  # 1
+      [False, False, False, False],
+      [True, True, False, False],  # 2
+      [True, False, False, False],  # 1
+    ]
   ])
 
-  result = mask_workers_percent(mask, 0.5)
+  result = get_workers_percent_mask(mask, 0.5)
   np.testing.assert_array_equal(result, [
     False,
     False,
@@ -80,14 +82,16 @@ def test_component_50():
 
 def test_component_51():
   mask = np.array([
-    [False, False, False, False],
-    [True, False, False, False],  # 1
-    [False, False, False, False],
-    [True, True, False, False],  # 2
-    [True, False, False, False],  # 1
+    [
+      [False, False, False, False],
+      [True, False, False, False],  # 1
+      [False, False, False, False],
+      [True, True, False, False],  # 2
+      [True, False, False, False],  # 1
+    ]
   ])
 
-  result = mask_workers_percent(mask, 0.51)
+  result = get_workers_percent_mask(mask, 0.51)
   np.testing.assert_array_equal(result, [
     False,
     False,
@@ -98,6 +102,6 @@ def test_component_51():
 
 
 def test_empty__returns_empty():
-  mask = np.empty((0, 0))
-  result = mask_workers_percent(mask, p=0.5)
+  mask = np.empty((0, 0, 0))
+  result = get_workers_percent_mask(mask, p=0.5)
   np.testing.assert_array_equal(result, np.empty((0,)))
