@@ -4,11 +4,9 @@ from logging import Logger
 import pandas as pd
 
 from tts_mos_test_mturk.df_generation import get_mos_df
-from tts_mos_test_mturk.evaluation_data import EvaluationData
-from tts_mos_test_mturk_cli.argparse_helper import get_optional, parse_path
 from tts_mos_test_mturk_cli.default_args import add_masks_argument, add_project_argument
-from tts_mos_test_mturk_cli.parsers.statistics.common import (add_optional_output_argument, add_silent_argument,
-                                                              save_output_csv)
+from tts_mos_test_mturk_cli.parsers.statistics.common import (add_optional_output_argument,
+                                                              add_silent_argument, save_output_csv)
 from tts_mos_test_mturk_cli.types import ExecutionResult
 
 

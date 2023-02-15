@@ -2,14 +2,9 @@ from argparse import ArgumentParser, Namespace
 from logging import Logger
 
 import boto3
-import pandas as pd
 
 from tts_mos_test_mturk.api import approve_from_df
-from tts_mos_test_mturk.evaluation_data import EvaluationData
-from tts_mos_test_mturk.statistics.algorithm_worker_stats import get_worker_algorithm_stats
-from tts_mos_test_mturk_cli.argparse_helper import (parse_data_frame, parse_existing_file,
-                                                    parse_non_empty_or_whitespace, parse_path)
-from tts_mos_test_mturk_cli.default_args import add_masks_argument, add_project_argument
+from tts_mos_test_mturk_cli.argparse_helper import parse_data_frame, parse_non_empty_or_whitespace
 from tts_mos_test_mturk_cli.globals import MTURK_SANDBOX
 from tts_mos_test_mturk_cli.types import ExecutionResult
 

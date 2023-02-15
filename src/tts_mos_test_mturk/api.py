@@ -1,6 +1,3 @@
-from collections import OrderedDict
-from logging import getLogger
-from typing import Any, Dict, List, Optional, Set
 
 import pandas as pd
 from mypy_boto3_mturk import MTurkClient

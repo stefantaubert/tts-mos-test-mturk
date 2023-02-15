@@ -1,7 +1,6 @@
 from argparse import ArgumentParser, Namespace
 from logging import Logger
 
-from tts_mos_test_mturk.evaluation_data import EvaluationData
 from tts_mos_test_mturk.masking.worker_correlation_mask import (mask_workers_by_correlation,
                                                                 mask_workers_by_correlation_percent)
 from tts_mos_test_mturk_cli.argparse_helper import parse_non_negative_float, parse_positive_float

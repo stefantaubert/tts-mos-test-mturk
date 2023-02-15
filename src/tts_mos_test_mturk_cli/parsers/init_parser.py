@@ -1,10 +1,8 @@
 from argparse import ArgumentParser, Namespace
 from logging import Logger
 
-import pandas as pd
-
 from tts_mos_test_mturk.evaluation_data import EvaluationData
-from tts_mos_test_mturk_cli.argparse_helper import parse_data_frame, parse_existing_file, parse_path
+from tts_mos_test_mturk_cli.argparse_helper import parse_data_frame, parse_path
 from tts_mos_test_mturk_cli.helper import save_project
 from tts_mos_test_mturk_cli.types import ExecutionResult
 
