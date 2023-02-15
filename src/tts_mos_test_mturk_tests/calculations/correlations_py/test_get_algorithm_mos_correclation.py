@@ -1,6 +1,6 @@
 import numpy as np
 
-from tts_mos_test_mturk.analyze_assignmens import get_algorithm_mos_correlation
+from tts_mos_test_mturk.calculation.correlations import get_algorithm_mos_correlation
 
 
 def test_component():

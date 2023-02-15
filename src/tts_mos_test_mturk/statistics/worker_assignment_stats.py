@@ -11,7 +11,7 @@ from tts_mos_test_mturk.data_point import (DEVICE_DESKTOP, DEVICE_IN_EAR, DEVICE
                                            DEVICE_ON_EAR, STATE_ACCEPTED, STATE_APPROVED,
                                            STATE_REJECTED)
 from tts_mos_test_mturk.evaluation_data import EvaluationData
-from tts_mos_test_mturk.masks import MaskBase
+from tts_mos_test_mturk.masking.masks import MaskBase
 
 
 @dataclass
@@ -95,7 +95,7 @@ def get_data(data: EvaluationData, masks: List[MaskBase]):
     else:
       assert dp.state == STATE_APPROVED
       entry.approved_assignments += 1
-    entry.worktimes.append(dp.worktime)
+    entry.worktimes.append(dp.work_time)
 
     if entry.algorithm_corr is None:
       entry.algorithm_corr = get_algorithm_mos_correlation(w_i, os)

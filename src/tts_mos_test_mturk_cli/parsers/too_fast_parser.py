@@ -2,7 +2,7 @@ from argparse import ArgumentParser, Namespace
 from logging import Logger
 
 from tts_mos_test_mturk.evaluation_data import EvaluationData
-from tts_mos_test_mturk.masking.worktime_mask import mask_assignments_by_worktime
+from tts_mos_test_mturk.masking.work_time_mask import mask_assignments_by_work_time
 from tts_mos_test_mturk_cli.argparse_helper import parse_positive_integer
 from tts_mos_test_mturk_cli.default_args import (add_dry_argument, add_masks_argument,
                                                  add_output_mask_argument, add_project_argument)
@@ -28,7 +28,7 @@ def main(ns: Namespace, logger: Logger, flogger: Logger) -> ExecutionResult:
     logger.error(f"Project \"{ns.project.absolute()}\" couldn't be loaded!")
     return False
 
-  mask_assignments_by_worktime(project, ns.masks, ns.threshold, ns.output_mask)
+  mask_assignments_by_work_time(project, ns.masks, ns.threshold, ns.output_mask)
 
   if ns.dry:
     return True

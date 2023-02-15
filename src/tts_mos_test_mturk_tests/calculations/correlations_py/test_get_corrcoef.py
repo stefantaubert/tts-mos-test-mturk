@@ -1,6 +1,6 @@
 import numpy as np
 
-from tts_mos_test_mturk.analyze_assignmens import get_corrcoef
+from tts_mos_test_mturk.calculation.correlations import get_corrcoef
 
 
 def test_component():
@@ -21,4 +21,4 @@ def test_component():
     ],
   ])
 
-  get_corrcoef(v)
+  res = get_corrcoef(v)

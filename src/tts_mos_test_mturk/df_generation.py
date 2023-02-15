@@ -119,7 +119,7 @@ def generate_ground_truth_table(data: EvaluationData, mask_names: Set[str]) -> O
         ("Algorithm", dp.algorithm),
         ("File", dp.file),
         ("Score", dp.opinion_score),
-        ("AssignmentWorktime (s)", dp.worktime),
+        ("AssignmentWorktime (s)", dp.work_time),
         ("Device", dp.listening_device),
         ("AssignmentState", dp.state),
         ("AssignmentId", dp.assignment_id),

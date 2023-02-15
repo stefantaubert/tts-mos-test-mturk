@@ -2,10 +2,10 @@ import numpy as np
 from ordered_set import OrderedSet
 from pandas import DataFrame
 
-from tts_mos_test_mturk.types import Evaluation
+from tts_mos_test_mturk.evaluation_data import EvaluationData
 
 
-def test_comp():
+def test_component():
   gt_df = DataFrame([
       ["url1", "alg1", "file1"],
       ["url2", "alg1", "file2"],
@@ -46,21 +46,25 @@ def test_comp():
     ]
   )
 
-  ev = Evaluation(res_df, gt_df)
-  ev.parse_results()
+  data = EvaluationData(res_df, gt_df)
 
   _ = np.nan
-  assert ev.n_alg == 3
-  assert ev.n_audios == 5
-  assert ev.n_files == 3
-  assert ev.n_workers == 2
-  assert ev.workers == OrderedSet(("worker00", "worker01"))
-  assert ev.algorithms == OrderedSet(("alg1", "alg2", "alg3"))
-  assert ev.audio_urls == OrderedSet(("url1", "url2", "url3", "url4", "url5"))
-  assert ev.files == OrderedSet(("file1", "file2", "file3"))
-  assert ev.assignments == OrderedSet(("assignment0", "assignment1"))
+  assert data.n_workers == 2
+  assert data.workers == OrderedSet(("worker00", "worker01"))
 
-  np.testing.assert_equal(ev.Z, [
+  assert data.n_algorithms == 3
+  assert data.algorithms == OrderedSet(("alg1", "alg2", "alg3"))
+
+  assert data.n_urls == 5
+  assert data.audio_urls == OrderedSet(("url1", "url2", "url3", "url4", "url5"))
+
+  assert data.n_files == 3
+  assert data.files == OrderedSet(("file1", "file2", "file3"))
+
+  assert data.n_assignments == 2
+  assert data.assignments == OrderedSet(("assignment0", "assignment1"))
+
+  np.testing.assert_equal(data.get_os(), [
     [
       [1, 5, _],
       [_, _, _],
@@ -74,21 +78,3 @@ def test_comp():
       [_, _, _],
     ],
   ])
-
-  np.testing.assert_equal(ev.Z_ass, [
-    [
-      [0, 0, _],
-      [_, _, _],
-    ],
-    [
-      [_, _, _],
-      [1, 1, _],
-    ],
-    [
-      [_, _, _],
-      [_, _, _],
-    ],
-  ])
-
-
-test_comp()

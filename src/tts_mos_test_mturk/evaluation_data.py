@@ -10,7 +10,8 @@ from pandas import DataFrame
 
 from tts_mos_test_mturk.data_point import DataPoint, get_n_urls_per_assignment, parse_data_points
 from tts_mos_test_mturk.io import load_obj, save_obj
-from tts_mos_test_mturk.masks import MaskBase, MaskFactory
+from tts_mos_test_mturk.masking.masks import MaskBase
+from tts_mos_test_mturk.masking.mask_factory import MaskFactory
 
 
 def get_file_dict_from_df(ground_truth_df: DataFrame) -> Dict[str, str]:
@@ -77,6 +78,10 @@ class EvaluationData():
   @property
   def n_files(self) -> int:
     return len(self.files)
+
+  @property
+  def n_urls(self) -> int:
+    return len(self.audio_urls)
 
   def get_masks_from_names(self, mask_names: Set[str]) -> List[MaskBase]:
     masks = [self.masks[mask_name] for mask_name in mask_names]

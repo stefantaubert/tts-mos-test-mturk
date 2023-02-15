@@ -4,7 +4,7 @@ from typing import Set
 import numpy as np
 
 from tts_mos_test_mturk.evaluation_data import EvaluationData
-from tts_mos_test_mturk.masks import AssignmentMask, MaskFactory
+from tts_mos_test_mturk.masking.mask_factory import MaskFactory
 from tts_mos_test_mturk.statistics.update_stats import print_stats_masks
 
 

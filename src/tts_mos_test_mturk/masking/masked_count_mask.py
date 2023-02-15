@@ -8,7 +8,7 @@ from tts_mos_test_mturk.statistics.update_stats import print_stats_masks
 
 
 def mask_scores_by_masked_count(data: EvaluationData, mask_names: Set[str], ref_mask_name: str, percent: float, output_mask_name: str):
-  logger = get_detail_logger()
+  dlogger = get_detail_logger()
   factory = data.get_mask_factory()
   masks = data.get_masks_from_names(mask_names)
   ref_mask = data.masks[ref_mask_name]
@@ -21,7 +21,7 @@ def mask_scores_by_masked_count(data: EvaluationData, mask_names: Set[str], ref_
   outlier_workers_count = get_workers_count(ref_omask.mask)
   outlier_workers_percent = get_workers_percent(ref_omask.mask)
   for w_i, worker in enumerate(data.workers):
-    logger.info(
+    dlogger.info(
       f"Worker {worker} has {outlier_workers_percent[w_i]*100:.2f}% of outlying scores (#{outlier_workers_count[w_i]})")
 
   outlier_workers_np_mask = get_workers_percent_mask(ref_mask.mask, percent)

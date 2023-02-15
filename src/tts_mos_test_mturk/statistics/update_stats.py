@@ -4,7 +4,7 @@ import numpy as np
 
 from tts_mos_test_mturk.evaluation_data import EvaluationData
 from tts_mos_test_mturk.logging import get_detail_logger, get_logger
-from tts_mos_test_mturk.masks import AssignmentMask, MaskBase, WorkerMask
+from tts_mos_test_mturk.masking.masks import AssignmentMask, MaskBase, WorkerMask
 
 
 def print_stats(data: EvaluationData, mask_names: Set[str], added_mask_names: Set[str]) -> None:
