@@ -15,9 +15,8 @@ def get_init_parser(parser: ArgumentParser):
   parser.add_argument("output", type=parse_path, metavar="OUTPUT-PROJECT-PATH",
                       help="output project file (.pkl)")
 
-  def main(ns: Namespace, logger: Logger, flogger: Logger) -> None:
+  def main(ns: Namespace) -> None:
     data = EvaluationData(ns.results_path, ns.ground_truth_path)
     data.file_path = ns.output
-
     save_project(data)
   return main

@@ -5,6 +5,7 @@ import pandas as pd
 
 from tts_mos_test_mturk.calculation.mos_variance import compute_alg_mos_ci95
 from tts_mos_test_mturk.evaluation_data import EvaluationData
+from tts_mos_test_mturk.logging import get_logger
 
 
 def get_mos_df(data: EvaluationData, mask_names: Set[str]) -> pd.DataFrame:
@@ -14,7 +15,7 @@ def get_mos_df(data: EvaluationData, mask_names: Set[str]) -> pd.DataFrame:
   os = data.get_os()
   omask = factory.merge_masks_into_omask(masks)
   omask.apply_by_nan(os)
-  
+
   alg_mos_ci95 = compute_alg_mos_ci95(os)
 
   scores: List[Dict] = []
@@ -29,7 +30,7 @@ def get_mos_df(data: EvaluationData, mask_names: Set[str]) -> pd.DataFrame:
   return result
 
 
-def generate_approve_csv(data: EvaluationData, mask_names: Set[str], reason: Optional[str]) -> Optional[pd.DataFrame]:
+def generate_approve_csv(data: EvaluationData, mask_names: Set[str], reason: Optional[str], approval_cost: Optional[float]) -> pd.DataFrame:
   masks = data.get_masks_from_names(mask_names)
   factory = data.get_mask_factory()
 
@@ -53,10 +54,14 @@ def generate_approve_csv(data: EvaluationData, mask_names: Set[str], reason: Opt
     ))
     results.append(line)
   result = pd.DataFrame.from_records(results)
+  if approval_cost is not None:
+    logger = get_logger()
+    logger.info(
+      f"Estimated costs ({len(assignment_indices)} assignments x {approval_cost:.2f}$): {len(assignment_indices) * approval_cost:.2f}$")
   return result
 
 
-def generate_reject_csv(data: EvaluationData, mask_names: Set[str], reason: str) -> Optional[pd.DataFrame]:
+def generate_reject_csv(data: EvaluationData, mask_names: Set[str], reason: str) -> pd.DataFrame:
   masks = data.get_masks_from_names(mask_names)
   factory = data.get_mask_factory()
 
@@ -80,7 +85,7 @@ def generate_reject_csv(data: EvaluationData, mask_names: Set[str], reason: str)
   return result
 
 
-def generate_bonus_csv(data: EvaluationData, mask_names: Set[str], bonus: float, reason: str) -> Optional[pd.DataFrame]:
+def generate_bonus_csv(data: EvaluationData, mask_names: Set[str], bonus: float, reason: str) -> pd.DataFrame:
   masks = data.get_masks_from_names(mask_names)
   factory = data.get_mask_factory()
 
@@ -101,10 +106,13 @@ def generate_bonus_csv(data: EvaluationData, mask_names: Set[str], bonus: float,
     ))
     results.append(line)
   result = pd.DataFrame.from_records(results)
+  logger = get_logger()
+  logger.info(
+    f"Estimated costs ({len(assignment_indices)} assignments x {bonus:.2f}$): {len(assignment_indices) * bonus:.2f}$")
   return result
 
 
-def generate_ground_truth_table(data: EvaluationData, mask_names: Set[str]) -> Optional[pd.DataFrame]:
+def generate_ground_truth_table(data: EvaluationData, mask_names: Set[str]) -> pd.DataFrame:
   masks = data.get_masks_from_names(mask_names)
   factory = data.get_mask_factory()
 

@@ -169,7 +169,7 @@ def parse_args(args: List[str]) -> None:
 
   success = True
   try:
-    invoke_handler(ns, cmd_logger, cmd_flogger)
+    invoke_handler(ns)
   except CLIError as error:
     cmd_logger.error(error.args[0])
     cmd_flogger.debug(error, exc_info=True)

@@ -40,6 +40,23 @@ class ConsoleFormatter(logging.Formatter):
     return formatter.format(record)
 
 
+class FileFormatter(logging.Formatter):
+  def __init__(self):
+    super().__init__()
+    self.datefmt = '%Y/%m/%d %H:%M:%S'
+    self.fmt = '[%(asctime)s.%(msecs)03d] (%(levelname)s) %(message)s'
+    self.fmt_foreign = '[%(asctime)s.%(msecs)03d] (%(levelname)s) %(name)s: %(message)s'
+
+  def format(self, record):
+    # print(record.name)
+    is_foreign = record.name not in {"file_logger", "cli_logger",
+                                     "tts_mos_test_mturk.details", "tts_mos_test_mturk"}
+    fmt = self.fmt_foreign if is_foreign else self.fmt
+    formatter = logging.Formatter(fmt, self.datefmt)
+
+    return formatter.format(record)
+
+
 def add_console_out(logger: Logger):
   console = StreamHandler()
   logger.addHandler(console)
@@ -67,9 +84,7 @@ def set_console_formatter(handler: Handler) -> None:
 
 
 def set_logfile_formatter(handler: Handler) -> None:
-  fmt = '[%(asctime)s.%(msecs)03d] (%(levelname)s) %(message)s'
-  datefmt = '%Y/%m/%d %H:%M:%S'
-  logging_formatter = Formatter(fmt, datefmt)
+  logging_formatter = FileFormatter()
   handler.setFormatter(logging_formatter)
 
 

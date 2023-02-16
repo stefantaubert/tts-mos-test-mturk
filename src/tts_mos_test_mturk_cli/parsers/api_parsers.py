@@ -42,6 +42,25 @@ def create_mturk_client(aws_access_key_id: str, aws_secret_access_key: str, endp
   return create_mturk_client_from_session(session, endpoint_url)
 
 
+def get_approve_parser(parser: ArgumentParser):
+  parser.description = "Generate a CSV-file in which all unmasked assignments will be listed for them to be approvement via API or the MTurk website."
+  add_project_argument(parser)
+  add_masks_argument(parser)
+  parser.add_argument("output", type=parse_path,
+                      help="write CSV to this path", metavar="OUTPUT-CSV")
+  parser.add_argument("--costs", type=get_optional(parse_non_negative_float),
+                      metavar="DOLLAR", help="costs for one approval (in $)", default=None)
+  parser.add_argument("--reason", type=get_optional(parse_non_empty_or_whitespace), metavar="REASON",
+                      help="use custom reason instead of \"x\"", default=None)
+
+  def main(ns: Namespace) -> None:
+    ensure_masks_exist(ns.project, ns.masks)
+    result_df = generate_approve_csv(ns.project, ns.masks, ns.reason, ns.costs)
+    # print(result_df)
+    save_output_csv(ns.output, result_df)
+  return main
+
+
 def get_api_approve_parser(parser: ArgumentParser):
   parser.description = "Approve via API."
   parser.add_argument("aws_access_key_id", type=parse_non_empty_or_whitespace,
@@ -57,7 +76,7 @@ def get_api_approve_parser(parser: ArgumentParser):
   # parser.add_argument("--region", type=parse_non_empty_or_whitespace,
   #                     default="us-east-1", help="region")
 
-  def main(ns: Namespace, logger: Logger, flogger: Logger) -> None:
+  def main(ns: Namespace) -> None:
     mturk = create_mturk_client(ns.aws_access_key_id, ns.aws_secret_access_key, ns.endpoint)
     if not approve_from_df(ns.approve_csv, mturk):
       raise CLIError("Not all assignments could've been approved!")
@@ -79,7 +98,7 @@ def get_api_bonus_parser(parser: ArgumentParser):
   # parser.add_argument("--region", type=parse_non_empty_or_whitespace,
   #                     default="us-east-1", help="region")
 
-  def main(ns: Namespace, logger: Logger, flogger: Logger) -> None:
+  def main(ns: Namespace) -> None:
     mturk = create_mturk_client(ns.aws_access_key_id, ns.aws_secret_access_key, ns.endpoint)
     if not grant_bonuses_from_df(ns.bonus_csv, mturk):
       raise CLIError("Not all assignments could've been bonused!")
@@ -101,27 +120,10 @@ def get_api_reject_parser(parser: ArgumentParser):
   # parser.add_argument("--region", type=parse_non_empty_or_whitespace,
   #                     default="us-east-1", help="region")
 
-  def main(ns: Namespace, logger: Logger, flogger: Logger) -> None:
+  def main(ns: Namespace) -> None:
     mturk = create_mturk_client(ns.aws_access_key_id, ns.aws_secret_access_key, ns.endpoint)
     if not reject_from_df(ns.reject_csv, mturk):
       raise CLIError("Not all assignments could've been rejected!")
-  return main
-
-
-def get_approve_parser(parser: ArgumentParser):
-  parser.description = "Write approvement CSV of all unmasked assignments."
-  add_project_argument(parser)
-  add_masks_argument(parser)
-  parser.add_argument("output", type=parse_path,
-                      help="write CSV to this path", metavar="OUTPUT-CSV")
-  parser.add_argument("--reason", type=get_optional(parse_non_empty_or_whitespace), metavar="REASON",
-                      help="use custom reason instead of \"x\"", default=None)
-
-  def main(ns: Namespace, logger: Logger, flogger: Logger) -> None:
-    ensure_masks_exist(ns.project, ns.masks)
-    result_df = generate_approve_csv(ns.project, ns.masks, ns.reason)
-    # print(result_df)
-    save_output_csv(ns.output, result_df)
   return main
 
 
@@ -136,7 +138,7 @@ def get_bonus_parser(parser: ArgumentParser):
   parser.add_argument("output", type=parse_path,
                       help="write CSV to this path", metavar="OUTPUT-CSV")
 
-  def main(ns: Namespace, logger: Logger, flogger: Logger) -> None:
+  def main(ns: Namespace) -> None:
     ensure_masks_exist(ns.project, ns.masks)
     result_df = generate_bonus_csv(ns.project, ns.masks, ns.amount, ns.reason)
     # print(result_df)
@@ -153,7 +155,7 @@ def get_reject_parser(parser: ArgumentParser):
   parser.add_argument("output", type=parse_path,
                       help="write CSV to this path", metavar="OUTPUT-CSV")
 
-  def main(ns: Namespace, logger: Logger, flogger: Logger) -> None:
+  def main(ns: Namespace) -> None:
     ensure_masks_exist(ns.project, ns.masks)
     result_df = generate_reject_csv(ns.project, ns.masks, ns.reason)
     save_output_csv(ns.output, result_df)

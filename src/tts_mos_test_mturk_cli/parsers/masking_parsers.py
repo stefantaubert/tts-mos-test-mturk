@@ -27,14 +27,12 @@ def get_mask_assignments_by_listening_device_parser(parser: ArgumentParser):
   add_output_mask_argument(parser)
   add_dry_argument(parser)
 
-  def main(ns: Namespace, logger: Logger, flogger: Logger) -> None:
+  def main(ns: Namespace) -> None:
     ensure_masks_exist(ns.project, ns.masks)
     mask_assignments_by_listening_device(ns.project, ns.masks, ns.devices, ns.output_mask)
 
-    if ns.dry:
-      return True
-
-    return save_project(ns.project)
+    if not ns.dry:
+      save_project(ns.project)
   return main
 
 
@@ -47,14 +45,12 @@ def get_mask_assignments_by_work_time_parser(parser: ArgumentParser):
   add_output_mask_argument(parser)
   add_dry_argument(parser)
 
-  def main(ns: Namespace, logger: Logger, flogger: Logger) -> None:
+  def main(ns: Namespace) -> None:
     ensure_masks_exist(ns.project, ns.masks)
     mask_assignments_by_work_time(ns.project, ns.masks, ns.threshold, ns.output_mask)
 
-    if ns.dry:
-      return True
-
-    return save_project(ns.project)
+    if not ns.dry:
+      save_project(ns.project)
   return main
 
 
@@ -67,14 +63,12 @@ def get_mask_outlying_scores_parser(parser: ArgumentParser):
   add_output_mask_argument(parser)
   add_dry_argument(parser)
 
-  def main(ns: Namespace, logger: Logger, flogger: Logger) -> None:
+  def main(ns: Namespace) -> None:
     ensure_masks_exist(ns.project, ns.masks)
     mask_outlying_scores(ns.project, ns.masks, ns.threshold, ns.output_mask)
 
-    if ns.dry:
-      return True
-
-    return save_project(ns.project)
+    if not ns.dry:
+      save_project(ns.project)
   return main
 
 
@@ -89,14 +83,12 @@ def get_mask_scores_by_masked_count_parser(parser: ArgumentParser):
   add_output_mask_argument(parser)
   add_dry_argument(parser)
 
-  def main(ns: Namespace, logger: Logger, flogger: Logger) -> None:
+  def main(ns: Namespace) -> None:
     ensure_masks_exist(ns.project, ns.masks)
     mask_scores_by_masked_count(ns.project, ns.masks, ns.ref_mask, ns.percent, ns.output_mask)
 
-    if ns.dry:
-      return True
-
-    return save_project(ns.project)
+    if not ns.dry:
+      save_project(ns.project)
   return main
 
 
@@ -109,14 +101,12 @@ def get_mask_workers_by_assignment_count_parser(parser: ArgumentParser):
   add_output_mask_argument(parser)
   add_dry_argument(parser)
 
-  def main(ns: Namespace, logger: Logger, flogger: Logger) -> None:
+  def main(ns: Namespace) -> None:
     ensure_masks_exist(ns.project, ns.masks)
     mask_workers_by_assignment_count(ns.project, ns.masks, ns.count, ns.output_mask)
 
-    if ns.dry:
-      return True
-
-    return save_project(ns.project)
+    if not ns.dry:
+      save_project(ns.project)
   return main
 
 
@@ -131,14 +121,12 @@ def get_mask_workers_by_correlation_parser(parser: ArgumentParser):
   add_output_mask_argument(parser)
   add_dry_argument(parser)
 
-  def main(ns: Namespace, logger: Logger, flogger: Logger) -> None:
+  def main(ns: Namespace) -> None:
     ensure_masks_exist(ns.project, ns.masks)
     mask_workers_by_correlation(ns.project, ns.masks, ns.threshold, ns.mode, ns.output_mask)
 
-    if ns.dry:
-      return True
-
-    return save_project(ns.project)
+    if not ns.dry:
+      save_project(ns.project)
   return main
 
 
@@ -155,14 +143,11 @@ def get_mask_workers_by_correlation_percent_parser(parser: ArgumentParser):
   add_output_mask_argument(parser)
   add_dry_argument(parser)
 
-  def main(ns: Namespace, logger: Logger, flogger: Logger) -> None:
+  def main(ns: Namespace) -> None:
     ensure_masks_exist(ns.project, ns.masks)
     mask_workers_by_correlation_percent(ns.project, ns.masks, ns.from_percent,
                                         ns.to_percent, ns.mode, ns.output_mask)
 
-    if ns.dry:
-      return True
-
-    return save_project(ns.project)
-
+    if not ns.dry:
+      save_project(ns.project)
   return main

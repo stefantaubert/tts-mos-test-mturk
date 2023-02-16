@@ -29,7 +29,7 @@ def get_export_wa_stats_parser(parser: ArgumentParser):
   add_optional_output_argument(parser)
   add_silent_argument(parser)
 
-  def main(ns: Namespace, logger: Logger, flogger: Logger) -> None:
+  def main(ns: Namespace) -> None:
     ensure_masks_exist(ns.project, ns.masks)
     result_df = get_worker_assignment_stats(ns.project, ns.masks)
 
@@ -38,7 +38,6 @@ def get_export_wa_stats_parser(parser: ArgumentParser):
 
     if ns.output:
       return save_output_csv(ns.output, result_df)
-    return True
   return main
 
 
@@ -47,10 +46,9 @@ def get_stats_parser(parser: ArgumentParser):
   add_project_argument(parser)
   add_masks_argument(parser)
 
-  def main(ns: Namespace, logger: Logger, flogger: Logger) -> None:
+  def main(ns: Namespace) -> None:
     ensure_masks_exist(ns.project, ns.masks)
     print_stats(ns.project, set(), ns.masks)
-    return True
   return main
 
 
@@ -61,7 +59,7 @@ def get_calculation_parser(parser: ArgumentParser):
   add_optional_output_argument(parser)
   add_silent_argument(parser)
 
-  def main(ns: Namespace, logger: Logger, flogger: Logger) -> None:
+  def main(ns: Namespace) -> None:
     ensure_masks_exist(ns.project, ns.masks)
     result_df = get_mos_df(ns.project, ns.masks)
 
@@ -70,7 +68,6 @@ def get_calculation_parser(parser: ArgumentParser):
 
     if ns.output:
       return save_output_csv(ns.output, result_df)
-    return True
   return main
 
 
@@ -81,7 +78,7 @@ def get_export_as_stats_parser(parser: ArgumentParser):
   add_optional_output_argument(parser)
   add_silent_argument(parser)
 
-  def main(ns: Namespace, logger: Logger, flogger: Logger) -> None:
+  def main(ns: Namespace) -> None:
     ensure_masks_exist(ns.project, ns.masks)
     result_df = get_algorithm_sentence_stats(ns.project, ns.masks)
 
@@ -90,7 +87,6 @@ def get_export_as_stats_parser(parser: ArgumentParser):
 
     if ns.output:
       return save_output_csv(ns.output, result_df)
-    return True
   return main
 
 
@@ -101,7 +97,7 @@ def get_export_aw_stats_parser(parser: ArgumentParser):
   add_optional_output_argument(parser)
   add_silent_argument(parser)
 
-  def main(ns: Namespace, logger: Logger, flogger: Logger) -> None:
+  def main(ns: Namespace) -> None:
     ensure_masks_exist(ns.project, ns.masks)
     result_df = get_worker_algorithm_stats(ns.project, ns.masks)
 
@@ -110,7 +106,6 @@ def get_export_aw_stats_parser(parser: ArgumentParser):
 
     if ns.output:
       return save_output_csv(ns.output, result_df)
-    return True
   return main
 
 
@@ -121,7 +116,7 @@ def get_export_gt_parser(parser: ArgumentParser):
   add_optional_output_argument(parser)
   add_silent_argument(parser)
 
-  def main(ns: Namespace, logger: Logger, flogger: Logger) -> None:
+  def main(ns: Namespace) -> None:
     ensure_masks_exist(ns.project, ns.masks)
     result_df = generate_ground_truth_table(ns.project, ns.masks)
 
@@ -130,5 +125,4 @@ def get_export_gt_parser(parser: ArgumentParser):
 
     if ns.output:
       return save_output_csv(ns.output, result_df)
-    return True
   return main
