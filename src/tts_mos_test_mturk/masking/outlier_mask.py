@@ -6,14 +6,24 @@ from tts_mos_test_mturk.evaluation_data import EvaluationData
 from tts_mos_test_mturk.statistics.update_stats import print_stats_masks
 
 
-def mask_outliers(opinion_scores: np.ndarray, max_std_dev_diff: float) -> np.ndarray:
-  mu = np.nanmean(opinion_scores)
-  s = np.nanstd(opinion_scores)
+def mask_outliers(Z: np.ndarray, max_std_dev_diff: float) -> np.ndarray:
+  assert len(Z.shape) == 2
+  mu = np.nanmean(Z)
+  s = np.nanstd(Z)
 
-  mu_norm = abs(opinion_scores - mu) / s
+  mu_norm = abs(Z - mu) / s
   outlying_scores: np.ndarray = mu_norm > max_std_dev_diff
 
   return outlying_scores
+
+
+def mask_outliers_alg(opinion_scores: np.ndarray, max_std_dev_diff: float) -> np.ndarray:
+  result = np.full_like(opinion_scores, fill_value=False, dtype=bool)
+  n_alg = opinion_scores.shape[0]
+  for alg_i in range(n_alg):
+    Z = opinion_scores[alg_i]
+    result[alg_i, :] = mask_outliers(Z, max_std_dev_diff)
+  return result
 
 
 def mask_outlying_scores(data: EvaluationData, mask_names: Set[str], max_std_dev_diff: float, output_mask_name: str):
@@ -24,7 +34,7 @@ def mask_outlying_scores(data: EvaluationData, mask_names: Set[str], max_std_dev
   omask = factory.merge_masks_into_omask(masks)
   omask.apply_by_nan(os)
 
-  outlier_np_mask = mask_outliers(os, max_std_dev_diff)
+  outlier_np_mask = mask_outliers_alg(os, max_std_dev_diff)
   outlier_omask = factory.convert_ndarray_to_omask(outlier_np_mask)
   data.add_or_update_mask(output_mask_name, outlier_omask)
 

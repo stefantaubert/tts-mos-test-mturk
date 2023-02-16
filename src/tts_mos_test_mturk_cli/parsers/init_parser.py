@@ -7,7 +7,7 @@ from tts_mos_test_mturk_cli.helper import save_project
 
 
 def get_init_parser(parser: ArgumentParser):
-  parser.description = "This command reads the lines of a text file and initializes a dataset from it."
+  parser.description = "Initialize a project from the ground truth and batch results."
   parser.add_argument("ground_truth_path", type=parse_data_frame, metavar="GROUND-TRUTH-CSV",
                       help="path containing the ground truths for each url, i.e. a CSV-file with columns \"audio_url, algorithm, file\"")
   parser.add_argument("results_path", type=parse_data_frame, metavar="RESULTS-CSV",

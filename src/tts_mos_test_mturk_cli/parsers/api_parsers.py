@@ -43,7 +43,7 @@ def create_mturk_client(aws_access_key_id: str, aws_secret_access_key: str, endp
 
 
 def get_approve_parser(parser: ArgumentParser):
-  parser.description = "Generate a CSV-file in which all unmasked assignments will be listed for them to be approvement via API or the MTurk website."
+  parser.description = "Generate a CSV-file in which all unmasked assignments will be listed for them to be approved via API or the MTurk website."
   add_project_argument(parser)
   add_masks_argument(parser)
   parser.add_argument("output", type=parse_path,
@@ -62,7 +62,7 @@ def get_approve_parser(parser: ArgumentParser):
 
 
 def get_api_approve_parser(parser: ArgumentParser):
-  parser.description = "Approve via API."
+  parser.description = "Approve all assignments in a CSV-file via API."
   parser.add_argument("aws_access_key_id", type=parse_non_empty_or_whitespace,
                       help="AWS access key id", metavar="AWS_ACCESS_KEY_ID")
   parser.add_argument("aws_secret_access_key", type=parse_non_empty_or_whitespace,
@@ -83,30 +83,24 @@ def get_api_approve_parser(parser: ArgumentParser):
   return main
 
 
-def get_api_bonus_parser(parser: ArgumentParser):
-  parser.description = "Bonus via API."
-  parser.add_argument("aws_access_key_id", type=parse_non_empty_or_whitespace,
-                      help="AWS access key id", metavar="AWS_ACCESS_KEY_ID")
-  parser.add_argument("aws_secret_access_key", type=parse_non_empty_or_whitespace,
-                      help="AWS secret access key", metavar="AWS_SECRET_ACCESS_KEY")
-  parser.add_argument("bonus_csv", type=parse_data_frame,
-                      metavar="BONUS-CSV", help="path containing the bonuses CSV")
-  # parser.add_argument("-p", "--productive", action="store_true",
-  #                     help="use production API and not sandbox")
-  parser.add_argument("--endpoint", type=parse_non_empty_or_whitespace,
-                      default=MTURK_SANDBOX, help="API endpoint")
-  # parser.add_argument("--region", type=parse_non_empty_or_whitespace,
-  #                     default="us-east-1", help="region")
+def get_reject_parser(parser: ArgumentParser):
+  parser.description = "Generate a CSV-file in which all masked assignments will be listed for them to be rejected via API or the MTurk website."
+  add_project_argument(parser)
+  add_masks_argument(parser)
+  parser.add_argument("reason", type=parse_non_empty_or_whitespace, metavar="REASON",
+                      help="use this reason")
+  parser.add_argument("output", type=parse_path,
+                      help="write CSV to this path", metavar="OUTPUT-CSV")
 
   def main(ns: Namespace) -> None:
-    mturk = create_mturk_client(ns.aws_access_key_id, ns.aws_secret_access_key, ns.endpoint)
-    if not grant_bonuses_from_df(ns.bonus_csv, mturk):
-      raise CLIError("Not all assignments could've been bonused!")
+    ensure_masks_exist(ns.project, ns.masks)
+    result_df = generate_reject_csv(ns.project, ns.masks, ns.reason)
+    save_output_csv(ns.output, result_df)
   return main
 
 
 def get_api_reject_parser(parser: ArgumentParser):
-  parser.description = "Reject via API."
+  parser.description = "Reject all assignments in a CSV-file via API."
   parser.add_argument("aws_access_key_id", type=parse_non_empty_or_whitespace,
                       help="AWS access key id", metavar="AWS_ACCESS_KEY_ID")
   parser.add_argument("aws_secret_access_key", type=parse_non_empty_or_whitespace,
@@ -128,13 +122,13 @@ def get_api_reject_parser(parser: ArgumentParser):
 
 
 def get_bonus_parser(parser: ArgumentParser):
-  parser.description = "Write bonus CSV of all unmasked assignments."
+  parser.description = "Generate a CSV-file in which all unmasked assignments will be listed for them to be paid a bonus via API or the MTurk website."
   add_project_argument(parser)
   add_masks_argument(parser)
   parser.add_argument("amount", type=parse_non_negative_float,
-                      metavar="AMOUNT", help="bonus amount in $")
+                      metavar="BONUS", help="bonus amount in $")
   parser.add_argument("reason", type=parse_non_empty_or_whitespace, metavar="REASON",
-                      help="reason for bonus")
+                      help="reason for paying the bonus")
   parser.add_argument("output", type=parse_path,
                       help="write CSV to this path", metavar="OUTPUT-CSV")
 
@@ -146,17 +140,23 @@ def get_bonus_parser(parser: ArgumentParser):
   return main
 
 
-def get_reject_parser(parser: ArgumentParser):
-  parser.description = "Write rejectment CSV of all masked assignments."
-  add_project_argument(parser)
-  add_masks_argument(parser)
-  parser.add_argument("reason", type=parse_non_empty_or_whitespace, metavar="REASON",
-                      help="use this reason")
-  parser.add_argument("output", type=parse_path,
-                      help="write CSV to this path", metavar="OUTPUT-CSV")
+def get_api_bonus_parser(parser: ArgumentParser):
+  parser.description = "Pay all assignments in a CSV-file a bonus via API."
+  parser.add_argument("aws_access_key_id", type=parse_non_empty_or_whitespace,
+                      help="AWS access key id", metavar="AWS_ACCESS_KEY_ID")
+  parser.add_argument("aws_secret_access_key", type=parse_non_empty_or_whitespace,
+                      help="AWS secret access key", metavar="AWS_SECRET_ACCESS_KEY")
+  parser.add_argument("bonus_csv", type=parse_data_frame,
+                      metavar="BONUS-CSV", help="path containing the bonuses CSV")
+  # parser.add_argument("-p", "--productive", action="store_true",
+  #                     help="use production API and not sandbox")
+  parser.add_argument("--endpoint", type=parse_non_empty_or_whitespace,
+                      default=MTURK_SANDBOX, help="API endpoint")
+  # parser.add_argument("--region", type=parse_non_empty_or_whitespace,
+  #                     default="us-east-1", help="region")
 
   def main(ns: Namespace) -> None:
-    ensure_masks_exist(ns.project, ns.masks)
-    result_df = generate_reject_csv(ns.project, ns.masks, ns.reason)
-    save_output_csv(ns.output, result_df)
+    mturk = create_mturk_client(ns.aws_access_key_id, ns.aws_secret_access_key, ns.endpoint)
+    if not grant_bonuses_from_df(ns.bonus_csv, mturk):
+      raise CLIError("Not all assignments could've been bonused!")
   return main

@@ -19,11 +19,11 @@ from tts_mos_test_mturk_cli.validation import ensure_masks_exist
 
 
 def get_mask_assignments_by_listening_device_parser(parser: ArgumentParser):
-  parser.description = "Reject assignments with listening type"
+  parser.description = "Mask assignments by their listening devices."
   add_project_argument(parser)
   add_masks_argument(parser)
   parser.add_argument("devices", type=str, metavar="DEVICE", choices=["in-ear", "over-the-ear", "desktop", "laptop"], nargs="+",
-                      help="ignore all assignments with DEVICE", action=ConvertToSetAction)
+                      help="mask all assignments that were done on DEVICE", action=ConvertToSetAction)
   add_output_mask_argument(parser)
   add_dry_argument(parser)
 
@@ -37,11 +37,11 @@ def get_mask_assignments_by_listening_device_parser(parser: ArgumentParser):
 
 
 def get_mask_assignments_by_work_time_parser(parser: ArgumentParser):
-  parser.description = "Reject too fast assignments"
+  parser.description = "Mask assignments by their work time."
   add_project_argument(parser)
   add_masks_argument(parser)
   parser.add_argument("threshold", type=parse_positive_integer, metavar="THRESHOLD",
-                      help="ignore all assignments, which have a work_time smaller than THRESHOLD")
+                      help="mask all assignments, which have a work time smaller than THRESHOLD")
   add_output_mask_argument(parser)
   add_dry_argument(parser)
 
@@ -55,11 +55,11 @@ def get_mask_assignments_by_work_time_parser(parser: ArgumentParser):
 
 
 def get_mask_outlying_scores_parser(parser: ArgumentParser):
-  parser.description = "Ignore outliers."
+  parser.description = "Mask outlying opinion scores."
   add_project_argument(parser)
   add_masks_argument(parser)
-  parser.add_argument("threshold", type=parse_positive_float, metavar="THRESHOLD",
-                      help="ignore opinion scores with that amount of standard deviations away")
+  parser.add_argument("threshold", type=parse_positive_float, metavar="N-STD",
+                      help="mask outlying opinion scores that lie N-STD standard deviations away from the mean.")
   add_output_mask_argument(parser)
   add_dry_argument(parser)
 
