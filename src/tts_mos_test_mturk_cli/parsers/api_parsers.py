@@ -2,21 +2,44 @@ from argparse import ArgumentParser, Namespace
 from logging import Logger
 
 import boto3
-import pandas as pd
+from mypy_boto3_mturk import MTurkClient
 
 from tts_mos_test_mturk.api import approve_from_df, grant_bonuses_from_df, reject_from_df
 from tts_mos_test_mturk.df_generation import (generate_approve_csv, generate_bonus_csv,
                                               generate_reject_csv)
-from tts_mos_test_mturk.evaluation_data import EvaluationData
-from tts_mos_test_mturk.statistics.update_stats import print_stats
-from tts_mos_test_mturk.statistics.worker_assignment_stats import get_worker_assignment_stats
 from tts_mos_test_mturk_cli.argparse_helper import (get_optional, parse_data_frame,
                                                     parse_non_empty_or_whitespace,
                                                     parse_non_negative_float, parse_path)
 from tts_mos_test_mturk_cli.default_args import add_masks_argument, add_project_argument
 from tts_mos_test_mturk_cli.globals import MTURK_SANDBOX
-from tts_mos_test_mturk_cli.types import CLIError, ExecutionResult
+from tts_mos_test_mturk_cli.helper import save_output_csv
+from tts_mos_test_mturk_cli.types import CLIError
 from tts_mos_test_mturk_cli.validation import ensure_masks_exist
+
+
+def create_aws_session(aws_access_key_id: str, aws_secret_access_key: str) -> boto3.Session:
+  try:
+    session = boto3.Session(
+      aws_access_key_id=aws_access_key_id,
+      aws_secret_access_key=aws_secret_access_key,
+      # region_name="us-east-1",
+    )
+  except Exception as ex:
+    raise CLIError("AWS session couldn't be created!") from ex
+  return session
+
+
+def create_mturk_client_from_session(session: boto3.Session, endpoint_url: str) -> MTurkClient:
+  try:
+    mturk = session.client('mturk', endpoint_url=endpoint_url)
+  except Exception as ex:
+    raise CLIError("MTurk client couldn't be established!") from ex
+  return mturk
+
+
+def create_mturk_client(aws_access_key_id: str, aws_secret_access_key: str, endpoint_url: str) -> MTurkClient:
+  session = create_aws_session(aws_access_key_id, aws_secret_access_key)
+  return create_mturk_client_from_session(session, endpoint_url)
 
 
 def get_api_approve_parser(parser: ArgumentParser):
@@ -34,42 +57,11 @@ def get_api_approve_parser(parser: ArgumentParser):
   # parser.add_argument("--region", type=parse_non_empty_or_whitespace,
   #                     default="us-east-1", help="region")
 
-  def main(ns: Namespace, logger: Logger, flogger: Logger) -> ExecutionResult:
-    try:
-      session = boto3.Session(
-        aws_access_key_id=ns.aws_access_key_id,
-        aws_secret_access_key=ns.aws_secret_access_key,
-        # region_name="us-east-1",
-      )
-    except Exception as ex:
-      flogger.debug(ex)
-      logger.error("Session couldn't be created!")
-      return False
-
-    try:
-      mturk = session.client('mturk', endpoint_url=ns.endpoint)
-    except Exception as ex:
-      flogger.debug(ex)
-      logger.error("MTurk client couldn't be established!")
-      return False
-
-    success = approve_from_df(ns.approve_csv, mturk)
-
-    return success
-
+  def main(ns: Namespace, logger: Logger, flogger: Logger) -> None:
+    mturk = create_mturk_client(ns.aws_access_key_id, ns.aws_secret_access_key, ns.endpoint)
+    if not approve_from_df(ns.approve_csv, mturk):
+      raise CLIError("Not all assignments could've been approved!")
   return main
-
-
-def create_aws_session(aws_access_key_id: str, aws_secret_access_key: str):
-  try:
-    session = boto3.Session(
-      aws_access_key_id=aws_access_key_id,
-      aws_secret_access_key=aws_secret_access_key,
-      # region_name="us-east-1",
-    )
-  except Exception as ex:
-    raise CLIError("Session couldn't be created!") from ex
-  return session
 
 
 def get_api_bonus_parser(parser: ArgumentParser):
@@ -87,28 +79,10 @@ def get_api_bonus_parser(parser: ArgumentParser):
   # parser.add_argument("--region", type=parse_non_empty_or_whitespace,
   #                     default="us-east-1", help="region")
 
-  def main(ns: Namespace, logger: Logger, flogger: Logger) -> ExecutionResult:
-    try:
-      session = boto3.Session(
-        aws_access_key_id=ns.aws_access_key_id,
-        aws_secret_access_key=ns.aws_secret_access_key,
-        # region_name="us-east-1",
-      )
-    except Exception as ex:
-      flogger.debug(ex)
-      logger.error("Session couldn't be created!")
-      return False
-
-    try:
-      mturk = session.client('mturk', endpoint_url=ns.endpoint)
-    except Exception as ex:
-      flogger.debug(ex)
-      logger.error("MTurk client couldn't be established!")
-      return False
-
-    success = grant_bonuses_from_df(ns.bonus_csv, mturk)
-
-    return success
+  def main(ns: Namespace, logger: Logger, flogger: Logger) -> None:
+    mturk = create_mturk_client(ns.aws_access_key_id, ns.aws_secret_access_key, ns.endpoint)
+    if not grant_bonuses_from_df(ns.bonus_csv, mturk):
+      raise CLIError("Not all assignments could've been bonused!")
   return main
 
 
@@ -127,28 +101,10 @@ def get_api_reject_parser(parser: ArgumentParser):
   # parser.add_argument("--region", type=parse_non_empty_or_whitespace,
   #                     default="us-east-1", help="region")
 
-  def main(ns: Namespace, logger: Logger, flogger: Logger) -> ExecutionResult:
-    try:
-      session = boto3.Session(
-        aws_access_key_id=ns.aws_access_key_id,
-        aws_secret_access_key=ns.aws_secret_access_key,
-        # region_name="us-east-1",
-      )
-    except Exception as ex:
-      flogger.debug(ex)
-      logger.error("Session couldn't be created!")
-      return False
-
-    try:
-      mturk = session.client('mturk', endpoint_url=ns.endpoint)
-    except Exception as ex:
-      flogger.debug(ex)
-      logger.error("MTurk client couldn't be established!")
-      return False
-
-    success = reject_from_df(ns.reject_csv, mturk)
-
-    return success
+  def main(ns: Namespace, logger: Logger, flogger: Logger) -> None:
+    mturk = create_mturk_client(ns.aws_access_key_id, ns.aws_secret_access_key, ns.endpoint)
+    if not reject_from_df(ns.reject_csv, mturk):
+      raise CLIError("Not all assignments could've been rejected!")
   return main
 
 
@@ -161,20 +117,11 @@ def get_approve_parser(parser: ArgumentParser):
   parser.add_argument("--reason", type=get_optional(parse_non_empty_or_whitespace), metavar="REASON",
                       help="use custom reason instead of \"x\"", default=None)
 
-  def main(ns: Namespace, logger: Logger, flogger: Logger) -> ExecutionResult:
+  def main(ns: Namespace, logger: Logger, flogger: Logger) -> None:
     ensure_masks_exist(ns.project, ns.masks)
     result_df = generate_approve_csv(ns.project, ns.masks, ns.reason)
     # print(result_df)
-
-    try:
-      result_df.to_csv(ns.output, index=False)
-    except Exception as ex:
-      flogger.debug(ex)
-      logger.error(f"Output CSV \"{ns.output.absolute()}\" couldn't be saved!")
-      return False
-    logger.info(f"Written output to: \"{ns.output.absolute()}\"")
-
-    return True
+    save_output_csv(ns.output, result_df)
   return main
 
 
@@ -189,20 +136,11 @@ def get_bonus_parser(parser: ArgumentParser):
   parser.add_argument("output", type=parse_path,
                       help="write CSV to this path", metavar="OUTPUT-CSV")
 
-  def main(ns: Namespace, logger: Logger, flogger: Logger) -> ExecutionResult:
+  def main(ns: Namespace, logger: Logger, flogger: Logger) -> None:
     ensure_masks_exist(ns.project, ns.masks)
     result_df = generate_bonus_csv(ns.project, ns.masks, ns.amount, ns.reason)
     # print(result_df)
-
-    try:
-      result_df.to_csv(ns.output, index=False)
-    except Exception as ex:
-      flogger.debug(ex)
-      logger.error(f"Output CSV \"{ns.output.absolute()}\" couldn't be saved!")
-      return False
-    logger.info(f"Written output to: \"{ns.output.absolute()}\"")
-
-    return True
+    save_output_csv(ns.output, result_df)
   return main
 
 
@@ -215,17 +153,8 @@ def get_reject_parser(parser: ArgumentParser):
   parser.add_argument("output", type=parse_path,
                       help="write CSV to this path", metavar="OUTPUT-CSV")
 
-  def main(ns: Namespace, logger: Logger, flogger: Logger) -> ExecutionResult:
+  def main(ns: Namespace, logger: Logger, flogger: Logger) -> None:
     ensure_masks_exist(ns.project, ns.masks)
     result_df = generate_reject_csv(ns.project, ns.masks, ns.reason)
-
-    try:
-      result_df.to_csv(ns.output, index=False)
-    except Exception as ex:
-      flogger.debug(ex)
-      logger.error(f"Output CSV \"{ns.output.absolute()}\" couldn't be saved!")
-      return False
-    logger.info(f"Written output to: \"{ns.output.absolute()}\"")
-
-    return True
+    save_output_csv(ns.output, result_df)
   return main

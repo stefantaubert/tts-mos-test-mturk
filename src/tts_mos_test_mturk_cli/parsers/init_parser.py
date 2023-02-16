@@ -4,7 +4,6 @@ from logging import Logger
 from tts_mos_test_mturk.evaluation_data import EvaluationData
 from tts_mos_test_mturk_cli.argparse_helper import parse_data_frame, parse_path
 from tts_mos_test_mturk_cli.helper import save_project
-from tts_mos_test_mturk_cli.types import ExecutionResult
 
 
 def get_init_parser(parser: ArgumentParser):
@@ -21,5 +20,4 @@ def get_init_parser(parser: ArgumentParser):
     data.file_path = ns.output
 
     save_project(data)
-
   return main

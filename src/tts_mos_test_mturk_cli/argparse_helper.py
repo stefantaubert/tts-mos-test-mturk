@@ -32,7 +32,7 @@ def parse_project(value: str) -> EvaluationData:
   try:
     project = EvaluationData.load(path)
   except Exception as ex:
-    raise ArgumentTypeError("File couldn't be parsed!") from ex
+    raise ArgumentTypeError("Project couldn't be parsed!") from ex
   return project
 
 
@@ -41,7 +41,7 @@ def parse_data_frame(value: str) -> pd.DataFrame:
   try:
     df = pd.read_csv(path)
   except Exception as ex:
-    raise ArgumentTypeError("File couldn't be parsed!") from ex
+    raise ArgumentTypeError("CSV couldn't be parsed!") from ex
   return df
 
 

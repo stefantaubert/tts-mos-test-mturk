@@ -8,7 +8,6 @@ import numpy as np
 from ordered_set import OrderedSet
 from pandas import DataFrame
 
-from tts_mos_test_mturk.core_error import CoreError
 from tts_mos_test_mturk.data_point import DataPoint, get_n_urls_per_assignment, parse_data_points
 from tts_mos_test_mturk.io import load_obj, save_obj
 from tts_mos_test_mturk.masking.mask_factory import MaskFactory

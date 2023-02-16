@@ -172,11 +172,11 @@ def parse_args(args: List[str]) -> None:
     invoke_handler(ns, cmd_logger, cmd_flogger)
   except CLIError as error:
     cmd_logger.error(error.args[0])
-    cmd_flogger.debug(error)
+    cmd_flogger.debug(error, exc_info=True)
     success = False
   except Exception as exception:
     cmd_logger.error("Unhandled error occurred!")
-    cmd_flogger.debug(exception)
+    cmd_flogger.debug(exception, exc_info=True)
     success = False
 
   exit_code = 0
