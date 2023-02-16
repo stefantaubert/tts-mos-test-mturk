@@ -10,12 +10,12 @@ def mask_workers_by_assignment_count(data: EvaluationData, mask_names: Set[str],
   masks = data.get_masks_from_names(mask_names)
   factory = data.get_mask_factory()
 
-  x = factory.get_assignments_worker_index_matrix()
+  aw_matrix = factory.get_assignments_worker_index_matrix()
 
   amask = factory.merge_masks_into_amask(masks)
-  x = amask.apply_by_del(x)
+  aw_matrix = amask.apply_by_del(aw_matrix)
 
-  unique_w, a_counts = np.unique(x, return_counts=True)
+  unique_w, a_counts = np.unique(aw_matrix, return_counts=True)
 
   matching_a_counts = a_counts < threshold
   indices = matching_a_counts.nonzero()[0]

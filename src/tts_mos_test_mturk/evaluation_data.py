@@ -8,6 +8,7 @@ import numpy as np
 from ordered_set import OrderedSet
 from pandas import DataFrame
 
+from tts_mos_test_mturk.core_error import CoreError
 from tts_mos_test_mturk.data_point import DataPoint, get_n_urls_per_assignment, parse_data_points
 from tts_mos_test_mturk.io import load_obj, save_obj
 from tts_mos_test_mturk.masking.mask_factory import MaskFactory
@@ -90,11 +91,17 @@ class EvaluationData():
   def n_urls(self) -> int:
     return len(self.audio_urls)
 
+  def get_mask(self, mask_name: str) -> MaskBase:
+    if mask_name not in self.masks:
+      raise ValueError(f"Mask \"{mask_name}\" doesn't exist!")
+    return self.masks[mask_name]
+
   def get_masks_from_names(self, mask_names: Set[str]) -> List[MaskBase]:
-    masks = [self.masks[mask_name] for mask_name in mask_names]
+    masks = [self.get_mask(mask_name) for mask_name in mask_names]
     return masks
 
   def add_or_update_mask(self, name: str, mask: MaskBase) -> None:
+    assert name is not None
     self.masks[name] = mask
 
   def get_mask_factory(self) -> MaskFactory:

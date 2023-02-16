@@ -5,6 +5,8 @@ from logging.handlers import MemoryHandler
 from pathlib import Path
 from typing import Tuple
 
+from tts_mos_test_mturk_cli.globals import APP_NAME
+
 
 class ConsoleFormatter(logging.Formatter):
   """Logging colored formatter, adapted from https://stackoverflow.com/a/56944256/3638629"""
@@ -46,8 +48,13 @@ def add_console_out(logger: Logger):
   set_console_formatter(console)
 
 
-def init_and_return_loggers(name: str) -> Tuple[Logger, Logger]:
-  logger = getLogger(name)
+def get_cli_logger() -> Logger:
+  logger = getLogger(APP_NAME)
+  return logger
+
+
+def init_and_return_loggers() -> Tuple[Logger, Logger]:
+  logger = get_cli_logger()
   flogger = get_file_logger()
   logger.parent = flogger
   logger.handlers.clear()
@@ -85,7 +92,7 @@ def configure_root_logger() -> None:
 
 
 def get_file_logger() -> Logger:
-  logger = getLogger("file-logger")
+  logger = getLogger(f"{APP_NAME}.file-logger")
   if logger.propagate:
     logger.propagate = False
   return logger

@@ -11,12 +11,18 @@ from tempfile import gettempdir
 from time import perf_counter
 from typing import Callable, List
 
+from tts_mos_test_mturk.logging import (attach_boto_to_detail_logger,
+                                        attach_urllib3_to_detail_logger, get_detail_logger,
+                                        get_logger)
+from tts_mos_test_mturk_cli.argparse_helper import get_optional, parse_path, parse_positive_integer
+from tts_mos_test_mturk_cli.globals import APP_NAME
+from tts_mos_test_mturk_cli.logging_configuration import (configure_root_logger, get_file_logger,
+                                                          init_and_return_loggers,
+                                                          try_init_file_buffer_logger)
 from tts_mos_test_mturk_cli.parsers import *
-from tts_mos_test_mturk_cli.types import ExecutionResult
+from tts_mos_test_mturk_cli.types import CLIError, ExecutionResult
 
-__APP_NAME = "tts-mos-test-mturk"
-
-__version__ = version(__APP_NAME)
+__version__ = version(APP_NAME)
 
 INVOKE_HANDLER_VAR = "invoke_handler"
 DEFAULT_LOGGING_BUFFER_CAP = 1000000000
@@ -59,7 +65,7 @@ def _init_parser():
   )
   main_parser.add_argument('-v', '--version', action='version', version='%(prog)s ' + __version__)
   subparsers = main_parser.add_subparsers(help="description")
-  default_log_path = Path(gettempdir()) / f"{__APP_NAME}.log"
+  default_log_path = Path(gettempdir()) / f"{APP_NAME}.log"
 
   methods = get_parsers()
   for command, description, method in methods:
@@ -110,8 +116,8 @@ def parse_args(args: List[str]) -> None:
 
   try:
     ns = parser.parse_args(args)
-  except SystemExit as error:
-    error_code = error.args[0]
+  except SystemExit as exception:
+    error_code = exception.args[0]
     # -v -> 0; invalid arg -> 2
     sys.exit(error_code)
 
@@ -151,7 +157,7 @@ def parse_args(args: List[str]) -> None:
   flogger.debug(f"Parsed arguments: {str(ns)}")
 
   start = perf_counter()
-  cmd_flogger, cmd_logger = init_and_return_loggers(__name__)
+  cmd_flogger, cmd_logger = init_and_return_loggers()
 
   # success, changed_anything = invoke_handler(ns, cmd_logger, cmd_flogger)
   core_main_logger = get_logger()
@@ -161,10 +167,16 @@ def parse_args(args: List[str]) -> None:
   attach_boto_to_detail_logger()
   attach_urllib3_to_detail_logger()
 
+  success = True
   try:
-    success = invoke_handler(ns, cmd_logger, cmd_flogger)
-  except ValueError as error:
+    invoke_handler(ns, cmd_logger, cmd_flogger)
+  except CLIError as error:
+    cmd_logger.error(error.args[0])
     cmd_flogger.debug(error)
+    success = False
+  except Exception as exception:
+    cmd_logger.error("Unhandled error occurred!")
+    cmd_flogger.debug(exception)
     success = False
 
   exit_code = 0
@@ -198,12 +210,12 @@ def run_prod():
 
 
 def debug_file_exists():
-  return (Path(gettempdir()) / f"{__APP_NAME}-debug").is_file()
+  return (Path(gettempdir()) / f"{APP_NAME}-debug").is_file()
 
 
 def create_debug_file():
   if not debug_file_exists():
-    (Path(gettempdir()) / f"{__APP_NAME}-debug").write_text("", "UTF-8")
+    (Path(gettempdir()) / f"{APP_NAME}-debug").write_text("", "UTF-8")
 
 
 if __name__ == "__main__":

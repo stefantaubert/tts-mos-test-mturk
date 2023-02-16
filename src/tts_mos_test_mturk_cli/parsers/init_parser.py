@@ -15,12 +15,11 @@ def get_init_parser(parser: ArgumentParser):
                       help="path to the batch results file (something like \"Batch_374625_batch_results.csv\")")
   parser.add_argument("output", type=parse_path, metavar="OUTPUT-PROJECT-PATH",
                       help="output project file (.pkl)")
+
+  def main(ns: Namespace, logger: Logger, flogger: Logger) -> None:
+    data = EvaluationData(ns.results_path, ns.ground_truth_path)
+    data.file_path = ns.output
+
+    save_project(data)
+
   return main
-
-
-def main(ns: Namespace, logger: Logger, flogger: Logger) -> ExecutionResult:
-  data = EvaluationData(ns.results_path, ns.ground_truth_path)
-  data.file_path = ns.output
-
-  success = save_project(data, logger, flogger)
-  return success
