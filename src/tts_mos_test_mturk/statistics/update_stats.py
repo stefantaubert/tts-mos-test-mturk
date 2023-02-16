@@ -43,7 +43,7 @@ def print_rating_stats(data: EvaluationData, masks: List[MaskBase], added_masks:
   n_already_ignored = ratings_mask_before.n_masked
 
   if data.n_ratings > 0:
-    logger.info("--- Opinion Score Statistics ---")
+    logger.info("--- Ratings Statistics ---")
   if data.n_ratings > 0:
     logger.info(
         f"{n_already_ignored} out of all {data.n_ratings} ratings ({n_already_ignored/data.n_ratings*100:.2f}%) were already masked (i.e., {data.n_ratings - n_already_ignored} unmasked).")

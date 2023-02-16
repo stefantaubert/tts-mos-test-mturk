@@ -20,11 +20,11 @@ COL_INEAR = DEVICE_IN_EAR
 COL_ONEAR = DEVICE_ON_EAR
 COL_LAPTOP = DEVICE_LAPTOP
 COL_DESKTOP = DEVICE_DESKTOP
-COL_MOS1 = "Score 1"
-COL_MOS2 = "Score 2"
-COL_MOS3 = "Score 3"
-COL_MOS4 = "Score 4"
-COL_MOS5 = "Score 5"
+COL_MOS1 = "Rating 1"
+COL_MOS2 = "Rating 2"
+COL_MOS3 = "Rating 3"
+COL_MOS4 = "Rating 4"
+COL_MOS5 = "Rating 5"
 COL_MASKED = "Masked"
 COL_ALL = "All"
 
@@ -128,7 +128,7 @@ def stats_to_df(stats: Dict[str, Dict[str, FileEntry]]) -> pd.DataFrame:
   csv_data = []
   for algorithm, xx in stats.items():
     for file, entry in xx.items():
-      mos_counts = Counter(entry.ratings)
+      rating_counts = Counter(entry.ratings)
       data_entry = {
         COL_ALG: algorithm,
         COL_SENT: file,
@@ -140,11 +140,11 @@ def stats_to_df(stats: Dict[str, Dict[str, FileEntry]]) -> pd.DataFrame:
         COL_ONEAR: entry.over_ear,
         COL_LAPTOP: entry.laptop,
         COL_DESKTOP: entry.desktop,
-        COL_MOS1: mos_counts.get(1, 0),
-        COL_MOS2: mos_counts.get(2, 0),
-        COL_MOS3: mos_counts.get(3, 0),
-        COL_MOS4: mos_counts.get(4, 0),
-        COL_MOS5: mos_counts.get(5, 0),
+        COL_MOS1: rating_counts.get(1, 0),
+        COL_MOS2: rating_counts.get(2, 0),
+        COL_MOS3: rating_counts.get(3, 0),
+        COL_MOS4: rating_counts.get(4, 0),
+        COL_MOS5: rating_counts.get(5, 0),
         COL_MASKED: entry.masked,
       }
       csv_data.append(data_entry)
