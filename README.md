@@ -47,19 +47,20 @@ pip install tts-mos-test-mturk --user
 ## Usage
 
 ```txt
-usage: tts-mos-test-mturk-cli [-h] [-v] {dataset,subsets,weights} ...
+usage: cli.py [-h] [-v] {init,masks,stats,mturk} ...
 
-CLI to select lines of a text file.
+CLI to evaluate MOS results from MTurk and approve/reject workers.
 
 positional arguments:
-  {dataset,subsets,weights}  description
-    dataset                  dataset commands
-    subsets                  subsets commands
-    weights                  weights commands
+  {init,masks,stats,mturk}  description
+    init                    initialize project
+    masks                   masks commands
+    stats                   stats commands
+    mturk                   mturk commands
 
-optional arguments:
-  -h, --help                 show this help message and exit
-  -v, --version              show program's version number and exit
+options:
+  -h, --help                show this help message and exit
+  -v, --version             show program's version number and exit
 ```
 
 ## Evaluation
