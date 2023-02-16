@@ -1,5 +1,4 @@
 from argparse import ArgumentParser, Namespace
-from logging import Logger
 
 from tts_mos_test_mturk.masking.assignment_count_mask import mask_workers_by_assignment_count
 from tts_mos_test_mturk.masking.listening_device_mask import mask_assignments_by_listening_device
@@ -55,11 +54,11 @@ def get_mask_assignments_by_work_time_parser(parser: ArgumentParser):
 
 
 def get_mask_outlying_scores_parser(parser: ArgumentParser):
-  parser.description = "Mask outlying opinion scores."
+  parser.description = "Mask outlying opinion scores of each algorithm."
   add_project_argument(parser)
   add_masks_argument(parser)
   parser.add_argument("threshold", type=parse_positive_float, metavar="N-STD",
-                      help="mask outlying opinion scores that lie N-STD standard deviations away from the mean.")
+                      help="mask outlying opinion scores that lie N-STD standard deviations away from the mean of the respective algorithm.")
   add_output_mask_argument(parser)
   add_dry_argument(parser)
 
@@ -73,19 +72,19 @@ def get_mask_outlying_scores_parser(parser: ArgumentParser):
 
 
 def get_mask_scores_by_masked_count_parser(parser: ArgumentParser):
-  parser.description = "Ignore workers who have at least an amount of masked opinion scores."
+  parser.description = "Mask workers based on their percentual amount of masked opinion scores compared to all masked scores."
   add_project_argument(parser)
   add_masks_argument(parser)
-  parser.add_argument("ref_mask", type=parse_non_empty_or_whitespace,
-                      metavar="REF-MASK", help="name of the mask on which the masked opinion scores should be counted")
+  parser.add_argument("ref_masks", type=parse_non_empty_or_whitespace, nargs="+",
+                      metavar="REF-MASK", help="masks on which the masked opinion scores should be counted", action=ConvertToSetAction)
   parser.add_argument("percent", type=parse_positive_float, metavar="PERCENT",
-                      help=f"ignore workers who have at least PERCENT % of all masked opinion scores")
+                      help=f"mask workers that have at least PERCENT % of all masked opinion scores")
   add_output_mask_argument(parser)
   add_dry_argument(parser)
 
   def main(ns: Namespace) -> None:
     ensure_masks_exist(ns.project, ns.masks)
-    mask_scores_by_masked_count(ns.project, ns.masks, ns.ref_mask, ns.percent, ns.output_mask)
+    mask_scores_by_masked_count(ns.project, ns.masks, ns.ref_masks, ns.percent, ns.output_mask)
 
     if not ns.dry:
       save_project(ns.project)
@@ -93,11 +92,11 @@ def get_mask_scores_by_masked_count_parser(parser: ArgumentParser):
 
 
 def get_mask_workers_by_assignment_count_parser(parser: ArgumentParser):
-  parser.description = "Reject workers with too few assignments"
+  parser.description = "Mask workers based on their amount of assignments."
   add_project_argument(parser)
   add_masks_argument(parser)
   parser.add_argument("count", type=parse_positive_integer, metavar="COUNT",
-                      help="ignore all which have fewer assignments than COUNT")
+                      help="mask workers which have fewer assignments than COUNT")
   add_output_mask_argument(parser)
   add_dry_argument(parser)
 
@@ -111,13 +110,12 @@ def get_mask_workers_by_assignment_count_parser(parser: ArgumentParser):
 
 
 def get_mask_workers_by_correlation_parser(parser: ArgumentParser):
-  parser.description = "Reject bad workers"
+  parser.description = "Mask workers based on their sentence or algorithm correlation compared to other workers."
   add_project_argument(parser)
   add_masks_argument(parser)
   parser.add_argument("threshold", type=parse_positive_float, metavar="THRESHOLD",
-                      help="ignore all assignments, which have a work_time smaller than THRESHOLD")
-  parser.add_argument("--mode", type=str, choices=["sentence", "algorithm",
-                      "both"], default="both", help="Mode to calculate the correlations")
+                      help="mask workers that have a correlation smaller than THRESHOLD")
+  add_mode_argument(parser)
   add_output_mask_argument(parser)
   add_dry_argument(parser)
 
@@ -131,15 +129,14 @@ def get_mask_workers_by_correlation_parser(parser: ArgumentParser):
 
 
 def get_mask_workers_by_correlation_percent_parser(parser: ArgumentParser):
-  parser.description = "Reject bad workers percent-wise."
+  parser.description = "Mask workers based on their sentence or algorithm correlation compared to other workers (percentage-wise)."
   add_project_argument(parser)
   add_masks_argument(parser)
   parser.add_argument("from_percent", type=parse_non_negative_float, metavar="FROM-PERCENT",
                       help="inclusive lower boundary")
   parser.add_argument("to_percent", type=parse_positive_float, metavar="TO-PERCENT",
                       help="exclusive top boundary")
-  parser.add_argument("--mode", type=str, choices=["sentence", "algorithm",
-                      "both"], default="both", help="Mode to calculate the correlations")
+  add_mode_argument(parser)
   add_output_mask_argument(parser)
   add_dry_argument(parser)
 
@@ -151,3 +148,8 @@ def get_mask_workers_by_correlation_percent_parser(parser: ArgumentParser):
     if not ns.dry:
       save_project(ns.project)
   return main
+
+
+def add_mode_argument(parser: ArgumentParser) -> None:
+  parser.add_argument("--mode", type=str, choices=["sentence", "algorithm",
+                      "both"], default="both", help="mode to calculate the correlations: sentence -> the correlation of the opinion scores of each audio url from a worker in comparison to the mean of the opinion scores of the other workers; algorithm -> the correlation of the mean opinion scores from one worker compared to the mean of all other workers for each algorithm; both -> the mean of sentence and algorithm correlation")

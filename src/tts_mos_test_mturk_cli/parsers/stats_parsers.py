@@ -1,5 +1,4 @@
 from argparse import ArgumentParser, Namespace
-from logging import Logger
 
 from tts_mos_test_mturk.df_generation import generate_ground_truth_table, get_mos_df
 from tts_mos_test_mturk.statistics.algorithm_sentence_stats import get_algorithm_sentence_stats
@@ -14,16 +13,16 @@ from tts_mos_test_mturk_cli.validation import ensure_masks_exist
 
 def add_optional_output_argument(parser: ArgumentParser) -> None:
   parser.add_argument("--output", type=get_optional(parse_path),
-                      help="write results table to this CSV file", metavar="OUTPUT-CSV", default=None)
+                      help="save results to this CSV-file", metavar="OUTPUT-CSV", default=None)
 
 
 def add_silent_argument(parser: ArgumentParser) -> None:
   parser.add_argument("-s", "--silent", action="store_true",
-                      help="don't print results table to console")
+                      help="don't print results to console")
 
 
 def get_export_wa_stats_parser(parser: ArgumentParser):
-  parser.description = "Write worker assignment statistics CSV."
+  parser.description = "Print assignment statistics for each worker."
   add_project_argument(parser)
   add_masks_argument(parser)
   add_optional_output_argument(parser)
@@ -42,7 +41,7 @@ def get_export_wa_stats_parser(parser: ArgumentParser):
 
 
 def get_stats_parser(parser: ArgumentParser):
-  parser.description = "Calculate MOS for each algorithm"
+  parser.description = "Print masks statistics regarding masked workers, assignments and opinion scores."
   add_project_argument(parser)
   add_masks_argument(parser)
 
@@ -53,7 +52,7 @@ def get_stats_parser(parser: ArgumentParser):
 
 
 def get_calculation_parser(parser: ArgumentParser):
-  parser.description = "Calculate MOS for each algorithm."
+  parser.description = "Print MOS and CI95 statistics for each algorithm."
   add_project_argument(parser)
   add_masks_argument(parser)
   add_optional_output_argument(parser)
@@ -72,7 +71,7 @@ def get_calculation_parser(parser: ArgumentParser):
 
 
 def get_export_as_stats_parser(parser: ArgumentParser):
-  parser.description = "Print algorithm <-> sentence statistics."
+  parser.description = "Print sentence statistics for each algorithm."
   add_project_argument(parser)
   add_masks_argument(parser)
   add_optional_output_argument(parser)
@@ -91,7 +90,7 @@ def get_export_as_stats_parser(parser: ArgumentParser):
 
 
 def get_export_aw_stats_parser(parser: ArgumentParser):
-  parser.description = "Print algorithm <-> worker statistics."
+  parser.description = "Print worker statistics for each algorithm."
   add_project_argument(parser)
   add_masks_argument(parser)
   add_optional_output_argument(parser)
@@ -110,7 +109,7 @@ def get_export_aw_stats_parser(parser: ArgumentParser):
 
 
 def get_export_gt_parser(parser: ArgumentParser):
-  parser.description = "Print all opinion scores."
+  parser.description = "Print all opinion scores including all metadata."
   add_project_argument(parser)
   add_masks_argument(parser)
   add_optional_output_argument(parser)

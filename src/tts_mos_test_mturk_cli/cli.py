@@ -175,7 +175,7 @@ def parse_args(args: List[str]) -> None:
     cmd_flogger.debug(error, exc_info=True)
     success = False
   except Exception as exception:
-    cmd_logger.error("Unhandled error occurred!")
+    cmd_logger.error("Unexpected error occurred!")
     cmd_flogger.debug(exception, exc_info=True)
     success = False
 

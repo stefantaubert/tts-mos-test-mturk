@@ -1,5 +1,4 @@
 from argparse import ArgumentParser, Namespace
-from logging import Logger
 
 import boto3
 from mypy_boto3_mturk import MTurkClient

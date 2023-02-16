@@ -1,6 +1,6 @@
 import logging
 import os
-from logging import Formatter, Handler, Logger, StreamHandler, getLogger
+from logging import Handler, Logger, StreamHandler, getLogger
 from logging.handlers import MemoryHandler
 from pathlib import Path
 from typing import Tuple

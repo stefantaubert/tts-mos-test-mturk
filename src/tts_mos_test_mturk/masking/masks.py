@@ -20,6 +20,10 @@ class MaskBase():
     assert data.shape == self.mask.shape
     data[self.mask] = np.nan
 
+  def apply_by_false(self, data: np.ndarray) -> None:
+    assert data.shape == self.mask.shape
+    data[self.mask] = False
+
   def apply_by_del(self, data: np.ndarray) -> np.ndarray:
     assert data.shape == self.mask.shape
     data = data[~self.mask]

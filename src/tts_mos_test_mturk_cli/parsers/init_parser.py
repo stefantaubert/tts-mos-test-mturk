@@ -1,5 +1,4 @@
 from argparse import ArgumentParser, Namespace
-from logging import Logger
 
 from tts_mos_test_mturk.evaluation_data import EvaluationData
 from tts_mos_test_mturk_cli.argparse_helper import parse_data_frame, parse_path
