@@ -49,10 +49,10 @@ def get_data(data: EvaluationData, masks: List[MaskBase]):
 
   wmask = factory.merge_masks_into_wmask(masks)
   amask = factory.merge_masks_into_amask(masks)
-  omask = factory.merge_masks_into_omask(masks)
+  rmask = factory.merge_masks_into_rmask(masks)
 
-  os = data.get_os()
-  omask.apply_by_nan(os)
+  ratings = data.get_ratings()
+  rmask.apply_by_nan(ratings)
 
   stats: Dict[str, WorkerEntry] = {}
 

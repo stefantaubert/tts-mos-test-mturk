@@ -13,7 +13,7 @@ from tts_mos_test_mturk.masking.masks import MaskBase
 
 @dataclass
 class WorkerEntry:
-  opinion_scores: List[float] = field(default_factory=list)
+  ratings: List[float] = field(default_factory=list)
   in_ear: int = 0
   over_ear: int = 0
   laptop: int = 0
@@ -21,37 +21,37 @@ class WorkerEntry:
   masked: int = 0
 
   @property
-  def min_os(self) -> float:
-    if len(self.opinion_scores) == 0:
+  def min_ratings(self) -> float:
+    if len(self.ratings) == 0:
       return np.nan
-    return np.min(self.opinion_scores)
+    return np.min(self.ratings)
 
   @property
-  def max_os(self) -> float:
-    if len(self.opinion_scores) == 0:
+  def max_ratings(self) -> float:
+    if len(self.ratings) == 0:
       return np.nan
-    return np.max(self.opinion_scores)
+    return np.max(self.ratings)
 
   @property
-  def mean_os(self) -> float:
-    if len(self.opinion_scores) == 0:
+  def mean_ratings(self) -> float:
+    if len(self.ratings) == 0:
       return np.nan
-    return np.mean(self.opinion_scores)
+    return np.mean(self.ratings)
 
   @property
-  def std_os(self) -> float:
-    if len(self.opinion_scores) == 0:
+  def std_ratings(self) -> float:
+    if len(self.ratings) == 0:
       return np.nan
-    return np.std(self.opinion_scores)
+    return np.std(self.ratings)
 
 
 def get_worker_stats(data: EvaluationData, masks: List[MaskBase]):
   factory = data.get_mask_factory()
 
-  omask = factory.merge_masks_into_omask(masks)
+  rmask = factory.merge_masks_into_rmask(masks)
 
-  os = data.get_os()
-  omask.apply_by_nan(os)
+  ratings = data.get_ratings()
+  rmask.apply_by_nan(ratings)
 
   stats: Dict[str, Dict[str, WorkerEntry]] = {}
 
@@ -66,7 +66,7 @@ def get_worker_stats(data: EvaluationData, masks: List[MaskBase]):
     w_i = data.workers.get_loc(data_point.worker_id)
     a_i = data.algorithms.get_loc(data_point.algorithm)
     f_i = data.files.get_loc(data_point.file)
-    o_is_masked = omask.mask[a_i, w_i, f_i]
+    o_is_masked = rmask.mask[a_i, w_i, f_i]
     if o_is_masked:
       entry.masked += 1
       continue
@@ -81,7 +81,7 @@ def get_worker_stats(data: EvaluationData, masks: List[MaskBase]):
       assert data_point.listening_device == DEVICE_DESKTOP
       entry.desktop += 1
 
-    entry.opinion_scores.append(data_point.opinion_score)
+    entry.ratings.append(data_point.rating)
 
   return stats
 
@@ -90,7 +90,7 @@ def stats_to_df(stats: Dict[str, Dict[str, WorkerEntry]]) -> pd.DataFrame:
   csv_data = []
   for algorithm, xx in stats.items():
     for worker, entry in xx.items():
-      mos_counts = Counter(entry.opinion_scores)
+      mos_counts = Counter(entry.ratings)
       data_entry = OrderedDict((
         ("Algorithm", algorithm),
         ("WorkerId", worker),

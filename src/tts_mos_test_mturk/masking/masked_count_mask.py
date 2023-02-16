@@ -7,26 +7,26 @@ from tts_mos_test_mturk.logging import get_detail_logger
 from tts_mos_test_mturk.statistics.update_stats import print_stats_masks
 
 
-def mask_scores_by_masked_count(data: EvaluationData, mask_names: Set[str], ref_masks: Set[str], percent: float, output_mask_name: str):
+def mask_ratings_by_masked_count(data: EvaluationData, mask_names: Set[str], ref_masks: Set[str], percent: float, output_mask_name: str):
   dlogger = get_detail_logger()
   factory = data.get_mask_factory()
   masks = data.get_masks_from_names(mask_names)
   ref_masks = data.get_masks_from_names(ref_masks)
-  ref_omask = factory.merge_masks_into_omask(ref_masks)
+  ref_rmask = factory.merge_masks_into_rmask(ref_masks)
 
-  omask = factory.merge_masks_into_omask(masks)
-  omask.apply_by_false(ref_omask.mask)
+  rmask = factory.merge_masks_into_rmask(masks)
+  rmask.apply_by_false(ref_rmask.mask)
 
-  outlier_workers_count = get_workers_masked_os_count(ref_omask.mask)
+  outlier_workers_count = get_workers_masked_os_count(ref_rmask.mask)
   total_count = np.sum(outlier_workers_count)
   if total_count == 0:
-    dlogger.info("No masked opinion scores exist!")
+    dlogger.info("No masked ratings exist!")
   else:
     for w_i, worker in enumerate(data.workers):
       dlogger.info(
-        f"Worker {worker} has {outlier_workers_count[w_i]/total_count*100:.2f}% of outlying scores (#{outlier_workers_count[w_i]}/{total_count})")
+        f"Worker {worker} has {outlier_workers_count[w_i]/total_count*100:.2f}% of outlying ratings (#{outlier_workers_count[w_i]}/{total_count})")
 
-  outlier_workers_np_mask = get_workers_percent_mask(ref_omask.mask, percent)
+  outlier_workers_np_mask = get_workers_percent_mask(ref_rmask.mask, percent)
   outlier_wmask = factory.convert_ndarray_to_wmask(outlier_workers_np_mask)
   data.add_or_update_mask(output_mask_name, outlier_wmask)
   print_stats_masks(data, masks, [outlier_wmask])

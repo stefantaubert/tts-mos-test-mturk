@@ -6,20 +6,20 @@ import numpy as np
 from tts_mos_test_mturk.calculation.mos_variance import compute_alg_mos_ci95
 
 
-def load_opinion_scores_from_json(path: Path) -> np.ndarray:
+def load_ratings_from_json(path: Path) -> np.ndarray:
   with open(path, "r", encoding="utf-8") as f:
-    opinion_scores_list = json.load(f)
+    ratings_list = json.load(f)
 
-  opinion_scores = np.array(opinion_scores_list, dtype=np.float32)
-  opinion_scores[opinion_scores == 0] = np.nan
-  return opinion_scores
+  ratings = np.array(ratings_list, dtype=np.float32)
+  ratings[ratings == 0] = np.nan
+  return ratings
 
 
 def test_blizzard_crowdmos1_hp():
   path = Path("src/tts_mos_test_mturk_tests/calculations/mos_variance_py/blizzard_crowdmos1_hp.json")
-  opinion_scores = load_opinion_scores_from_json(path)
+  ratings = load_ratings_from_json(path)
 
-  result = compute_alg_mos_ci95(opinion_scores)
+  result = compute_alg_mos_ci95(ratings)
 
   np.testing.assert_allclose(result, [
     [
@@ -33,9 +33,9 @@ def test_blizzard_crowdmos1_hp():
 
 def test_blizzard_crowdmos2_hp():
   path = Path("src/tts_mos_test_mturk_tests/calculations/mos_variance_py/blizzard_crowdmos2_hp.json")
-  opinion_scores = load_opinion_scores_from_json(path)
+  ratings = load_ratings_from_json(path)
 
-  result = compute_alg_mos_ci95(opinion_scores)
+  result = compute_alg_mos_ci95(ratings)
 
   np.testing.assert_allclose(result, [
     [
@@ -49,9 +49,9 @@ def test_blizzard_crowdmos2_hp():
 
 def test_blizzard_crowdmos2_ls():
   path = Path("src/tts_mos_test_mturk_tests/calculations/mos_variance_py/blizzard_crowdmos2_ls.json")
-  opinion_scores = load_opinion_scores_from_json(path)
+  ratings = load_ratings_from_json(path)
 
-  result = compute_alg_mos_ci95(opinion_scores)
+  result = compute_alg_mos_ci95(ratings)
 
   np.testing.assert_allclose(result, [
     [
@@ -65,9 +65,9 @@ def test_blizzard_crowdmos2_ls():
 
 def test_blizzard_paid_participants():
   path = Path("src/tts_mos_test_mturk_tests/calculations/mos_variance_py/blizzard_paid_participants.json")
-  opinion_scores = load_opinion_scores_from_json(path)
+  ratings = load_ratings_from_json(path)
 
-  result = compute_alg_mos_ci95(opinion_scores)
+  result = compute_alg_mos_ci95(ratings)
 
   np.testing.assert_allclose(result, [
     [
@@ -81,9 +81,9 @@ def test_blizzard_paid_participants():
 
 def test_blizzard_online_volunteers():
   path = Path("src/tts_mos_test_mturk_tests/calculations/mos_variance_py/blizzard_online_volunteers.json")
-  opinion_scores = load_opinion_scores_from_json(path)
+  ratings = load_ratings_from_json(path)
 
-  result = compute_alg_mos_ci95(opinion_scores)
+  result = compute_alg_mos_ci95(ratings)
 
   np.testing.assert_allclose(result, [
     [

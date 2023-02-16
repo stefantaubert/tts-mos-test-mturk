@@ -64,7 +64,7 @@ def test_component():
   assert data.n_assignments == 2
   assert data.assignments == OrderedSet(("assignment0", "assignment1"))
 
-  np.testing.assert_equal(data.get_os(), [
+  np.testing.assert_equal(data.get_ratings(), [
     [
       [1, 5, _],
       [_, _, _],

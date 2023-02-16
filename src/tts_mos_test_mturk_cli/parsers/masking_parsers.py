@@ -2,8 +2,8 @@ from argparse import ArgumentParser, Namespace
 
 from tts_mos_test_mturk.masking.assignment_count_mask import mask_workers_by_assignment_count
 from tts_mos_test_mturk.masking.listening_device_mask import mask_assignments_by_listening_device
-from tts_mos_test_mturk.masking.masked_count_mask import mask_scores_by_masked_count
-from tts_mos_test_mturk.masking.outlier_mask import mask_outlying_scores
+from tts_mos_test_mturk.masking.masked_count_mask import mask_ratings_by_masked_count
+from tts_mos_test_mturk.masking.outlier_mask import mask_outlying_ratings
 from tts_mos_test_mturk.masking.work_time_mask import mask_assignments_by_work_time
 from tts_mos_test_mturk.masking.worker_correlation_mask import (mask_workers_by_correlation,
                                                                 mask_workers_by_correlation_percent)
@@ -53,38 +53,38 @@ def get_mask_assignments_by_work_time_parser(parser: ArgumentParser):
   return main
 
 
-def get_mask_outlying_scores_parser(parser: ArgumentParser):
-  parser.description = "Mask outlying opinion scores of each algorithm."
+def get_mask_outlying_ratings_parser(parser: ArgumentParser):
+  parser.description = "Mask outlying ratings of each algorithm."
   add_project_argument(parser)
   add_masks_argument(parser)
   parser.add_argument("threshold", type=parse_positive_float, metavar="N-STD",
-                      help="mask outlying opinion scores that lie N-STD standard deviations away from the mean of the respective algorithm.")
+                      help="mask outlying ratings that lie N-STD standard deviations away from the mean of the respective algorithm.")
   add_output_mask_argument(parser)
   add_dry_argument(parser)
 
   def main(ns: Namespace) -> None:
     ensure_masks_exist(ns.project, ns.masks)
-    mask_outlying_scores(ns.project, ns.masks, ns.threshold, ns.output_mask)
+    mask_outlying_ratings(ns.project, ns.masks, ns.threshold, ns.output_mask)
 
     if not ns.dry:
       save_project(ns.project)
   return main
 
 
-def get_mask_scores_by_masked_count_parser(parser: ArgumentParser):
-  parser.description = "Mask workers based on their percentual amount of masked opinion scores compared to all masked scores."
+def get_mask_ratings_by_masked_count_parser(parser: ArgumentParser):
+  parser.description = "Mask workers based on their percentual amount of masked ratings compared to all masked ratings."
   add_project_argument(parser)
   add_masks_argument(parser)
   parser.add_argument("ref_masks", type=parse_non_empty_or_whitespace, nargs="+",
-                      metavar="REF-MASK", help="masks on which the masked opinion scores should be counted", action=ConvertToSetAction)
+                      metavar="REF-MASK", help="masks on which the masked ratings should be counted", action=ConvertToSetAction)
   parser.add_argument("percent", type=parse_positive_float, metavar="PERCENT",
-                      help=f"mask workers that have at least PERCENT % of all masked opinion scores")
+                      help=f"mask workers that have at least PERCENT % of all masked ratings")
   add_output_mask_argument(parser)
   add_dry_argument(parser)
 
   def main(ns: Namespace) -> None:
     ensure_masks_exist(ns.project, ns.masks)
-    mask_scores_by_masked_count(ns.project, ns.masks, ns.ref_masks, ns.percent, ns.output_mask)
+    mask_ratings_by_masked_count(ns.project, ns.masks, ns.ref_masks, ns.percent, ns.output_mask)
 
     if not ns.dry:
       save_project(ns.project)
@@ -152,4 +152,4 @@ def get_mask_workers_by_correlation_percent_parser(parser: ArgumentParser):
 
 def add_mode_argument(parser: ArgumentParser) -> None:
   parser.add_argument("--mode", type=str, choices=["sentence", "algorithm",
-                      "both"], default="both", help="mode to calculate the correlations: sentence -> the correlation of the opinion scores of each audio url from a worker in comparison to the mean of the opinion scores of the other workers; algorithm -> the correlation of the mean opinion scores from one worker compared to the mean of all other workers for each algorithm; both -> the mean of sentence and algorithm correlation")
+                      "both"], default="both", help="mode to calculate the correlations: sentence -> the correlation of the ratings of each audio url from a worker in comparison to the mean of the ratings of the other workers; algorithm -> the correlation of the mean ratings from one worker compared to the mean of all other workers for each algorithm; both -> the mean of sentence and algorithm correlation")

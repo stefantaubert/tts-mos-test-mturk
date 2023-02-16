@@ -12,11 +12,11 @@ def get_mos_df(data: EvaluationData, mask_names: Set[str]) -> pd.DataFrame:
   masks = data.get_masks_from_names(mask_names)
   factory = data.get_mask_factory()
 
-  os = data.get_os()
-  omask = factory.merge_masks_into_omask(masks)
-  omask.apply_by_nan(os)
+  ratings = data.get_ratings()
+  rmask = factory.merge_masks_into_rmask(masks)
+  rmask.apply_by_nan(ratings)
 
-  alg_mos_ci95 = compute_alg_mos_ci95(os)
+  alg_mos_ci95 = compute_alg_mos_ci95(ratings)
 
   scores: List[Dict] = []
   for algo_i, alg_name in enumerate(data.algorithms):
@@ -116,19 +116,19 @@ def generate_ground_truth_table(data: EvaluationData, mask_names: Set[str]) -> p
   masks = data.get_masks_from_names(mask_names)
   factory = data.get_mask_factory()
 
-  omask = factory.merge_masks_into_omask(masks)
+  rmask = factory.merge_masks_into_rmask(masks)
 
   results: List[Dict[str, Any]] = []
   for data_point in data.data:
     w_i = data.workers.get_loc(data_point.worker_id)
     a_i = data.algorithms.get_loc(data_point.algorithm)
     s_i = data.files.get_loc(data_point.file)
-    is_masked = omask.mask[a_i, w_i, s_i]
+    is_masked = rmask.mask[a_i, w_i, s_i]
     line = OrderedDict((
         ("WorkerId", data_point.worker_id),
         ("Algorithm", data_point.algorithm),
         ("File", data_point.file),
-        ("Score", data_point.opinion_score),
+        ("Score", data_point.rating),
         ("AssignmentWorktime (s)", data_point.work_time),
         ("Device", data_point.listening_device),
         ("AssignmentState", data_point.state),

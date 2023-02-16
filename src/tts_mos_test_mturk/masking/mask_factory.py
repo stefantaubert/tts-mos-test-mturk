@@ -5,7 +5,7 @@ import numpy as np
 from ordered_set import OrderedSet
 
 from tts_mos_test_mturk.data_point import DataPoint
-from tts_mos_test_mturk.masking.masks import AssignmentMask, MaskBase, OpinionScoreMask, WorkerMask
+from tts_mos_test_mturk.masking.masks import AssignmentsMask, MaskBase, RatingsMask, WorkersMask
 
 
 class MaskFactory():
@@ -16,67 +16,67 @@ class MaskFactory():
     self.assignments = assignments
     self.data_points = data_points
 
-  def get_omask(self) -> OpinionScoreMask:
+  def get_rmask(self) -> RatingsMask:
     mask = np.full(
       (len(self.algorithms), len(self.workers), len(self.files)),
       fill_value=False,
       dtype=bool,
     )
-    return OpinionScoreMask(mask)
+    return RatingsMask(mask)
 
-  def get_amask(self) -> AssignmentMask:
+  def get_amask(self) -> AssignmentsMask:
     mask = np.full(
       len(self.assignments),
       fill_value=False,
       dtype=bool,
     )
-    return AssignmentMask(mask)
+    return AssignmentsMask(mask)
 
-  def get_wmask(self) -> WorkerMask:
+  def get_wmask(self) -> WorkersMask:
     mask = np.full(
       len(self.workers),
       fill_value=False,
       dtype=bool,
     )
-    return WorkerMask(mask)
+    return WorkersMask(mask)
 
-  def convert_ndarray_to_omask(self, array: np.ndarray) -> OpinionScoreMask:
+  def convert_ndarray_to_rmask(self, array: np.ndarray) -> RatingsMask:
     if array.shape != (len(self.algorithms), len(self.workers), len(self.files)):
       raise ValueError("Invalid format!")
     if array.dtype != bool:
       raise ValueError("Invalid format!")
-    return OpinionScoreMask(array)
+    return RatingsMask(array)
 
-  def convert_ndarray_to_amask(self, array: np.ndarray) -> AssignmentMask:
+  def convert_ndarray_to_amask(self, array: np.ndarray) -> AssignmentsMask:
     if array.shape != (len(self.assignments),):
       raise ValueError("Invalid format!")
     if array.dtype != bool:
       raise ValueError("Invalid format!")
-    return AssignmentMask(array)
+    return AssignmentsMask(array)
 
-  def convert_ndarray_to_wmask(self, array: np.ndarray) -> WorkerMask:
+  def convert_ndarray_to_wmask(self, array: np.ndarray) -> WorkersMask:
     if array.shape != (len(self.workers),):
       raise ValueError("Invalid format!")
     if array.dtype != bool:
       raise ValueError("Invalid format!")
-    return WorkerMask(array)
+    return WorkersMask(array)
 
-  def convert_mask_to_omask(self, mask: MaskBase) -> OpinionScoreMask:
-    if isinstance(mask, WorkerMask):
+  def convert_mask_to_rmask(self, mask: MaskBase) -> RatingsMask:
+    if isinstance(mask, WorkersMask):
       mask = self.convert_mask_to_amask(mask)
-    if isinstance(mask, AssignmentMask):
-      mask = self.convert_amask_to_omask(mask)
-    assert isinstance(mask, OpinionScoreMask)
+    if isinstance(mask, AssignmentsMask):
+      mask = self.convert_amask_to_rmask(mask)
+    assert isinstance(mask, RatingsMask)
     return mask
 
-  def merge_masks_into_omask(self, masks: List[MaskBase]) -> OpinionScoreMask:
-    result = self.get_omask()
+  def merge_masks_into_rmask(self, masks: List[MaskBase]) -> RatingsMask:
+    result = self.get_rmask()
     for mask in masks:
-      mask = self.convert_mask_to_omask(mask)
+      mask = self.convert_mask_to_rmask(mask)
       result.combine_mask(mask)
     return result
 
-  def get_opinion_scores_assignments_index_matrix(self) -> np.ndarray:
+  def get_ratings_assignments_index_matrix(self) -> np.ndarray:
     res = np.full(
       (len(self.algorithms), len(self.workers), len(self.files)),
       fill_value=np.nan,
@@ -91,21 +91,21 @@ class MaskFactory():
       res[alg_i, worker_i, file_i] = ass_i
     return res
 
-  def convert_amask_to_omask(self, amask: AssignmentMask) -> OpinionScoreMask:
-    opinion_scores_assignments_index_matrix = self.get_opinion_scores_assignments_index_matrix()
-    new_mask = np.isin(opinion_scores_assignments_index_matrix, amask.masked_indices)
-    result = OpinionScoreMask(new_mask)
+  def convert_amask_to_rmask(self, amask: AssignmentsMask) -> RatingsMask:
+    ratings_assignments_index_matrix = self.get_ratings_assignments_index_matrix()
+    new_mask = np.isin(ratings_assignments_index_matrix, amask.masked_indices)
+    result = RatingsMask(new_mask)
     return result
 
-  def convert_mask_to_amask(self, mask: MaskBase) -> AssignmentMask:
-    if isinstance(mask, OpinionScoreMask):
-      raise ValueError("OpinionScoreMasks can't be converted to AssignmentMasks!")
-    if isinstance(mask, WorkerMask):
+  def convert_mask_to_amask(self, mask: MaskBase) -> AssignmentsMask:
+    if isinstance(mask, RatingsMask):
+      raise ValueError("RatingsMasks can't be converted to AssignmentsMasks!")
+    if isinstance(mask, WorkersMask):
       mask = self.convert_wmask_to_amask(mask)
-    assert isinstance(mask, AssignmentMask)
+    assert isinstance(mask, AssignmentsMask)
     return mask
 
-  def merge_masks_into_amask(self, masks: List[MaskBase]) -> AssignmentMask:
+  def merge_masks_into_amask(self, masks: List[MaskBase]) -> AssignmentsMask:
     result = self.get_amask()
     for mask in masks:
       try:
@@ -128,21 +128,21 @@ class MaskFactory():
       res[ass_i] = worker_i
     return res
 
-  def convert_wmask_to_amask(self, wmask: WorkerMask) -> AssignmentMask:
+  def convert_wmask_to_amask(self, wmask: WorkersMask) -> AssignmentsMask:
     result = self.get_amask()
     assignments_worker_index_matrix = self.get_assignments_worker_index_matrix()
     result.mask = np.isin(assignments_worker_index_matrix, wmask.masked_indices)
     return result
 
-  def convert_mask_to_wmask(self, mask: MaskBase) -> WorkerMask:
-    if isinstance(mask, OpinionScoreMask):
-      raise ValueError("OpinionScoreMasks can't be converted to WorkerMasks!")
-    if isinstance(mask, AssignmentMask):
-      raise ValueError("AssignmentMasks can't be converted to WorkerMasks!")
-    assert isinstance(mask, WorkerMask)
+  def convert_mask_to_wmask(self, mask: MaskBase) -> WorkersMask:
+    if isinstance(mask, RatingsMask):
+      raise ValueError("RatingsMasks can't be converted to WorkersMasks!")
+    if isinstance(mask, AssignmentsMask):
+      raise ValueError("AssignmentsMasks can't be converted to WorkersMasks!")
+    assert isinstance(mask, WorkersMask)
     return mask
 
-  def merge_masks_into_wmask(self, masks: List[WorkerMask]) -> WorkerMask:
+  def merge_masks_into_wmask(self, masks: List[WorkersMask]) -> WorkersMask:
     result = self.get_wmask()
     for mask in masks:
       try:

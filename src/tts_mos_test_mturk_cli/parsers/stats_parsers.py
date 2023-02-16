@@ -41,7 +41,7 @@ def get_export_wa_stats_parser(parser: ArgumentParser):
 
 
 def get_stats_parser(parser: ArgumentParser):
-  parser.description = "Print masks statistics regarding masked workers, assignments and opinion scores."
+  parser.description = "Print masks statistics regarding masked workers, assignments and ratings."
   add_project_argument(parser)
   add_masks_argument(parser)
 
@@ -109,7 +109,7 @@ def get_export_aw_stats_parser(parser: ArgumentParser):
 
 
 def get_export_gt_parser(parser: ArgumentParser):
-  parser.description = "Print all opinion scores including all metadata."
+  parser.description = "Print all ratings including all metadata."
   add_project_argument(parser)
   add_masks_argument(parser)
   add_optional_output_argument(parser)

@@ -5,7 +5,7 @@ from tts_mos_test_mturk.calculation.correlations import get_worker_mos_correlati
 
 def test_component():
   _ = np.nan
-  opinion_scores = np.array([
+  ratings = np.array([
     [
       [5, 4, 1],
       [4, 5, 2],
@@ -40,7 +40,7 @@ def test_component():
     ],
   ])
 
-  r = get_worker_mos_correlations(opinion_scores)
+  r = get_worker_mos_correlations(ratings)
 
   assert r[0] == 0.39630561749956444
   assert r[1] == 0.6054909989887703
@@ -52,7 +52,7 @@ def test_component():
 
 
 def test_one_algorithm_return_nan_for_each_worker():
-  opinion_scores = np.array([
+  ratings = np.array([
     [
       [5, 4, 4],
       [1, 2, 1],
@@ -61,7 +61,7 @@ def test_one_algorithm_return_nan_for_each_worker():
     ]
   ])
 
-  r = get_worker_mos_correlations(opinion_scores)
+  r = get_worker_mos_correlations(ratings)
 
   assert r[0] == -0.49999999999999994
   assert r[1] == 0.5000000000000001
@@ -71,7 +71,7 @@ def test_one_algorithm_return_nan_for_each_worker():
 
 
 def test_all_nan_return_for_each_worker():
-  opinion_scores = np.array([
+  ratings = np.array([
     [
       [np.nan, np.nan],
       [np.nan, np.nan],
@@ -82,7 +82,7 @@ def test_all_nan_return_for_each_worker():
     ],
   ])
 
-  r = get_worker_mos_correlations(opinion_scores)
+  r = get_worker_mos_correlations(ratings)
 
   assert np.isnan(r[0])
   assert np.isnan(r[1])
@@ -90,7 +90,7 @@ def test_all_nan_return_for_each_worker():
 
 
 def test_positive_correlation():
-  opinion_scores = np.array([
+  ratings = np.array([
     [
       [5, 4, 4],
       [4, 5, 5],
@@ -101,7 +101,7 @@ def test_positive_correlation():
     ],
   ])
 
-  r = get_worker_mos_correlations(opinion_scores)
+  r = get_worker_mos_correlations(ratings)
 
   assert r[0] == 0.9122424289477238
   assert r[1] == 0.9122424289477238
@@ -109,7 +109,7 @@ def test_positive_correlation():
 
 
 def test_negative_correlation():
-  opinion_scores = np.array([
+  ratings = np.array([
     [
       [5, 4, 4],
       [1, 2, 2],
@@ -120,7 +120,7 @@ def test_negative_correlation():
     ],
   ])
 
-  r = get_worker_mos_correlations(opinion_scores)
+  r = get_worker_mos_correlations(ratings)
 
   assert r[0] == -0.949719013397517
   assert r[1] == -0.9497190133975169
@@ -128,7 +128,7 @@ def test_negative_correlation():
 
 
 def test_one_negative_two_positive_correlation():
-  opinion_scores = np.array([
+  ratings = np.array([
     [
       [5, 4, 4, 4],
       [1, 2, 2, 1],
@@ -141,7 +141,7 @@ def test_one_negative_two_positive_correlation():
     ],
   ])
 
-  r = get_worker_mos_correlations(opinion_scores)
+  r = get_worker_mos_correlations(ratings)
 
   assert r[0] == -0.9444444444444444
   assert r[1] == 0.6012739367083666
@@ -150,7 +150,7 @@ def test_one_negative_two_positive_correlation():
 
 
 def test_one_almost_zero_two_negative_correlation():
-  opinion_scores = np.array([
+  ratings = np.array([
     [
       [5, 4, 4, 4],
       [1, 2, 2, 1],
@@ -168,7 +168,7 @@ def test_one_almost_zero_two_negative_correlation():
     ],
   ])
 
-  r = get_worker_mos_correlations(opinion_scores)
+  r = get_worker_mos_correlations(ratings)
 
   assert r[0] == -0.6545894593638613
   assert r[1] == -0.8608101960290726

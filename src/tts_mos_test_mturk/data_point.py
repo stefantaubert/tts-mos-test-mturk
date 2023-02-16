@@ -14,7 +14,7 @@ STATE_APPROVED = "Approved"
 
 @dataclass
 class DataPoint():
-  opinion_score: Literal[1, 2, 3, 4, 5]
+  rating: Literal[1, 2, 3, 4, 5]
   worker_id: str
   assignment_id: str
   algorithm: str
@@ -44,7 +44,7 @@ def parse_data_points(results_dict: Dict, alg_dict: Dict, file_dict: Dict) -> Ge
         audio_url=audio_url,
         file=audio_file,
         listening_device=lt,
-        opinion_score=mos_rating,
+        rating=mos_rating,
         state=row["AssignmentStatus"],
         work_time=work_time,
       )

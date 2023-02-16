@@ -10,25 +10,25 @@ def get_sentence_mos_correlation(worker: int, Z: np.ndarray) -> float:
   n_workers = Z.shape[0]
   n_sentences = Z.shape[1]
 
-  scores = np.empty((2, n_sentences))
+  mos_ratings = np.empty((2, n_sentences))
   others = [w_i for w_i in range(n_workers) if w_i != worker]
 
   for sentence_i in range(n_sentences):
-    scores[0, sentence_i] = Z[worker, sentence_i]
-    scores[1, sentence_i] = compute_mos(Z[others, sentence_i])
+    mos_ratings[0, sentence_i] = Z[worker, sentence_i]
+    mos_ratings[1, sentence_i] = compute_mos(Z[others, sentence_i])
 
-  return get_corrcoef(scores)
+  return get_corrcoef(mos_ratings)
 
 
-def get_sentence_mos_correlation_3dim(worker: int, opinion_scores: np.ndarray) -> float:
-  assert len(opinion_scores.shape) == 3
-  Z = np.concatenate(opinion_scores, axis=1)
+def get_sentence_mos_correlation_3dim(worker: int, ratings: np.ndarray) -> float:
+  assert len(ratings.shape) == 3
+  Z = np.concatenate(ratings, axis=1)
   return get_sentence_mos_correlation(worker, Z)
 
 
-def get_sentence_mos_correlations_3dim(opinion_scores: np.ndarray) -> np.ndarray:
-  n_workers = opinion_scores.shape[1]
-  Z = np.concatenate(opinion_scores, axis=1)
+def get_sentence_mos_correlations_3dim(ratings: np.ndarray) -> np.ndarray:
+  n_workers = ratings.shape[1]
+  Z = np.concatenate(ratings, axis=1)
 
   correlations = np.empty(n_workers)
   for worker_i in range(n_workers):
@@ -37,27 +37,27 @@ def get_sentence_mos_correlations_3dim(opinion_scores: np.ndarray) -> np.ndarray
   return correlations
 
 
-def get_algorithm_mos_correlation(worker: int, opinion_scores: np.ndarray) -> float:
-  assert len(opinion_scores.shape) == 3
-  n_alg = opinion_scores.shape[0]
-  n_workers = opinion_scores.shape[1]
+def get_algorithm_mos_correlation(worker: int, ratings: np.ndarray) -> float:
+  assert len(ratings.shape) == 3
+  n_alg = ratings.shape[0]
+  n_workers = ratings.shape[1]
 
-  scores = np.empty((2, n_alg))
+  mos_ratings = np.empty((2, n_alg))
   others = [w_i for w_i in range(n_workers) if w_i != worker]
 
   for alg_i in range(n_alg):
-    scores[0, alg_i] = compute_mos(opinion_scores[alg_i, worker, :])
-    scores[1, alg_i] = compute_mos(opinion_scores[alg_i, others, :])
+    mos_ratings[0, alg_i] = compute_mos(ratings[alg_i, worker, :])
+    mos_ratings[1, alg_i] = compute_mos(ratings[alg_i, others, :])
 
-  return get_corrcoef(scores)
+  return get_corrcoef(mos_ratings)
 
 
-def get_worker_mos_correlations(opinion_scores: np.ndarray) -> np.ndarray:
-  n_workers = opinion_scores.shape[1]
+def get_worker_mos_correlations(ratings: np.ndarray) -> np.ndarray:
+  n_workers = ratings.shape[1]
 
   correlations = np.empty((2, n_workers))
-  correlations[0, :] = get_algorithm_mos_correlations(opinion_scores)
-  correlations[1, :] = get_sentence_mos_correlations_3dim(opinion_scores)
+  correlations[0, :] = get_algorithm_mos_correlations(ratings)
+  correlations[1, :] = get_sentence_mos_correlations_3dim(ratings)
 
   # print(correlations)
   worker_correlations = np.nanmean(correlations, axis=0)
@@ -65,22 +65,22 @@ def get_worker_mos_correlations(opinion_scores: np.ndarray) -> np.ndarray:
   return worker_correlations
 
 
-def get_mos_correlations(opinion_scores: np.ndarray, mode: Literal["sentence", "algorithm", "both"]) -> np.ndarray:
+def get_mos_correlations(ratings: np.ndarray, mode: Literal["sentence", "algorithm", "both"]) -> np.ndarray:
   if mode == "sentence":
-    return get_sentence_mos_correlations_3dim(opinion_scores)
+    return get_sentence_mos_correlations_3dim(ratings)
   if mode == "algorithm":
-    return get_algorithm_mos_correlations(opinion_scores)
+    return get_algorithm_mos_correlations(ratings)
   if mode == "both":
-    return get_worker_mos_correlations(opinion_scores)
+    return get_worker_mos_correlations(ratings)
   raise NotImplementedError()
 
 
-def get_algorithm_mos_correlations(opinion_scores: np.ndarray) -> np.ndarray:
-  n_workers = opinion_scores.shape[1]
+def get_algorithm_mos_correlations(ratings: np.ndarray) -> np.ndarray:
+  n_workers = ratings.shape[1]
 
   correlations = np.empty(n_workers)
   for worker_i in range(n_workers):
-    correlations[worker_i] = get_algorithm_mos_correlation(worker_i, opinion_scores)
+    correlations[worker_i] = get_algorithm_mos_correlation(worker_i, ratings)
 
   return correlations
 

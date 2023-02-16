@@ -9,27 +9,27 @@ def matlab_tinv(p: float, df: int) -> float:
   return result
 
 
-def compute_alg_mos(opinion_scores: np.ndarray) -> np.ndarray:
-  n_algorithms = opinion_scores.shape[0]
+def compute_alg_mos(ratings: np.ndarray) -> np.ndarray:
+  n_algorithms = ratings.shape[0]
   result = np.empty(n_algorithms, dtype=np.float32)
   for algo_i in range(n_algorithms):
-    result[algo_i] = compute_mos(opinion_scores[algo_i])
+    result[algo_i] = compute_mos(ratings[algo_i])
   return result
 
 
-def compute_alg_ci95(opinion_scores: np.ndarray) -> np.ndarray:
-  n_algorithms = opinion_scores.shape[0]
+def compute_alg_ci95(ratings: np.ndarray) -> np.ndarray:
+  n_algorithms = ratings.shape[0]
   result = np.empty(n_algorithms, dtype=np.float32)
   for algo_i in range(n_algorithms):
-    result[algo_i] = compute_ci95(opinion_scores[algo_i])
+    result[algo_i] = compute_ci95(ratings[algo_i])
   return result
 
 
-def compute_alg_mos_ci95(opinion_scores: np.ndarray) -> np.ndarray:
-  n_algorithms = opinion_scores.shape[0]
+def compute_alg_mos_ci95(ratings: np.ndarray) -> np.ndarray:
+  n_algorithms = ratings.shape[0]
   result = np.empty((2, n_algorithms), dtype=np.float32)
-  result[0, :] = compute_alg_mos(opinion_scores)
-  result[1, :] = compute_alg_ci95(opinion_scores)
+  result[0, :] = compute_alg_mos(ratings)
+  result[1, :] = compute_alg_ci95(ratings)
   return result
 
 

@@ -52,13 +52,13 @@ class MaskBase():
     return result
 
 
-class OpinionScoreMask(MaskBase):
+class RatingsMask(MaskBase):
   pass
 
 
-class AssignmentMask(MaskBase):
+class AssignmentsMask(MaskBase):
   pass
 
 
-class WorkerMask(MaskBase):
+class WorkersMask(MaskBase):
   pass

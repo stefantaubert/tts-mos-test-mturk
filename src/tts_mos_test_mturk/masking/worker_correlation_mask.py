@@ -12,11 +12,11 @@ def mask_workers_by_correlation(data: EvaluationData, mask_names: Set[str], thre
   masks = data.get_masks_from_names(mask_names)
   factory = data.get_mask_factory()
 
-  opinion_scores = data.get_os()
-  opinion_scores_mask = factory.merge_masks_into_omask(masks)
-  opinion_scores_mask.apply_by_nan(opinion_scores)
+  ratings = data.get_ratings()
+  ratings_mask = factory.merge_masks_into_rmask(masks)
+  ratings_mask.apply_by_nan(ratings)
 
-  wcorrelations = get_mos_correlations(opinion_scores, mode)
+  wcorrelations = get_mos_correlations(ratings, mode)
 
   bad_worker_np_mask = wcorrelations < threshold
   bad_worker_mask = factory.convert_ndarray_to_wmask(bad_worker_np_mask)
@@ -29,11 +29,11 @@ def mask_workers_by_correlation_percent(data: EvaluationData, mask_names: Set[st
   masks = data.get_masks_from_names(mask_names)
   factory = data.get_mask_factory()
 
-  os = data.get_os()
-  omask = factory.merge_masks_into_omask(masks)
-  omask.apply_by_nan(os)
+  ratings = data.get_ratings()
+  rmask = factory.merge_masks_into_rmask(masks)
+  rmask.apply_by_nan(ratings)
 
-  wcorrelations = get_mos_correlations(os, mode)
+  wcorrelations = get_mos_correlations(ratings, mode)
 
   windices = np.array(range(data.n_workers))
   wmask = factory.merge_masks_into_wmask(masks)

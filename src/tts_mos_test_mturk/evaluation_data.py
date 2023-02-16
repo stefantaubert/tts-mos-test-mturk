@@ -79,7 +79,7 @@ class EvaluationData():
     return len(self.workers)
 
   @property
-  def n_opinion_scores(self) -> int:
+  def n_ratings(self) -> int:
     return len(self.data)
 
   @property
@@ -107,7 +107,7 @@ class EvaluationData():
     result = MaskFactory(self.algorithms, self.workers, self.files, self.assignments, self.data)
     return result
 
-  def get_os(self) -> np.ndarray:
+  def get_ratings(self) -> np.ndarray:
     Z = np.full(
       (self.n_algorithms, self.n_workers, self.n_files),
       fill_value=np.nan,
@@ -117,5 +117,5 @@ class EvaluationData():
       alg_i = self.algorithms.get_loc(data_point.algorithm)
       worker_i = self.workers.get_loc(data_point.worker_id)
       file_i = self.files.get_loc(data_point.file)
-      Z[alg_i, worker_i, file_i] = data_point.opinion_score
+      Z[alg_i, worker_i, file_i] = data_point.rating
     return Z

@@ -50,9 +50,9 @@ def get_parsers():
   # workers mask-by-correlation
   yield "ignore-bad-workers", "ignore too bad workers", get_mask_workers_by_correlation_parser
   yield "ignore-bad-workers-percent", "ignore bad workers by percentage", get_mask_workers_by_correlation_percent_parser
-  yield "ignore-outliers", "ignore outliers", get_mask_outlying_scores_parser  # opinions mask-by-std
+  yield "ignore-outliers", "ignore outliers", get_mask_outlying_ratings_parser  # opinions mask-by-std
   # opinions mask-by-masked-count
-  yield "ignore-os-count", "ignore workers who overreach a specific percentage of all masked opinion scores", get_mask_scores_by_masked_count_parser
+  yield "ignore-os-count", "ignore workers who overreach a specific percentage of all masked ratings", get_mask_ratings_by_masked_count_parser
   yield "approve-via-api", "approve via API", get_api_approve_parser
   yield "reject-via-api", "reject via API", get_api_reject_parser
   yield "bonus-via-api", "bonus via API", get_api_bonus_parser
