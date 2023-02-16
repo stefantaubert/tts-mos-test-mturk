@@ -17,7 +17,7 @@ from tts_mos_test_mturk_cli.helper import save_project
 from tts_mos_test_mturk_cli.validation import ensure_masks_exist
 
 
-def get_mask_assignments_by_listening_device_parser(parser: ArgumentParser):
+def get_mask_assignments_by_device_parser(parser: ArgumentParser):
   parser.description = "Mask assignments by their listening devices."
   add_project_argument(parser)
   add_masks_argument(parser)
@@ -35,7 +35,7 @@ def get_mask_assignments_by_listening_device_parser(parser: ArgumentParser):
   return main
 
 
-def get_mask_assignments_by_work_time_parser(parser: ArgumentParser):
+def init_mask_assignments_by_work_time_parser(parser: ArgumentParser):
   parser.description = "Mask assignments by their work time."
   add_project_argument(parser)
   add_masks_argument(parser)
@@ -53,7 +53,7 @@ def get_mask_assignments_by_work_time_parser(parser: ArgumentParser):
   return main
 
 
-def get_mask_outlying_ratings_parser(parser: ArgumentParser):
+def init_mask_rating_outliers_parser(parser: ArgumentParser):
   parser.description = "Mask outlying ratings of each algorithm."
   add_project_argument(parser)
   add_masks_argument(parser)
@@ -71,7 +71,7 @@ def get_mask_outlying_ratings_parser(parser: ArgumentParser):
   return main
 
 
-def get_mask_ratings_by_masked_count_parser(parser: ArgumentParser):
+def init_workers_by_masked_ratings_count_parser(parser: ArgumentParser):
   parser.description = "Mask workers based on their percentual amount of masked ratings compared to all masked ratings."
   add_project_argument(parser)
   add_masks_argument(parser)
@@ -91,7 +91,7 @@ def get_mask_ratings_by_masked_count_parser(parser: ArgumentParser):
   return main
 
 
-def get_mask_workers_by_assignment_count_parser(parser: ArgumentParser):
+def init_mask_workers_by_assignments_count_parser(parser: ArgumentParser):
   parser.description = "Mask workers based on their amount of assignments."
   add_project_argument(parser)
   add_masks_argument(parser)
@@ -109,7 +109,7 @@ def get_mask_workers_by_assignment_count_parser(parser: ArgumentParser):
   return main
 
 
-def get_mask_workers_by_correlation_parser(parser: ArgumentParser):
+def init_mask_workers_by_correlation_parser(parser: ArgumentParser):
   parser.description = "Mask workers based on their sentence or algorithm correlation compared to other workers."
   add_project_argument(parser)
   add_masks_argument(parser)
@@ -128,7 +128,7 @@ def get_mask_workers_by_correlation_parser(parser: ArgumentParser):
   return main
 
 
-def get_mask_workers_by_correlation_percent_parser(parser: ArgumentParser):
+def init_mask_workers_by_correlation_percent_parser(parser: ArgumentParser):
   parser.description = "Mask workers based on their sentence or algorithm correlation compared to other workers (percentage-wise)."
   add_project_argument(parser)
   add_masks_argument(parser)

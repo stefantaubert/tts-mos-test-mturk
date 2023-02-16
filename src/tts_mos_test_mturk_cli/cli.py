@@ -9,7 +9,7 @@ from pathlib import Path
 from pkgutil import iter_modules
 from tempfile import gettempdir
 from time import perf_counter
-from typing import Callable, List
+from typing import Callable, Dict, Generator, List, Tuple
 
 from tts_mos_test_mturk.logging import (attach_boto_to_detail_logger,
                                         attach_urllib3_to_detail_logger, get_detail_logger,
@@ -27,35 +27,62 @@ __version__ = version(APP_NAME)
 INVOKE_HANDLER_VAR = "invoke_handler"
 DEFAULT_LOGGING_BUFFER_CAP = 1000000000
 
+Parsers = Generator[Tuple[str, str, Callable], None, None]
+
+
+Parsers = Generator[Tuple[str, str, Callable[[ArgumentParser],
+                                             Callable[..., None]]], None, None]
+
 
 def formatter(prog):
   return argparse.ArgumentDefaultsHelpFormatter(prog, max_help_position=40)
 
 
+def get_masks_parsers() -> Parsers:
+  yield "mask-workers-by-assignments-count", "mask workers by their count of assignments", init_mask_workers_by_assignments_count_parser
+  yield "mask-workers-by-masked-ratings-count", "mask workers by their count of masked ratings", init_workers_by_masked_ratings_count_parser
+  yield "mask-workers-by-correlation", "mask workers by their algorithm/sentence correlation", init_mask_workers_by_correlation_parser
+  yield "mask-workers-by-correlation-percent", "mask workers by their algorithm/sentence correlation (percentage-wise)", init_mask_workers_by_correlation_percent_parser
+  yield "mask-assignments-by-device", "mask assignments by their listening device", get_mask_assignments_by_device_parser
+  yield "mask-assignments-by-work-time", "mask assignments by their work time", init_mask_assignments_by_work_time_parser
+  yield "mask-rating-outliers", "mask outlying ratings", init_mask_rating_outliers_parser
+
+
+def get_stats_parsers() -> Parsers:
+  yield "print-mos", "print MOS and CI95", init_print_mos_parser
+  yield "print-masking-stats", "print masking statistics", init_print_masking_stats_parser
+  yield "print-worker-stats", "print worker statistics for each algorithm", init_print_worker_stats_parser
+  yield "print-assignment-stats", "print assignment statistics for each worker", init_print_assignment_stats_parser
+  yield "print-sentence-stats", "print sentence statistics for each algorithm", init_print_sentence_stats_parser
+  yield "print-data", "export all data points", init_print_data_parser
+
+
+def get_mturk_parsers() -> Parsers:
+  yield "prepare-approval", "generate approval CSV-file", init_prepare_approval_parser
+  yield "approve", "approve assignments from CSV-file", init_approve_parser
+  yield "prepare-rejection", "generate rejection CSV-file", init_prepare_rejection_parser
+  yield "reject", "reject assignments from CSV-file", init_reject_parser
+  yield "prepare-bonus-payment", "generate bonus payment CSV-file", init_prepare_bonus_payment_parser
+  yield "pay-bonus", "pay bonus to assignments from CSV-file", init_pay_bonus_parser
+
+
 def get_parsers():
-  yield "init", "initialize project", get_init_parser  # initialize
-  yield "export-ground-truth", "export ground truth", get_export_gt_parser
-  yield "calc-mos", "calculate MOS with CI95", get_calculation_parser  # calculate-mos
-  yield "stats", "print statistics", get_stats_parser  # print-statistics
-  yield "stats-worker-assignments", "export worker assignment stats", get_export_wa_stats_parser
-  yield "stats-algorithm-worker", "export algorithm worker stats", get_export_aw_stats_parser
-  yield "stats-algorithm-sentences", "export algorithm sentence stats", get_export_as_stats_parser
-  yield "approve", "approve", get_approve_parser  # assignments create-approve-csv
-  yield "reject", "reject", get_reject_parser  # assignments create-reject-csv
-  yield "bonus", "bonus assignments", get_bonus_parser  # assignments create-bonus-csv
-  yield "ignore-too-fast", "ignore too fast assignments", get_mask_assignments_by_work_time_parser  # mask-by-work_time
-  # assignments mask-by-count
-  yield "ignore-too-few", "ignore workers with to few assignments", get_mask_workers_by_assignment_count_parser
-  yield "ignore-by-listening-device", "ignore by device", get_mask_assignments_by_listening_device_parser
-  # workers mask-by-correlation
-  yield "ignore-bad-workers", "ignore too bad workers", get_mask_workers_by_correlation_parser
-  yield "ignore-bad-workers-percent", "ignore bad workers by percentage", get_mask_workers_by_correlation_percent_parser
-  yield "ignore-outliers", "ignore outliers", get_mask_outlying_ratings_parser  # opinions mask-by-std
-  # opinions mask-by-masked-count
-  yield "ignore-os-count", "ignore workers who overreach a specific percentage of all masked ratings", get_mask_ratings_by_masked_count_parser
-  yield "approve-via-api", "approve via API", get_api_approve_parser
-  yield "reject-via-api", "reject via API", get_api_reject_parser
-  yield "bonus-via-api", "bonus via API", get_api_bonus_parser
+  yield "init", "initialize project", init_init_project_parser
+  yield "masks", "masks commands", list(get_masks_parsers())
+  yield "stats", "stats commands", list(get_stats_parsers())
+  yield "mturk", "mturk commands", list(get_mturk_parsers())
+
+
+def print_features():
+  parsers = get_parsers()
+  for parser_name, help_str, methods in parsers:
+    is_parent_parser = isinstance(methods, list)
+    if is_parent_parser:
+      print(f"- `{parser_name}`")
+      for command, description, method in methods:
+        print(f"  - `{command}`: {description}")
+    else:
+      print(f"- `{parser_name}`: {help_str}")
 
 
 def _init_parser():
@@ -67,21 +94,45 @@ def _init_parser():
   subparsers = main_parser.add_subparsers(help="description")
   default_log_path = Path(gettempdir()) / f"{APP_NAME}.log"
 
-  methods = get_parsers()
-  for command, description, method in methods:
-    method_parser = subparsers.add_parser(
-      command, help=description, formatter_class=formatter)
-    method_parser.set_defaults(**{
-      INVOKE_HANDLER_VAR: method(method_parser),
-    })
-    logging_group = method_parser.add_argument_group("logging arguments")
-    logging_group.add_argument("--log", type=get_optional(parse_path), metavar="FILE",
-                               nargs="?", const=None, help="path to write the log", default=default_log_path)
-    logging_group.add_argument("--buffer-capacity", type=parse_positive_integer, default=DEFAULT_LOGGING_BUFFER_CAP,
-                               metavar="CAPACITY", help="amount of logging lines that should be buffered before they are written to the log-file")
-    logging_group.add_argument("--debug", action="store_true",
-                               help="include debugging information in log")
-
+  parsers = get_parsers()
+  for parser_name, help_str, methods in parsers:
+    is_parent_parser = isinstance(methods, list)
+    if is_parent_parser:
+      sub_parser = subparsers.add_parser(parser_name, help=help_str, formatter_class=formatter)
+      subparsers_of_subparser = sub_parser.add_subparsers()
+      for command, description, method in methods:
+        method_parser = subparsers_of_subparser.add_parser(
+          command, help=description, formatter_class=formatter)
+        # init parser
+        invoke_method = method(method_parser)
+        method_parser.set_defaults(**{
+          INVOKE_HANDLER_VAR: invoke_method,
+        })
+        logging_group = method_parser.add_argument_group("logging arguments")
+        logging_group.add_argument("--log", type=get_optional(parse_path), metavar="FILE",
+                                   nargs="?", const=None, help="path to write the log", default=default_log_path)
+        logging_group.add_argument("--buffer-capacity", type=parse_positive_integer, default=DEFAULT_LOGGING_BUFFER_CAP,
+                                   metavar="CAPACITY", help="amount of logging lines that should be buffered before they are written to the log-file")
+        logging_group.add_argument("--debug", action="store_true",
+                                   help="include debugging information in log")
+    else:
+      command = parser_name
+      description = help_str
+      method = methods
+      method_parser = subparsers.add_parser(
+        command, help=description, formatter_class=formatter)
+      # init parser
+      invoke_method = method(method_parser)
+      method_parser.set_defaults(**{
+        INVOKE_HANDLER_VAR: invoke_method,
+      })
+      logging_group = method_parser.add_argument_group("logging arguments")
+      logging_group.add_argument("--log", type=get_optional(parse_path), metavar="FILE",
+                                 nargs="?", const=None, help="path to write the log", default=default_log_path)
+      logging_group.add_argument("--buffer-capacity", type=parse_positive_integer, default=DEFAULT_LOGGING_BUFFER_CAP,
+                                 metavar="CAPACITY", help="amount of logging lines that should be buffered before they are written to the log-file")
+      logging_group.add_argument("--debug", action="store_true",
+                                 help="include debugging information in log")
   return main_parser
 
 

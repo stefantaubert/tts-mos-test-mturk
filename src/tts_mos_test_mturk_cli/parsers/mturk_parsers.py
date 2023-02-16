@@ -41,7 +41,7 @@ def create_mturk_client(aws_access_key_id: str, aws_secret_access_key: str, endp
   return create_mturk_client_from_session(session, endpoint_url)
 
 
-def get_approve_parser(parser: ArgumentParser):
+def init_prepare_approval_parser(parser: ArgumentParser):
   parser.description = "Generate a CSV-file in which all unmasked assignments will be listed for them to be approved via API or the MTurk website."
   add_project_argument(parser)
   add_masks_argument(parser)
@@ -60,7 +60,7 @@ def get_approve_parser(parser: ArgumentParser):
   return main
 
 
-def get_api_approve_parser(parser: ArgumentParser):
+def init_approve_parser(parser: ArgumentParser):
   parser.description = "Approve all assignments in a CSV-file via API."
   parser.add_argument("aws_access_key_id", type=parse_non_empty_or_whitespace,
                       help="AWS access key id", metavar="AWS_ACCESS_KEY_ID")
@@ -82,7 +82,7 @@ def get_api_approve_parser(parser: ArgumentParser):
   return main
 
 
-def get_reject_parser(parser: ArgumentParser):
+def init_prepare_rejection_parser(parser: ArgumentParser):
   parser.description = "Generate a CSV-file in which all masked assignments will be listed for them to be rejected via API or the MTurk website."
   add_project_argument(parser)
   add_masks_argument(parser)
@@ -98,7 +98,7 @@ def get_reject_parser(parser: ArgumentParser):
   return main
 
 
-def get_api_reject_parser(parser: ArgumentParser):
+def init_reject_parser(parser: ArgumentParser):
   parser.description = "Reject all assignments in a CSV-file via API."
   parser.add_argument("aws_access_key_id", type=parse_non_empty_or_whitespace,
                       help="AWS access key id", metavar="AWS_ACCESS_KEY_ID")
@@ -120,7 +120,7 @@ def get_api_reject_parser(parser: ArgumentParser):
   return main
 
 
-def get_bonus_parser(parser: ArgumentParser):
+def init_prepare_bonus_payment_parser(parser: ArgumentParser):
   parser.description = "Generate a CSV-file in which all unmasked assignments will be listed for them to be paid a bonus via API or the MTurk website."
   add_project_argument(parser)
   add_masks_argument(parser)
@@ -139,7 +139,7 @@ def get_bonus_parser(parser: ArgumentParser):
   return main
 
 
-def get_api_bonus_parser(parser: ArgumentParser):
+def init_pay_bonus_parser(parser: ArgumentParser):
   parser.description = "Pay all assignments in a CSV-file a bonus via API."
   parser.add_argument("aws_access_key_id", type=parse_non_empty_or_whitespace,
                       help="AWS access key id", metavar="AWS_ACCESS_KEY_ID")

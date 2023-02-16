@@ -5,7 +5,7 @@ from tts_mos_test_mturk_cli.argparse_helper import parse_data_frame, parse_path
 from tts_mos_test_mturk_cli.helper import save_project
 
 
-def get_init_parser(parser: ArgumentParser):
+def init_init_project_parser(parser: ArgumentParser):
   parser.description = "Initialize a project from the ground truth and batch results."
   parser.add_argument("ground_truth_path", type=parse_data_frame, metavar="GROUND-TRUTH-CSV",
                       help="path containing the ground truths for each url, i.e. a CSV-file with columns \"audio_url, algorithm, file\"")

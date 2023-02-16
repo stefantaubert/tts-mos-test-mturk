@@ -21,7 +21,7 @@ def add_silent_argument(parser: ArgumentParser) -> None:
                       help="don't print results to console")
 
 
-def get_export_wa_stats_parser(parser: ArgumentParser):
+def init_print_assignment_stats_parser(parser: ArgumentParser):
   parser.description = "Print assignment statistics for each worker."
   add_project_argument(parser)
   add_masks_argument(parser)
@@ -40,7 +40,7 @@ def get_export_wa_stats_parser(parser: ArgumentParser):
   return main
 
 
-def get_stats_parser(parser: ArgumentParser):
+def init_print_masking_stats_parser(parser: ArgumentParser):
   parser.description = "Print masks statistics regarding masked workers, assignments and ratings."
   add_project_argument(parser)
   add_masks_argument(parser)
@@ -51,7 +51,7 @@ def get_stats_parser(parser: ArgumentParser):
   return main
 
 
-def get_calculation_parser(parser: ArgumentParser):
+def init_print_mos_parser(parser: ArgumentParser):
   parser.description = "Print MOS and CI95 statistics for each algorithm."
   add_project_argument(parser)
   add_masks_argument(parser)
@@ -66,11 +66,11 @@ def get_calculation_parser(parser: ArgumentParser):
       print_full_df(result_df)
 
     if ns.output:
-      return save_output_csv(ns.output, result_df)
+      save_output_csv(ns.output, result_df)
   return main
 
 
-def get_export_as_stats_parser(parser: ArgumentParser):
+def init_print_sentence_stats_parser(parser: ArgumentParser):
   parser.description = "Print sentence statistics for each algorithm."
   add_project_argument(parser)
   add_masks_argument(parser)
@@ -85,11 +85,11 @@ def get_export_as_stats_parser(parser: ArgumentParser):
       print_full_df(result_df)
 
     if ns.output:
-      return save_output_csv(ns.output, result_df)
+      save_output_csv(ns.output, result_df)
   return main
 
 
-def get_export_aw_stats_parser(parser: ArgumentParser):
+def init_print_worker_stats_parser(parser: ArgumentParser):
   parser.description = "Print worker statistics for each algorithm."
   add_project_argument(parser)
   add_masks_argument(parser)
@@ -104,11 +104,11 @@ def get_export_aw_stats_parser(parser: ArgumentParser):
       print_full_df(result_df)
 
     if ns.output:
-      return save_output_csv(ns.output, result_df)
+      save_output_csv(ns.output, result_df)
   return main
 
 
-def get_export_gt_parser(parser: ArgumentParser):
+def init_print_data_parser(parser: ArgumentParser):
   parser.description = "Print all ratings including all metadata."
   add_project_argument(parser)
   add_masks_argument(parser)
@@ -123,5 +123,5 @@ def get_export_gt_parser(parser: ArgumentParser):
       print_full_df(result_df)
 
     if ns.output:
-      return save_output_csv(ns.output, result_df)
+      save_output_csv(ns.output, result_df)
   return main
