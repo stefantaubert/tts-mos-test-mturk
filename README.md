@@ -8,7 +8,8 @@
 [![PyPI](https://img.shields.io/github/commits-since/stefantaubert/tts-mos-test-mturk/latest/master.svg)](https://github.com/stefantaubert/tts-mos-test-mturk/compare/v0.0.1...master)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7534707.svg)](https://doi.org/10.5281/zenodo.7534707)
 
-CLI to evaluate MOS results from MTurk and approve/reject workers.
+Command-line interface (CLI) and Python library to evaluate text-to-speech (TTS) mean opinion score (MOS) studies done on Amazon Mechanical Turk (MTurk).
+The calculation of the confidence intervals is done in the same manner as described in (Ribeiro et al., 2011).
 
 ## Features
 
@@ -46,7 +47,7 @@ pip install tts-mos-test-mturk --user
 ## Usage as CLI
 
 ```txt
-usage: cli.py [-h] [-v] {init,masks,stats,mturk,gen-example-input} ...
+usage: mos-cli [-h] [-v] {init,masks,stats,mturk,gen-example-input} ...
 
 CLI to evaluate MOS results from MTurk and approve/reject workers.
 
@@ -345,6 +346,10 @@ Final lines of test result output:
 MIT License
 
 ## Acknowledgments
+
+Calculation and template are based on:
+
+- Ribeiro, F., Florêncio, D., Zhang, C., & Seltzer, M. (2011). CrowdMOS: An approach for crowdsourcing mean opinion score studies. 2011 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP), 2416–2419. [https://doi.org/10.1109/ICASSP.2011.5946971](https://doi.org/10.1109/ICASSP.2011.5946971)
 
 Funded by the Deutsche Forschungsgemeinschaft (DFG, German Research Foundation) – Project-ID 416228727 – CRC 1410
 
