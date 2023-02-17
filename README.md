@@ -19,7 +19,7 @@ CLI to evaluate MOS results from MTurk and approve/reject workers.
   - `mask-workers-by-correlation`: mask workers by their algorithm/sentence correlation
   - `mask-workers-by-correlation-percent`: mask workers by their algorithm/sentence correlation (percentage-wise)
   - `mask-assignments-by-device`: mask assignments by their listening device
-  - `mask-assignments-by-worktime`: mask assignments by their work time
+  - `mask-assignments-by-worktime`: mask assignments by their worktime
   - `mask-rating-outliers`: mask outlying ratings
 - `stats`
   - `print-mos`: print MOS and CI95

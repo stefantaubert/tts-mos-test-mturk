@@ -36,11 +36,11 @@ def get_mask_assignments_by_device_parser(parser: ArgumentParser):
 
 
 def init_mask_assignments_by_worktime_parser(parser: ArgumentParser):
-  parser.description = "Mask assignments by their work time."
+  parser.description = "Mask assignments by their worktime."
   add_project_argument(parser)
   add_masks_argument(parser)
   parser.add_argument("threshold", type=parse_positive_integer, metavar="THRESHOLD",
-                      help="mask all assignments, which have a work time smaller than THRESHOLD")
+                      help="mask all assignments, which have a worktime smaller than THRESHOLD")
   add_output_mask_argument(parser)
   add_dry_argument(parser)
 
