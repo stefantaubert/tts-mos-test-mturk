@@ -35,8 +35,7 @@ CLI to evaluate MOS results from MTurk and approve/reject workers.
   - `reject`: reject assignments from CSV-file
   - `prepare-bonus-payment`: generate bonus payment CSV-file
   - `pay-bonus`: pay bonus to assignments from CSV-file
-
-## Roadmap
+- `gen-example-input`: generate example input data
 
 ## Installation
 
@@ -44,34 +43,82 @@ CLI to evaluate MOS results from MTurk and approve/reject workers.
 pip install tts-mos-test-mturk --user
 ```
 
-## Usage
+## Usage as CLI
 
 ```txt
-usage: cli.py [-h] [-v] {init,masks,stats,mturk} ...
+usage: cli.py [-h] [-v] {init,masks,stats,mturk,gen-example-input} ...
 
 CLI to evaluate MOS results from MTurk and approve/reject workers.
 
 positional arguments:
-  {init,masks,stats,mturk}  description
-    init                    initialize project
-    masks                   masks commands
-    stats                   stats commands
-    mturk                   mturk commands
+  {init,masks,stats,mturk,gen-example-input}
+                                        description
+    init                                initialize project
+    masks                               masks commands
+    stats                               stats commands
+    mturk                               mturk commands
+    gen-example-input                   generate example input data
 
 options:
-  -h, --help                show this help message and exit
-  -v, --version             show program's version number and exit
+  -h, --help                            show this help message and exit
+  -v, --version                         show program's version number and exit
 ```
 
-## Evaluation
+## Usage as library
 
-### Create MTurk Template
+```py
+import numpy as np
+
+from tts_mos_test_mturk import compute_alg_mos_ci95
+
+_ = np.nan
+
+ratings = np.array([
+    # columns represent sentences
+    # algorithm 1
+    [
+      [4, 5, _, 4],  # rater 1
+      [4, 4, 4, 5],  # rater 2
+      [_, 3, 5, 4],  # rater 3
+      [_, _, _, _],  # rater 4
+    ],
+    # algorithm 2
+    [
+      [1, 2, _, _],  # rater 1
+      [1, 1, 1, _],  # rater 2
+      [_, 2, 5, 1],  # rater 3
+      [_, 1, _, 1],  # rater 4
+    ]
+])
+
+results = compute_alg_mos_ci95(ratings)
+
+print(f"MOS algorithm 1: {results[0][0]:.3f} ± {results[1][0]:.3f}")
+# MOS algorithm 1: 4.200 ± 0.862
+print(f"MOS algorithm 2: {results[0][1]:.3f} ± {results[1][1]:.3f}")
+# MOS algorithm 2: 1.600 ± 2.053
+```
+
+## Pipeline
+
+### 1. Create MTurk Template
 
 To create the MTurk Template the script at [mturk-template/create-template.sh](mturk-template/create-template.sh) could be used.
 
-### Calculate MOS and CI95
+### 2. Run survey on MTurk
 
-First initialize a project. For this two files are needed:
+The survey needs to be started at MTurk. Alternatively some example data can be generated with:
+
+```py
+mos-cli gen-example-input \
+  "/tmp/algorithms-and-files.csv" \
+  "/tmp/Batch_374625_batch_results.csv" \
+  "/tmp/upload.csv" --seed 1234
+```
+
+### 3. Initialize project
+
+To initialize a project these two files are needed:
 
 - a file containing the algorithm and sentence for each url
   - it needs to contain 3 columns `audio_url`, `algorithm` and `file`
@@ -84,30 +131,158 @@ First initialize a project. For this two files are needed:
   - Then click on `Download CSV`
   - You get a file which is named something like `Batch_374625_batch_results.csv`
 
-Then initialize a new project:
+Then initialize a new project with:
 
 ```sh
 mos-cli init \
-  algorithms-and-files.csv \
-  Batch_374625_batch_results.csv \
-  /tmp/project.pkl
+  "/tmp/algorithms-and-files.csv" \
+  "/tmp/Batch_374625_batch_results.csv" \
+  "/tmp/project.pkl"
 ```
 
-To calculate the MOS:
+### 4. Mask workers/assignments/ratings
+
+Workers/assignments/ratings can be masked in order to ignore them later in the MOS calculation. For these operations the command `mos-cli masks [operation]` is used. For example: Mask assignments that were done too fast  (e.g., less than 30 seconds):
 
 ```sh
-mos-cli calc-mos /tmp/project.pkl
+mos-cli masks mask-assignments-by-work-time \
+  "/tmp/project.pkl" \
+  30 \
+  "too-fast"
 ```
 
-Example Output:
+Example output:
 
 ```txt
-  Algorithm       MOS      CI95
-0      alg0  3.186111  0.279992
-1      alg1  2.977778  0.090401
-2      alg2  2.938889  0.090390
-3      alg3  2.896296  0.193317
+--- Assignment Statistics ---
+0 out of all 540 assignments (0.00%) were already masked (i.e., 540 unmasked).
+Masked 34 out of the 540 unmasked assignments (6.30%), kept 506 unmasked!
+Result: 34 out of all 540 assignments (6.30%) are masked now!
+--- Ratings Statistics ---
+0 out of all 4320 ratings (0.00%) were already masked (i.e., 4320 unmasked).
+Masked 272 out of the 4320 unmasked ratings (6.30%), kept 4048 unmasked!
+Result: 272 out of all 4320 ratings (6.30%) are masked now!
+Updated project at: "/tmp/project.pkl"
+Log: "/tmp/tts-mos-test-mturk.log"
 ```
+
+This operation masked all 34 assignments (incl. their 272 contained ratings) that were done too fast.
+
+Then, to mask from the remaining assignments the ones done without a headphone (i.e., laptop or desktop), the following command can be used:
+
+```sh
+mos-cli masks mask-assignments-by-device \
+  "/tmp/project.pkl" \
+  "laptop" "desktop" \
+  "too-fast > no-headphone" \
+  --masks "too-fast"
+```
+
+Example output:
+
+```log
+--- Assignment Statistics ---
+34 out of all 540 assignments (6.30%) were already masked (i.e., 506 unmasked).
+Masked 54 out of the 506 unmasked assignments (10.67%), kept 452 unmasked!
+Result: 88 out of all 540 assignments (16.30%) are masked now!
+--- Ratings Statistics ---
+272 out of all 4320 ratings (6.30%) were already masked (i.e., 4048 unmasked).
+Masked 432 out of the 4048 unmasked ratings (10.67%), kept 3616 unmasked!
+Result: 704 out of all 4320 ratings (16.30%) are masked now!
+Updated project at: "/tmp/project.pkl"
+Log: "/tmp/tts-mos-test-mturk.log"
+```
+
+This operation masked 54 further assignments (incl. their 432 ratings) that were done without a headphone. All assignments that were done too fast were already masked.
+
+### 5. Calculate MOS and CI95
+
+To calculate the MOS for all ratings while ignoring ratings that were done without a headphone or were taken too fast, the masks `too-fast` and `too-fast > no-headphone` need to be applied:
+
+```sh
+mos-cli stats print-mos \
+  "/tmp/project.pkl" \
+  --masks \
+    "too-fast" \
+    "too-fast > no-headphone"
+```
+
+Example output:
+
+```log
+  Algorithm       MOS      CI95
+0      alg0  3.155134  0.101647
+1      alg1  2.985620  0.103292
+2      alg2  2.868565  0.100480
+3      alg3  2.890365  0.097933
+Log: "/tmp/tts-mos-test-mturk.log"
+```
+
+### 6. Approve/reject assignments
+
+To approve all assignments that weren't done too fast, a CSV can be generated using:
+
+```sh
+mos-cli mturk prepare-approval \
+  "/tmp/project.pkl" \
+  "/tmp/approve.csv" \
+  --costs 0.10 \
+  --reason "good work" \
+  --masks "too-fast"
+```
+
+Example output:
+
+```log
+Count of assignments that will be approved: 506
+Estimated costs (506 assignments x 0.10$): 50.60$
+Written output to: "/tmp/approve.csv"
+Log: "/tmp/tts-mos-test-mturk.log"
+```
+
+To finally approve the assignments:
+
+```sh
+mos-cli mturk approve \
+  "AWS_ACCESS_KEY_ID" \
+  "AWS_SECRET_ACCESS_KEY" \
+  "/tmp/approve.csv"
+```
+
+To reject all assignments that were done too fast, a CSV can be generated using:
+
+```sh
+mos-cli mturk prepare-rejection \
+  "/tmp/project.pkl" \
+  "assignment was done too fast" \
+  "/tmp/reject.csv" \
+  --masks "too-fast"
+```
+
+Example output:
+
+```log
+Count of assignments that will be rejected: 34
+Written output to: "/tmp/reject.csv"
+Log: "/tmp/tts-mos-test-mturk.log"
+```
+
+To finally reject the assignments:
+
+```sh
+mos-cli mturk reject \
+  "AWS_ACCESS_KEY_ID" \
+  "AWS_SECRET_ACCESS_KEY" \
+  "/tmp/reject.csv"
+```
+
+## Roadmap
+
+- add `masks mask-workers-by-id`
+- add `masks mask-assignments-by-id`
+- add `masks mask-assignments-by-date`
+- add `masks mask-assignments-not-of-last-month/week/day`
+- add `masks reverse-mask`
 
 ## Dependencies
 
@@ -115,7 +290,6 @@ Example Output:
 - `tqdm`
 - `boto3`
 - `boto3-stubs`
-- `xmltodict`
 - `ordered-set>=4.1.0`
 - `scipy`
 

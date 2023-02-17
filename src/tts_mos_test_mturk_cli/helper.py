@@ -31,11 +31,11 @@ def print_full_df(df: pd.DataFrame) -> None:
     print(df)
 
 
-def save_output_csv(path: Path, df: pd.DataFrame) -> None:
+def save_csv(path: Path, df: pd.DataFrame, output_name: str = "output") -> None:
   logger = get_cli_logger()
 
   try:
     df.to_csv(path, index=False)
   except Exception as ex:
-    raise CLIError(f"Output couldn't be saved to: \"{path.absolute()}\"!") from ex
-  logger.info(f"Written output to: \"{path.absolute()}\"")
+    raise CLIError(f"CSV-file couldn't be saved to: \"{path.absolute()}\"!") from ex
+  logger.info(f"Written {output_name} to: \"{path.absolute()}\"")

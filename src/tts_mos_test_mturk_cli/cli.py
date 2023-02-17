@@ -71,6 +71,7 @@ def get_parsers():
   yield "masks", "masks commands", list(get_masks_parsers())
   yield "stats", "stats commands", list(get_stats_parsers())
   yield "mturk", "mturk commands", list(get_mturk_parsers())
+  yield "gen-example-input", "generate example input data", init_generate_example_input_parser
 
 
 def print_features():
@@ -247,7 +248,8 @@ def parse_args(args: List[str]) -> None:
   if log_to_file:
     # path not encapsulated in "" because it is only console out
     root_logger.info(f"Log: \"{ns.log.absolute()}\"")
-    root_logger.info("Writing remaining buffered log lines...")
+    # Note: doesn't take so long on average so that it needs to be printed
+    # root_logger.info("Writing remaining buffered log lines...")
   sys.exit(exit_code)
 
 

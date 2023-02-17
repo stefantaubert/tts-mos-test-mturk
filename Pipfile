@@ -21,7 +21,6 @@ pandas = "*"
 tqdm = "*"
 boto3 = "*"
 boto3-stubs = {extras = ["mturk"], version = "*"}
-xmltodict = "*"
 ordered-set = ">=4.1.0"
 scipy = "*"
 

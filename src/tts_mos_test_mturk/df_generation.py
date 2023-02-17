@@ -31,12 +31,15 @@ def get_mos_df(data: EvaluationData, mask_names: Set[str]) -> pd.DataFrame:
 
 
 def generate_approve_csv(data: EvaluationData, mask_names: Set[str], reason: Optional[str], approval_cost: Optional[float]) -> pd.DataFrame:
+  logger = get_logger()
   masks = data.get_masks_from_names(mask_names)
   factory = data.get_mask_factory()
 
   work_times_amask = factory.merge_masks_into_amask(masks)
   assignment_indices = work_times_amask.unmasked_indices
   assignments_worker_matrix = factory.get_assignments_worker_index_matrix()
+
+  logger.info(f"Count of assignments that will be approved: {len(assignment_indices)}")
 
   if reason is None:
     reason = "x"
@@ -55,19 +58,22 @@ def generate_approve_csv(data: EvaluationData, mask_names: Set[str], reason: Opt
     results.append(line)
   result = pd.DataFrame.from_records(results)
   if approval_cost is not None:
-    logger = get_logger()
     logger.info(
       f"Estimated costs ({len(assignment_indices)} assignments x {approval_cost:.2f}$): {len(assignment_indices) * approval_cost:.2f}$")
   return result
 
 
 def generate_reject_csv(data: EvaluationData, mask_names: Set[str], reason: str) -> pd.DataFrame:
+  logger = get_logger()
+
   masks = data.get_masks_from_names(mask_names)
   factory = data.get_mask_factory()
 
   work_times_amask = factory.merge_masks_into_amask(masks)
   assignment_indices = work_times_amask.masked_indices
   assignments_worker_matrix = factory.get_assignments_worker_index_matrix()
+
+  logger.info(f"Count of assignments that will be rejected: {len(assignment_indices)}")
 
   results: List[Dict[str, Any]] = []
   for assignment_index in sorted(assignment_indices):
@@ -86,12 +92,15 @@ def generate_reject_csv(data: EvaluationData, mask_names: Set[str], reason: str)
 
 
 def generate_bonus_csv(data: EvaluationData, mask_names: Set[str], bonus: float, reason: str) -> pd.DataFrame:
+  logger = get_logger()
   masks = data.get_masks_from_names(mask_names)
   factory = data.get_mask_factory()
 
   work_times_amask = factory.merge_masks_into_amask(masks)
   assignment_indices = work_times_amask.unmasked_indices
   assignments_worker_matrix = factory.get_assignments_worker_index_matrix()
+
+  logger.info(f"Count of assignments that will be paid a bonus: {len(assignment_indices)}")
 
   results: List[Dict[str, Any]] = []
   for assignment_index in sorted(assignment_indices):

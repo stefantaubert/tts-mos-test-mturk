@@ -43,7 +43,6 @@ dependencies = [
   "tqdm",
   "boto3",
   "boto3-stubs[mturk]",
-  "xmltodict",
   "ordered-set>=4.1.0",
   "scipy",
 ]

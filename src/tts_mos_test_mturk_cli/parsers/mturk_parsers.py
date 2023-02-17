@@ -11,7 +11,7 @@ from tts_mos_test_mturk_cli.argparse_helper import (get_optional, parse_data_fra
                                                     parse_non_negative_float, parse_path)
 from tts_mos_test_mturk_cli.default_args import add_masks_argument, add_project_argument
 from tts_mos_test_mturk_cli.globals import MTURK_SANDBOX
-from tts_mos_test_mturk_cli.helper import save_output_csv
+from tts_mos_test_mturk_cli.helper import save_csv
 from tts_mos_test_mturk_cli.types import CLIError
 from tts_mos_test_mturk_cli.validation import ensure_masks_exist
 
@@ -56,7 +56,7 @@ def init_prepare_approval_parser(parser: ArgumentParser):
     ensure_masks_exist(ns.project, ns.masks)
     result_df = generate_approve_csv(ns.project, ns.masks, ns.reason, ns.costs)
     # print(result_df)
-    save_output_csv(ns.output, result_df)
+    save_csv(ns.output, result_df)
   return main
 
 
@@ -94,7 +94,7 @@ def init_prepare_rejection_parser(parser: ArgumentParser):
   def main(ns: Namespace) -> None:
     ensure_masks_exist(ns.project, ns.masks)
     result_df = generate_reject_csv(ns.project, ns.masks, ns.reason)
-    save_output_csv(ns.output, result_df)
+    save_csv(ns.output, result_df)
   return main
 
 
@@ -135,7 +135,7 @@ def init_prepare_bonus_payment_parser(parser: ArgumentParser):
     ensure_masks_exist(ns.project, ns.masks)
     result_df = generate_bonus_csv(ns.project, ns.masks, ns.amount, ns.reason)
     # print(result_df)
-    save_output_csv(ns.output, result_df)
+    save_csv(ns.output, result_df)
   return main
 
 

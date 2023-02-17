@@ -7,7 +7,7 @@ from tts_mos_test_mturk.statistics.update_stats import print_stats
 from tts_mos_test_mturk.statistics.worker_assignment_stats import get_worker_assignment_stats
 from tts_mos_test_mturk_cli.argparse_helper import get_optional, parse_path
 from tts_mos_test_mturk_cli.default_args import add_masks_argument, add_project_argument
-from tts_mos_test_mturk_cli.helper import print_full_df, save_output_csv
+from tts_mos_test_mturk_cli.helper import print_full_df, save_csv
 from tts_mos_test_mturk_cli.validation import ensure_masks_exist
 
 
@@ -36,7 +36,7 @@ def init_print_assignment_stats_parser(parser: ArgumentParser):
       print_full_df(result_df)
 
     if ns.output:
-      return save_output_csv(ns.output, result_df)
+      return save_csv(ns.output, result_df)
   return main
 
 
@@ -66,7 +66,7 @@ def init_print_mos_parser(parser: ArgumentParser):
       print_full_df(result_df)
 
     if ns.output:
-      save_output_csv(ns.output, result_df)
+      save_csv(ns.output, result_df)
   return main
 
 
@@ -85,7 +85,7 @@ def init_print_sentence_stats_parser(parser: ArgumentParser):
       print_full_df(result_df)
 
     if ns.output:
-      save_output_csv(ns.output, result_df)
+      save_csv(ns.output, result_df)
   return main
 
 
@@ -104,7 +104,7 @@ def init_print_worker_stats_parser(parser: ArgumentParser):
       print_full_df(result_df)
 
     if ns.output:
-      save_output_csv(ns.output, result_df)
+      save_csv(ns.output, result_df)
   return main
 
 
@@ -123,5 +123,5 @@ def init_print_data_parser(parser: ArgumentParser):
       print_full_df(result_df)
 
     if ns.output:
-      save_output_csv(ns.output, result_df)
+      save_csv(ns.output, result_df)
   return main
