@@ -116,18 +116,18 @@ def generate_example_data(seed: Optional[int]) -> Tuple[pd.DataFrame, pd.DataFra
       hits_workers[i_hit].add(hit_worker)
       hit_status = random.choices(list(assignment_statuses.keys()),
                                   assignment_statuses.values(), k=1)[0]
-      work_times = [
+      worktimes = [
         random.randint(MIN_WORK_TIME, MIN_WORK_TIME + 10),
         random.randint(0, MIN_WORK_TIME),
       ]
-      work_time_in_s = random.choices(work_times, [1 - TOO_FAST_RATE, TOO_FAST_RATE], k=1)[0]
+      worktime_in_s = random.choices(worktimes, [1 - TOO_FAST_RATE, TOO_FAST_RATE], k=1)[0]
 
       output_row = {
         "HITId": f"HIT{i_hit}",
         "AssignmentId": f"ASSIGNMENT{assignment_counter}",
         "WorkerId": hit_worker,
         "AssignmentStatus": hit_status,
-        "WorkTimeInSeconds": work_time_in_s,
+        "WorkTimeInSeconds": worktime_in_s,
       }
       input_row = {}
 

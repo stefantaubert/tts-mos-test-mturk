@@ -22,7 +22,7 @@ class DataPoint():
   audio_url: str
   listening_device: Literal["in-ear", "over-the-ear", "desktop", "laptop"]
   state: Literal["Accepted", "Rejected", "Approved"]
-  work_time: float
+  worktime: float
 
 
 def parse_data_points(results_dict: Dict, alg_dict: Dict, file_dict: Dict) -> Generator[DataPoint, None, None]:
@@ -30,7 +30,7 @@ def parse_data_points(results_dict: Dict, alg_dict: Dict, file_dict: Dict) -> Ge
     audios = parse_audio_files(row)
     mos = parse_mos_answers(row)
     lt = parse_listening_type(row)
-    work_time = int(row["WorkTimeInSeconds"])
+    worktime = int(row["WorkTimeInSeconds"])
 
     for sample_nr, audio_url in audios.items():
       audio_alg = alg_dict[audio_url]
@@ -46,7 +46,7 @@ def parse_data_points(results_dict: Dict, alg_dict: Dict, file_dict: Dict) -> Ge
         listening_device=lt,
         rating=mos_rating,
         state=row["AssignmentStatus"],
-        work_time=work_time,
+        worktime=worktime,
       )
       yield data_point
 

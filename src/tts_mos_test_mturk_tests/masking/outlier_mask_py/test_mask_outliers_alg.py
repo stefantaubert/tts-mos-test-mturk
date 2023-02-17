@@ -6,7 +6,7 @@ _ = np.nan
 
 
 def test_component():
-  work_times = np.array([
+  worktimes = np.array([
     [
       [4, 5, _],
       [4, 4, 4],
@@ -21,7 +21,7 @@ def test_component():
     ]
   ])
 
-  res = mask_outliers_alg(work_times, 1)
+  res = mask_outliers_alg(worktimes, 1)
   np.testing.assert_equal(res, [
     [
       [False, False, False],

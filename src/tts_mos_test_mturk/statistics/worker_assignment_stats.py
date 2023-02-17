@@ -21,7 +21,7 @@ class WorkerEntry:
   rejected_assignments: int = 0
   accepted_assignments: int = 0
   approved_assignments: int = 0
-  work_times: List[float] = field(default_factory=list)
+  worktimes: List[float] = field(default_factory=list)
   in_ear: int = 0
   over_ear: int = 0
   laptop: int = 0
@@ -95,7 +95,7 @@ def get_data(data: EvaluationData, masks: List[MaskBase]):
     else:
       assert data_point.state == STATE_APPROVED
       entry.approved_assignments += 1
-    entry.work_times.append(data_point.work_time)
+    entry.worktimes.append(data_point.worktime)
 
     if entry.algorithm_corr is None:
       entry.algorithm_corr = get_algorithm_mos_correlation(w_i, os)
@@ -114,8 +114,8 @@ def stats_to_df(stats: Dict[str, WorkerEntry]) -> pd.DataFrame:
       ("Rejected Assignments", entry.rejected_assignments),
       ("Approved Assignments", entry.approved_assignments),
       ("Accepted Assignments", entry.accepted_assignments),
-      ("Average work_time (s)", np.mean(entry.work_times)),
-      ("Total work_time (min)", np.sum(entry.work_times) / 60),
+      ("Average worktime (s)", np.mean(entry.worktimes)),
+      ("Total worktime (min)", np.sum(entry.worktimes) / 60),
       (DEVICE_IN_EAR, entry.in_ear),
       (DEVICE_ON_EAR, entry.over_ear),
       (DEVICE_LAPTOP, entry.laptop),
@@ -138,8 +138,8 @@ def add_all_row(df: pd.DataFrame) -> pd.DataFrame:
     ("Rejected Assignments", df["Rejected Assignments"].sum()),
     ("Approved Assignments", df["Approved Assignments"].sum()),
     ("Accepted Assignments", df["Accepted Assignments"].sum()),
-    ("Average work_time (s)", df["Average work_time (s)"].mean()),
-    ("Total work_time (min)", df["Total work_time (min)"].sum()),
+    ("Average worktime (s)", df["Average worktime (s)"].mean()),
+    ("Total worktime (min)", df["Total worktime (min)"].sum()),
     (DEVICE_IN_EAR, df[DEVICE_IN_EAR].sum()),
     (DEVICE_ON_EAR, df[DEVICE_ON_EAR].sum()),
     (DEVICE_LAPTOP, df[DEVICE_LAPTOP].sum()),

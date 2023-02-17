@@ -35,8 +35,8 @@ def generate_approve_csv(data: EvaluationData, mask_names: Set[str], reason: Opt
   masks = data.get_masks_from_names(mask_names)
   factory = data.get_mask_factory()
 
-  work_times_amask = factory.merge_masks_into_amask(masks)
-  assignment_indices = work_times_amask.unmasked_indices
+  worktimes_amask = factory.merge_masks_into_amask(masks)
+  assignment_indices = worktimes_amask.unmasked_indices
   assignments_worker_matrix = factory.get_assignments_worker_index_matrix()
 
   logger.info(f"Count of assignments that will be approved: {len(assignment_indices)}")
@@ -69,8 +69,8 @@ def generate_reject_csv(data: EvaluationData, mask_names: Set[str], reason: str)
   masks = data.get_masks_from_names(mask_names)
   factory = data.get_mask_factory()
 
-  work_times_amask = factory.merge_masks_into_amask(masks)
-  assignment_indices = work_times_amask.masked_indices
+  worktimes_amask = factory.merge_masks_into_amask(masks)
+  assignment_indices = worktimes_amask.masked_indices
   assignments_worker_matrix = factory.get_assignments_worker_index_matrix()
 
   logger.info(f"Count of assignments that will be rejected: {len(assignment_indices)}")
@@ -96,8 +96,8 @@ def generate_bonus_csv(data: EvaluationData, mask_names: Set[str], bonus: float,
   masks = data.get_masks_from_names(mask_names)
   factory = data.get_mask_factory()
 
-  work_times_amask = factory.merge_masks_into_amask(masks)
-  assignment_indices = work_times_amask.unmasked_indices
+  worktimes_amask = factory.merge_masks_into_amask(masks)
+  assignment_indices = worktimes_amask.unmasked_indices
   assignments_worker_matrix = factory.get_assignments_worker_index_matrix()
 
   logger.info(f"Count of assignments that will be paid a bonus: {len(assignment_indices)}")
@@ -138,7 +138,7 @@ def generate_ground_truth_table(data: EvaluationData, mask_names: Set[str]) -> p
         ("Algorithm", data_point.algorithm),
         ("File", data_point.file),
         ("Rating", data_point.rating),
-        ("AssignmentWorktime (s)", data_point.work_time),
+        ("AssignmentWorktime (s)", data_point.worktime),
         ("Device", data_point.listening_device),
         ("AssignmentState", data_point.state),
         ("AssignmentId", data_point.assignment_id),

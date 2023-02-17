@@ -19,7 +19,7 @@ CLI to evaluate MOS results from MTurk and approve/reject workers.
   - `mask-workers-by-correlation`: mask workers by their algorithm/sentence correlation
   - `mask-workers-by-correlation-percent`: mask workers by their algorithm/sentence correlation (percentage-wise)
   - `mask-assignments-by-device`: mask assignments by their listening device
-  - `mask-assignments-by-work-time`: mask assignments by their work time
+  - `mask-assignments-by-worktime`: mask assignments by their work time
   - `mask-rating-outliers`: mask outlying ratings
 - `stats`
   - `print-mos`: print MOS and CI95
@@ -145,7 +145,7 @@ mos-cli init \
 Workers/assignments/ratings can be masked in order to ignore them later in the MOS calculation. For these operations the command `mos-cli masks [operation]` is used. For example: Mask assignments that were done too fast  (e.g., less than 30 seconds):
 
 ```sh
-mos-cli masks mask-assignments-by-work-time \
+mos-cli masks mask-assignments-by-worktime \
   "/tmp/project.pkl" \
   30 \
   "too-fast"

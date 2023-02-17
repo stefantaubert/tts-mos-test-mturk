@@ -4,9 +4,9 @@ from tts_mos_test_mturk.masking.assignment_count_mask import mask_workers_by_ass
 from tts_mos_test_mturk.masking.listening_device_mask import mask_assignments_by_listening_device
 from tts_mos_test_mturk.masking.masked_count_mask import mask_ratings_by_masked_count
 from tts_mos_test_mturk.masking.outlier_mask import mask_outlying_ratings
-from tts_mos_test_mturk.masking.work_time_mask import mask_assignments_by_work_time
 from tts_mos_test_mturk.masking.worker_correlation_mask import (mask_workers_by_correlation,
                                                                 mask_workers_by_correlation_percent)
+from tts_mos_test_mturk.masking.worktime_mask import mask_assignments_by_worktime
 from tts_mos_test_mturk_cli.argparse_helper import (ConvertToSetAction,
                                                     parse_non_empty_or_whitespace,
                                                     parse_non_negative_float, parse_positive_float,
@@ -35,7 +35,7 @@ def get_mask_assignments_by_device_parser(parser: ArgumentParser):
   return main
 
 
-def init_mask_assignments_by_work_time_parser(parser: ArgumentParser):
+def init_mask_assignments_by_worktime_parser(parser: ArgumentParser):
   parser.description = "Mask assignments by their work time."
   add_project_argument(parser)
   add_masks_argument(parser)
@@ -46,7 +46,7 @@ def init_mask_assignments_by_work_time_parser(parser: ArgumentParser):
 
   def main(ns: Namespace) -> None:
     ensure_masks_exist(ns.project, ns.masks)
-    mask_assignments_by_work_time(ns.project, ns.masks, ns.threshold, ns.output_mask)
+    mask_assignments_by_worktime(ns.project, ns.masks, ns.threshold, ns.output_mask)
 
     if not ns.dry:
       save_project(ns.project)

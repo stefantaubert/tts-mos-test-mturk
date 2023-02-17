@@ -6,14 +6,14 @@ _ = np.nan
 
 
 def test_component_simple():
-  work_times = np.array([
+  worktimes = np.array([
     [4, 5, _],
     [4, 4, 4],
     [_, 1, 5],
     [_, _, _],
   ])
 
-  res = mask_outliers(work_times, 1)
+  res = mask_outliers(worktimes, 1)
 
   np.testing.assert_equal(res, [
     [False, False, False],
@@ -24,14 +24,14 @@ def test_component_simple():
 
 
 def test_component():
-  work_times = np.array([
+  worktimes = np.array([
     [4, 5, _, 1, 2, _],
     [4, 4, 4, 1, 1, 1],
     [_, 1, 5, _, 2, 5],
     [_, _, _, _, _, _],
   ])
 
-  res = mask_outliers(work_times, 1)
+  res = mask_outliers(worktimes, 1)
 
   # all 1's and 5's are outliers
   np.testing.assert_equal(res, [
