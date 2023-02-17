@@ -1,10 +1,9 @@
 from argparse import ArgumentParser, Namespace
 
-from tts_mos_test_mturk.evaluation_data import EvaluationData
 from tts_mos_test_mturk.example_df_creation import generate_example_data
-from tts_mos_test_mturk_cli.argparse_helper import (get_optional, parse_data_frame,
-                                                    parse_non_negative_integer, parse_path)
-from tts_mos_test_mturk_cli.helper import save_csv, save_project
+from tts_mos_test_mturk_cli.argparse_helper import (get_optional, parse_non_negative_integer,
+                                                    parse_path)
+from tts_mos_test_mturk_cli.helper import save_csv
 
 
 def init_generate_example_input_parser(parser: ArgumentParser):

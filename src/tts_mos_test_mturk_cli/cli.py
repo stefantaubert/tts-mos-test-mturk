@@ -9,7 +9,7 @@ from pathlib import Path
 from pkgutil import iter_modules
 from tempfile import gettempdir
 from time import perf_counter
-from typing import Callable, Dict, Generator, List, Tuple
+from typing import Callable, Generator, List, Tuple
 
 from tts_mos_test_mturk.logging import (attach_boto_to_detail_logger,
                                         attach_urllib3_to_detail_logger, get_detail_logger,
