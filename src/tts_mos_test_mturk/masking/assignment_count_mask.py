@@ -34,13 +34,11 @@ def mask_workers_by_assignment_count(data: EvaluationData, mask_names: Set[str],
   windices_sorted = sort_indices_after_values(windices, a_counts)
   a_counts_sorted = sort_indices_after_values(a_counts, a_counts)
 
-  dlogger.info("Worker ranking:")
-  nr = 1
-  for w_i, count in zip(windices_sorted, a_counts_sorted):
+  dlogger.info("Worker ranking by assignment count:")
+  for nr, (w_i, count) in enumerate(zip(windices_sorted, a_counts_sorted), start=1):
     masked_str = " [masked]" if w_i in matching_w else ""
     dlogger.info(
       f"{nr}. \"{data.workers[w_i]}\": {count}{masked_str}")
-    nr += 1
 
   wmask = factory.get_wmask()
   wmask.mask_indices(matching_w)

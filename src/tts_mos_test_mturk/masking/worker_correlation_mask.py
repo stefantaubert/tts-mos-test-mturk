@@ -35,13 +35,13 @@ def mask_workers_by_correlation(data: EvaluationData, mask_names: Set[str], from
   bad_worker_mask = factory.convert_ndarray_to_wmask(bad_worker_np_mask)
   masked_indices = bad_worker_mask.masked_indices
 
-  dlogger.info("Worker ranking:")
+  dlogger.info("Worker ranking by correlation:")
   for nr, w_i in enumerate(windices_sorted, start=1):
     if w_i in wmask.masked_indices:
       break
     masked_str = " [masked]" if w_i in masked_indices else ""
     dlogger.info(
-      f"{nr}. \"{data.workers[w_i]}\": ({wcorrelations[w_i]}){masked_str}")
+      f"{nr}. \"{data.workers[w_i]}\": {wcorrelations[w_i]}{masked_str}")
 
   data.add_or_update_mask(output_mask_name, bad_worker_mask)
 
@@ -75,11 +75,11 @@ def mask_workers_by_correlation_percent(data: EvaluationData, mask_names: Set[st
   # sub_sel_windices = get_indices(sub_windices, sub_wcorrelations,
   #                                from_percent_incl, to_percent_excl)
 
-  dlogger.info("Worker ranking:")
+  dlogger.info("Worker ranking by correlation:")
   for nr, w_i in enumerate(sub_windices_sorted, start=1):
     masked_str = " [masked]" if w_i in sub_sel_windices else ""
     dlogger.info(
-      f"{nr}. \"{data.workers[w_i]}\": {nr/len(sub_windices_sorted)*100:.2f}% ({wcorrelations[w_i]}){masked_str}")
+      f"{nr}. \"{data.workers[w_i]}\": {nr/len(sub_windices_sorted)*100:.2f}% {wcorrelations[w_i]}{masked_str}")
 
   # workers_sorted_2 = data.workers[sub_sel_worker_indices]
   res_wmask = factory.get_wmask()

@@ -22,7 +22,7 @@ class DataPoint():
   audio_url: str
   listening_device: Literal["in-ear", "over-the-ear", "desktop", "laptop"]
   state: Literal["Accepted", "Rejected", "Approved"]
-  worktime: float
+  worktime: int
 
 
 def parse_data_points(results_dict: Dict, alg_dict: Dict, file_dict: Dict) -> Generator[DataPoint, None, None]:
