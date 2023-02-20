@@ -17,6 +17,8 @@ def get_mu_norm(Z: np.ndarray) -> np.ndarray:
 
 
 def mask_outliers(Z: np.ndarray, max_std_dev_diff: float) -> np.ndarray:
+  # TODO remove method
+
   mu_norm = get_mu_norm(Z)
   outlying_ratings = mu_norm > max_std_dev_diff
   return outlying_ratings
