@@ -9,8 +9,9 @@ from tts_mos_test_mturk.masking.worker_correlation_mask import (mask_workers_by_
 from tts_mos_test_mturk.masking.worktime_mask import mask_assignments_by_worktime
 from tts_mos_test_mturk_cli.argparse_helper import (ConvertToSetAction,
                                                     parse_non_empty_or_whitespace,
-                                                    parse_non_negative_float, parse_positive_float,
-                                                    parse_positive_integer)
+                                                    parse_non_negative_float,
+                                                    parse_non_negative_integer,
+                                                    parse_positive_float, parse_positive_integer)
 from tts_mos_test_mturk_cli.default_args import (add_dry_argument, add_masks_argument,
                                                  add_output_mask_argument, add_project_argument)
 from tts_mos_test_mturk_cli.helper import save_project
@@ -95,14 +96,17 @@ def init_mask_workers_by_assignments_count_parser(parser: ArgumentParser):
   parser.description = "Mask workers based on their amount of assignments."
   add_project_argument(parser)
   add_masks_argument(parser)
-  parser.add_argument("count", type=parse_positive_integer, metavar="COUNT",
-                      help="mask workers which have fewer assignments than COUNT")
+  parser.add_argument("from_count", type=parse_non_negative_integer, metavar="FROM-COUNT",
+                      help="mask workers that have at least FROM-COUNT assignments (inclusive); in [0;inf)")
+  parser.add_argument("to_count", type=parse_positive_integer, metavar="TO-COUNT",
+                      help="mask workers that have fewer than TO-COUNT assignments (exclusive); in (0;inf]")
   add_output_mask_argument(parser)
   add_dry_argument(parser)
 
   def main(ns: Namespace) -> None:
     ensure_masks_exist(ns.project, ns.masks)
-    mask_workers_by_assignment_count(ns.project, ns.masks, ns.count, ns.output_mask)
+    mask_workers_by_assignment_count(
+      ns.project, ns.masks, ns.from_count, ns.to_count, ns.output_mask)
 
     if not ns.dry:
       save_project(ns.project)
@@ -113,15 +117,18 @@ def init_mask_workers_by_correlation_parser(parser: ArgumentParser):
   parser.description = "Mask workers based on their sentence or algorithm correlation compared to other workers."
   add_project_argument(parser)
   add_masks_argument(parser)
-  parser.add_argument("threshold", type=parse_positive_float, metavar="THRESHOLD",
-                      help="mask workers that have a correlation smaller than THRESHOLD")
+  parser.add_argument("from_threshold", type=float, metavar="FROM-THRESHOLD",
+                      help="mask workers that have a correlation with at least FROM-THRESHOLD (inclusive); in [-1;1)")
+  parser.add_argument("to_threshold", type=float, metavar="TO-THRESHOLD",
+                      help="mask workers that have a correlation smaller than TO-THRESHOLD (exclusive); in (-1;1]")
   add_mode_argument(parser)
   add_output_mask_argument(parser)
   add_dry_argument(parser)
 
   def main(ns: Namespace) -> None:
     ensure_masks_exist(ns.project, ns.masks)
-    mask_workers_by_correlation(ns.project, ns.masks, ns.threshold, ns.mode, ns.output_mask)
+    mask_workers_by_correlation(ns.project, ns.masks, ns.from_threshold,
+                                ns.to_threshold, ns.mode, ns.output_mask)
 
     if not ns.dry:
       save_project(ns.project)
@@ -133,9 +140,9 @@ def init_mask_workers_by_correlation_percent_parser(parser: ArgumentParser):
   add_project_argument(parser)
   add_masks_argument(parser)
   parser.add_argument("from_percent", type=parse_non_negative_float, metavar="FROM-PERCENT",
-                      help="inclusive lower boundary")
+                      help="inclusive lower boundary; in [0;1)")
   parser.add_argument("to_percent", type=parse_positive_float, metavar="TO-PERCENT",
-                      help="exclusive top boundary")
+                      help="exclusive top boundary; in (0;1]")
   add_mode_argument(parser)
   add_output_mask_argument(parser)
   add_dry_argument(parser)

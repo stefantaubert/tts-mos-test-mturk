@@ -1,4 +1,4 @@
-from typing import List, Set
+from typing import Generator, Iterable, Iterator, List, Set
 
 import numpy as np
 
@@ -81,14 +81,14 @@ def print_assignment_stats(data: EvaluationData, masks: List[MaskBase], added_ma
       f"{len(already_ignored)} out of all {data.n_assignments} assignments ({len(already_ignored)/data.n_assignments*100:.2f}%) were already masked (i.e., {data.n_assignments - len(already_ignored)} unmasked).")
 
   if len(already_ignored) > 0:
-    dlogger.info(f"Already masked assignments:  {', '.join(already_ignored)}")
+    dlogger.info(f"Already masked assignments:  {', '.join(to_quote(already_ignored))}")
 
   if old_count > 0:
     logger.info(
       f"Masked {old_count - new_count} out of the {old_count} unmasked assignments ({(old_count - new_count)/old_count*100:.2f}%), kept {new_count} unmasked!")
 
   if len(newly_masked_assignments) > 0:
-    dlogger.info(f"Masked assignments: {', '.join(newly_masked_assignments)}")
+    dlogger.info(f"Masked assignments: {', '.join(to_quote(newly_masked_assignments))}")
 
   # not_ignored = sorted(data.assignments[assignments_mask_after.unmasked_indices])
   # if len(not_ignored) > 0:
@@ -123,14 +123,14 @@ def print_worker_stats(data: EvaluationData, masks: List[MaskBase], added_masks:
       f"{len(already_ignored)} out of all {data.n_workers} workers ({len(already_ignored)/data.n_workers*100:.2f}%) were already masked (i.e., {data.n_workers - len(already_ignored)} unmasked).")
 
   if len(already_ignored) > 0:
-    dlogger.info(f"Already masked workers:  {', '.join(already_ignored)}")
+    dlogger.info(f"Already masked workers: {', '.join(to_quote(already_ignored))}")
 
   if old_count > 0:
     logger.info(
       f"Masked {old_count - new_count} out of the {old_count} unmasked workers ({(old_count - new_count)/old_count*100:.2f}%), kept {new_count} unmasked!")
 
   if len(newly_masked_workers) > 0:
-    dlogger.info(f"Masked workers: {', '.join(newly_masked_workers)}")
+    dlogger.info(f"Masked workers: {', '.join(to_quote(newly_masked_workers))}")
 
   # not_ignored = sorted(data.workers[workers.unmasked_indices])
   # if len(not_ignored) > 0:
@@ -139,3 +139,8 @@ def print_worker_stats(data: EvaluationData, masks: List[MaskBase], added_masks:
   if data.n_workers > 0:
     logger.info(
       f"Result: {workers_mask_after.n_masked} out of all {data.n_workers} workers ({workers_mask_after.n_masked/data.n_workers*100:.2f}%) are masked now!")
+
+
+def to_quote(strings: Iterator[str]) -> Generator[str, None, None]:
+  for s in strings:
+    yield f"\"{s}\""
