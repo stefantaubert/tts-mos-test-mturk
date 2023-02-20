@@ -54,7 +54,7 @@ def get_stats_parsers() -> Parsers:
   yield "print-worker-stats", "print worker statistics for each algorithm", init_print_worker_stats_parser
   yield "print-assignment-stats", "print assignment statistics for each worker", init_print_assignment_stats_parser
   yield "print-sentence-stats", "print sentence statistics for each algorithm", init_print_sentence_stats_parser
-  yield "print-data", "export all data points", init_print_data_parser
+  yield "print-data", "print all data points", init_print_data_parser
 
 
 def get_mturk_parsers() -> Parsers:

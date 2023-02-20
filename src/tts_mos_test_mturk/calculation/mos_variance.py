@@ -69,7 +69,7 @@ def get_v_mu(Z: np.ndarray) -> float:
 
   v_su = get_su(Z)  # v_su  = v_s + v_u
   v_wu = get_wu(Z)  # v_wu  = v_w + v_u
-  v_swu = get_total_variance(Z)  # v_swu = v_s + v_w + v_u
+  v_swu = get_swu(Z)  # v_swu = v_s + v_w + v_u
   W: np.ndarray = ~np.isnan(Z)
   M_s: np.ndarray = np.sum(W, axis=0)
   N_w: np.ndarray = np.sum(W, axis=1)
@@ -182,6 +182,8 @@ def get_v_mu_from_v_su_and_v_swu(v_su: float, v_swu: float, M_s: np.ndarray) -> 
 
 
 def get_v_mu_from_v_swu(v_swu: float, W: np.ndarray) -> float:
+  assert not np.isnan(v_swu)
+
   T = np.sum(W)
 
   v_mu = v_swu / T
@@ -198,7 +200,7 @@ def get_wu(Z: np.ndarray) -> float:
 
 
 def get_swu(Z: np.ndarray) -> float:
-  return get_total_variance(Z)
+  return get_custom_variance(Z)
 
 
 def get_mean_vertical_variance(Z: np.ndarray) -> float:
@@ -210,16 +212,15 @@ def get_mean_vertical_variance(Z: np.ndarray) -> float:
     dtype=np.float32,
   )
   for index in range(vertical_dim):
-    if non_nan_count(Z[:, index]) >= 2:
-      vertical_variances[index] = np.nanvar(Z[:, index])
+    vertical_variances[index] = get_custom_variance(Z[:, index])
   mean_variance = np.nanmean(vertical_variances)
   return mean_variance
 
 
-def get_total_variance(Z: np.ndarray) -> float:
+def get_custom_variance(vec: np.ndarray) -> float:
   result = np.nan
-  if non_nan_count(Z.flatten()) >= 2:
-    result = np.nanvar(Z.flatten())
+  if non_nan_count(vec) > 1:
+    result = np.nanvar(vec)
   return result
 
 

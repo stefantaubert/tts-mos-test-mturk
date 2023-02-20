@@ -28,7 +28,7 @@ The calculation of the confidence intervals is done in the same manner as descri
   - `print-worker-stats`: print worker statistics for each algorithm
   - `print-assignment-stats`: print assignment statistics for each worker
   - `print-sentence-stats`: print sentence statistics for each algorithm
-  - `print-data`: export all data points
+  - `print-data`: print all data points
 - `mturk`
   - `prepare-approval`: generate approval CSV-file
   - `approve`: approve assignments from CSV-file
@@ -95,9 +95,9 @@ ratings = np.array([
 results = compute_alg_mos_ci95(ratings)
 
 print(f"MOS algorithm 1: {results[0][0]:.3f} ± {results[1][0]:.3f}")
-# MOS algorithm 1: 4.200 ± 0.862
+# MOS algorithm 1: 4.200 ± 0.700
 print(f"MOS algorithm 2: {results[0][1]:.3f} ± {results[1][1]:.3f}")
-# MOS algorithm 2: 1.600 ± 2.053
+# MOS algorithm 2: 1.600 ± 1.791
 ```
 
 ## Pipeline
