@@ -40,26 +40,40 @@ def mask_workers_by_correlation_percent(data: EvaluationData, mask_names: Set[st
   sub_wcorrelations = wmask.apply_by_del(wcorrelations)
   sub_windices = wmask.apply_by_del(windices)
 
-  # n_workers2 = np.sum(~np.isnan(worker_correlations))
-  # n_workers = worker_mask.n_unmasked
-  sub_n_workers = len(sub_windices)
-
-  sub_sorted_indices = np.argsort(sub_wcorrelations)
-  sub_sorted_indices = np.array(list(sub_sorted_indices))
-  # correlations_sorted = sub_worker_correlations[sub_sorted_indices]
-  sub_windices_sorted = sub_windices[sub_sorted_indices]
-  # workers_sorted = data.workers[sub_worker_indices_sorted]
-
-  res_wmask = factory.get_wmask()
-  # TODO check is inclusive and exclusive
-  from_position = math.ceil(sub_n_workers * from_percent_incl)
-  to_position = math.ceil(sub_n_workers * to_percent_excl)
-  sub_sel_windices = sub_windices_sorted[from_position:to_position]
+  sub_sel_windices = get_indices(sub_windices, sub_wcorrelations,
+                                 from_percent_incl, to_percent_excl)
 
   # workers_sorted_2 = data.workers[sub_sel_worker_indices]
+  res_wmask = factory.get_wmask()
   res_wmask.mask_indices(sub_sel_windices)
   res_wmask.combine_mask(wmask)
 
   data.add_or_update_mask(output_mask_name, res_wmask)
 
   print_stats_masks(data, masks, [res_wmask])
+
+
+def get_indices(sub_windices: np.ndarray, sub_wcorrelations: np.ndarray, from_percent_incl: float, to_percent_excl: float) -> np.ndarray:
+  sub_windices_sorted = sort_indices_after_correlations(sub_windices, sub_wcorrelations)
+  sub_sel_windices = get_range_percent(sub_windices_sorted, from_percent_incl, to_percent_excl)
+  return sub_sel_windices
+
+
+def sort_indices_after_correlations(sub_windices: np.ndarray, sub_wcorrelations: np.ndarray) -> np.ndarray:
+  sub_sorted_indices = np.argsort(sub_wcorrelations)
+  sub_sorted_indices = np.array(list(sub_sorted_indices))
+  # correlations_sorted = sub_worker_correlations[sub_sorted_indices]
+  sub_windices_sorted = sub_windices[sub_sorted_indices]
+  # workers_sorted = data.workers[sub_worker_indices_sorted]
+  return sub_windices_sorted
+
+
+def get_range_percent(vec: np.ndarray, from_percent_incl: float, to_percent_excl: float) -> np.ndarray:
+  to_percent_excl = max(to_percent_excl, from_percent_incl)
+  vec_len = len(vec)
+  from_position = math.ceil(vec_len * from_percent_incl)
+  to_position = math.ceil(vec_len * to_percent_excl) - 1
+  if to_position == 0 and len(vec) > 0:
+    to_position = 1
+  sub_sel_windices = vec[from_position:to_position]
+  return sub_sel_windices
