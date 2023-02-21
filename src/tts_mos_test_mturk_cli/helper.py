@@ -18,7 +18,6 @@ def get_all_files_in_all_subfolders(directory: Path) -> Generator[Path, None, No
 
 def save_project(project: EvaluationData):
   logger = get_cli_logger()
-
   try:
     project.save()
   except Exception as ex:
@@ -26,14 +25,14 @@ def save_project(project: EvaluationData):
   logger.info(f"Updated project at: \"{project.file_path.absolute()}\"")
 
 
-def print_full_df(df: pd.DataFrame) -> None:
+def log_full_df(df: pd.DataFrame) -> None:
+  logger = get_cli_logger()
   with pd.option_context('display.max_rows', None, 'display.max_columns', None, "display.width", None):
-    print(df)
+    logger.info(f"Output:\n{df}")
 
 
 def save_csv(path: Path, df: pd.DataFrame, output_name: str = "output") -> None:
   logger = get_cli_logger()
-
   try:
     df.to_csv(path, index=False)
   except Exception as ex:

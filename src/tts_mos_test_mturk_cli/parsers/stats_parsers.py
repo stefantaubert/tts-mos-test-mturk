@@ -6,8 +6,8 @@ from tts_mos_test_mturk.statistics.algorithm_worker_stats import get_worker_algo
 from tts_mos_test_mturk.statistics.update_stats import print_stats
 from tts_mos_test_mturk.statistics.worker_assignment_stats import get_worker_assignment_stats
 from tts_mos_test_mturk_cli.argparse_helper import get_optional, parse_path
-from tts_mos_test_mturk_cli.default_args import add_masks_argument, add_project_argument
-from tts_mos_test_mturk_cli.helper import print_full_df, save_csv
+from tts_mos_test_mturk_cli.default_args import add_opt_masks_argument, add_req_project_argument
+from tts_mos_test_mturk_cli.helper import log_full_df, save_csv
 from tts_mos_test_mturk_cli.validation import ensure_masks_exist
 
 
@@ -23,8 +23,8 @@ def add_silent_argument(parser: ArgumentParser) -> None:
 
 def init_print_assignment_stats_parser(parser: ArgumentParser):
   parser.description = "Print assignment statistics for each worker."
-  add_project_argument(parser)
-  add_masks_argument(parser)
+  add_req_project_argument(parser)
+  add_opt_masks_argument(parser)
   add_optional_output_argument(parser)
   add_silent_argument(parser)
 
@@ -33,7 +33,7 @@ def init_print_assignment_stats_parser(parser: ArgumentParser):
     result_df = get_worker_assignment_stats(ns.project, ns.masks)
 
     if not ns.silent:
-      print_full_df(result_df)
+      log_full_df(result_df)
 
     if ns.output:
       return save_csv(ns.output, result_df)
@@ -42,8 +42,8 @@ def init_print_assignment_stats_parser(parser: ArgumentParser):
 
 def init_print_masking_stats_parser(parser: ArgumentParser):
   parser.description = "Print masks statistics regarding masked workers, assignments and ratings."
-  add_project_argument(parser)
-  add_masks_argument(parser)
+  add_req_project_argument(parser)
+  add_opt_masks_argument(parser)
 
   def main(ns: Namespace) -> None:
     ensure_masks_exist(ns.project, ns.masks)
@@ -53,8 +53,8 @@ def init_print_masking_stats_parser(parser: ArgumentParser):
 
 def init_print_mos_parser(parser: ArgumentParser):
   parser.description = "Print MOS and CI95 statistics for each algorithm."
-  add_project_argument(parser)
-  add_masks_argument(parser)
+  add_req_project_argument(parser)
+  add_opt_masks_argument(parser)
   add_optional_output_argument(parser)
   add_silent_argument(parser)
 
@@ -63,7 +63,7 @@ def init_print_mos_parser(parser: ArgumentParser):
     result_df = get_mos_df(ns.project, ns.masks)
 
     if not ns.silent:
-      print_full_df(result_df)
+      log_full_df(result_df)
 
     if ns.output:
       save_csv(ns.output, result_df)
@@ -72,8 +72,8 @@ def init_print_mos_parser(parser: ArgumentParser):
 
 def init_print_sentence_stats_parser(parser: ArgumentParser):
   parser.description = "Print sentence statistics for each algorithm."
-  add_project_argument(parser)
-  add_masks_argument(parser)
+  add_req_project_argument(parser)
+  add_opt_masks_argument(parser)
   add_optional_output_argument(parser)
   add_silent_argument(parser)
 
@@ -82,7 +82,7 @@ def init_print_sentence_stats_parser(parser: ArgumentParser):
     result_df = get_algorithm_sentence_stats(ns.project, ns.masks)
 
     if not ns.silent:
-      print_full_df(result_df)
+      log_full_df(result_df)
 
     if ns.output:
       save_csv(ns.output, result_df)
@@ -91,8 +91,8 @@ def init_print_sentence_stats_parser(parser: ArgumentParser):
 
 def init_print_worker_stats_parser(parser: ArgumentParser):
   parser.description = "Print worker statistics for each algorithm."
-  add_project_argument(parser)
-  add_masks_argument(parser)
+  add_req_project_argument(parser)
+  add_opt_masks_argument(parser)
   add_optional_output_argument(parser)
   add_silent_argument(parser)
 
@@ -101,7 +101,7 @@ def init_print_worker_stats_parser(parser: ArgumentParser):
     result_df = get_worker_algorithm_stats(ns.project, ns.masks)
 
     if not ns.silent:
-      print_full_df(result_df)
+      log_full_df(result_df)
 
     if ns.output:
       save_csv(ns.output, result_df)
@@ -110,8 +110,8 @@ def init_print_worker_stats_parser(parser: ArgumentParser):
 
 def init_print_data_parser(parser: ArgumentParser):
   parser.description = "Print all ratings including all metadata."
-  add_project_argument(parser)
-  add_masks_argument(parser)
+  add_req_project_argument(parser)
+  add_opt_masks_argument(parser)
   add_optional_output_argument(parser)
   add_silent_argument(parser)
 
@@ -120,7 +120,7 @@ def init_print_data_parser(parser: ArgumentParser):
     result_df = generate_ground_truth_table(ns.project, ns.masks)
 
     if not ns.silent:
-      print_full_df(result_df)
+      log_full_df(result_df)
 
     if ns.output:
       save_csv(ns.output, result_df)

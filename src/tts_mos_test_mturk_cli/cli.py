@@ -86,6 +86,17 @@ def print_features():
       print(f"- `{parser_name}`: {help_str}")
 
 
+def add_logging_group(parser: ArgumentParser) -> None:
+  default_log_path = Path(gettempdir()) / f"{APP_NAME}.log"
+  logging_group = parser.add_argument_group("logging arguments")
+  logging_group.add_argument("--log", type=get_optional(parse_path), metavar="FILE",
+                             nargs="?", const=None, help="path to write the log", default=default_log_path)
+  logging_group.add_argument("--buffer-capacity", type=parse_positive_integer, default=DEFAULT_LOGGING_BUFFER_CAP,
+                             metavar="CAPACITY", help="amount of logging lines that should be buffered before they are written to the log-file")
+  logging_group.add_argument("--debug", action="store_true",
+                             help="include debugging information in log")
+
+
 def _init_parser():
   main_parser = ArgumentParser(
     formatter_class=formatter,
@@ -93,7 +104,6 @@ def _init_parser():
   )
   main_parser.add_argument('-v', '--version', action='version', version='%(prog)s ' + __version__)
   subparsers = main_parser.add_subparsers(help="description")
-  default_log_path = Path(gettempdir()) / f"{APP_NAME}.log"
 
   parsers = get_parsers()
   for parser_name, help_str, methods in parsers:
@@ -104,36 +114,22 @@ def _init_parser():
       for command, description, method in methods:
         method_parser = subparsers_of_subparser.add_parser(
           command, help=description, formatter_class=formatter)
-        # init parser
         invoke_method = method(method_parser)
         method_parser.set_defaults(**{
           INVOKE_HANDLER_VAR: invoke_method,
         })
-        logging_group = method_parser.add_argument_group("logging arguments")
-        logging_group.add_argument("--log", type=get_optional(parse_path), metavar="FILE",
-                                   nargs="?", const=None, help="path to write the log", default=default_log_path)
-        logging_group.add_argument("--buffer-capacity", type=parse_positive_integer, default=DEFAULT_LOGGING_BUFFER_CAP,
-                                   metavar="CAPACITY", help="amount of logging lines that should be buffered before they are written to the log-file")
-        logging_group.add_argument("--debug", action="store_true",
-                                   help="include debugging information in log")
+        add_logging_group(method_parser)
     else:
       command = parser_name
       description = help_str
       method = methods
       method_parser = subparsers.add_parser(
         command, help=description, formatter_class=formatter)
-      # init parser
       invoke_method = method(method_parser)
       method_parser.set_defaults(**{
         INVOKE_HANDLER_VAR: invoke_method,
       })
-      logging_group = method_parser.add_argument_group("logging arguments")
-      logging_group.add_argument("--log", type=get_optional(parse_path), metavar="FILE",
-                                 nargs="?", const=None, help="path to write the log", default=default_log_path)
-      logging_group.add_argument("--buffer-capacity", type=parse_positive_integer, default=DEFAULT_LOGGING_BUFFER_CAP,
-                                 metavar="CAPACITY", help="amount of logging lines that should be buffered before they are written to the log-file")
-      logging_group.add_argument("--debug", action="store_true",
-                                 help="include debugging information in log")
+      add_logging_group(method_parser)
   return main_parser
 
 
@@ -236,7 +232,6 @@ def parse_args(args: List[str]) -> None:
     flogger.info("Everything was successful!")
   else:
     exit_code = 1
-    # cmd_logger.error(f"Validation error: {success.default_message}")
     if log_to_file:
       root_logger.error("Not everything was successful! See log for details.")
     else:

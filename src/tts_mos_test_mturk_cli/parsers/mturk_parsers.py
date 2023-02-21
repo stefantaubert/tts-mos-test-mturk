@@ -9,7 +9,7 @@ from tts_mos_test_mturk.df_generation import (generate_approve_csv, generate_bon
 from tts_mos_test_mturk_cli.argparse_helper import (get_optional, parse_data_frame,
                                                     parse_non_empty_or_whitespace,
                                                     parse_non_negative_float, parse_path)
-from tts_mos_test_mturk_cli.default_args import add_masks_argument, add_project_argument
+from tts_mos_test_mturk_cli.default_args import add_opt_masks_argument, add_req_project_argument
 from tts_mos_test_mturk_cli.globals import MTURK_SANDBOX
 from tts_mos_test_mturk_cli.helper import save_csv
 from tts_mos_test_mturk_cli.types import CLIError
@@ -43,8 +43,8 @@ def create_mturk_client(aws_access_key_id: str, aws_secret_access_key: str, endp
 
 def init_prepare_approval_parser(parser: ArgumentParser):
   parser.description = "Generate a CSV-file in which all unmasked assignments will be listed for them to be approved via API or the MTurk website."
-  add_project_argument(parser)
-  add_masks_argument(parser)
+  add_req_project_argument(parser)
+  add_opt_masks_argument(parser)
   parser.add_argument("output", type=parse_path,
                       help="write CSV to this path", metavar="OUTPUT-CSV")
   parser.add_argument("--costs", type=get_optional(parse_non_negative_float),
@@ -84,8 +84,8 @@ def init_approve_parser(parser: ArgumentParser):
 
 def init_prepare_rejection_parser(parser: ArgumentParser):
   parser.description = "Generate a CSV-file in which all masked assignments will be listed for them to be rejected via API or the MTurk website."
-  add_project_argument(parser)
-  add_masks_argument(parser)
+  add_req_project_argument(parser)
+  add_opt_masks_argument(parser)
   parser.add_argument("reason", type=parse_non_empty_or_whitespace, metavar="REASON",
                       help="use this reason")
   parser.add_argument("output", type=parse_path,
@@ -122,8 +122,8 @@ def init_reject_parser(parser: ArgumentParser):
 
 def init_prepare_bonus_payment_parser(parser: ArgumentParser):
   parser.description = "Generate a CSV-file in which all unmasked assignments will be listed for them to be paid a bonus via API or the MTurk website."
-  add_project_argument(parser)
-  add_masks_argument(parser)
+  add_req_project_argument(parser)
+  add_opt_masks_argument(parser)
   parser.add_argument("amount", type=parse_non_negative_float,
                       metavar="BONUS", help="bonus amount in $")
   parser.add_argument("reason", type=parse_non_empty_or_whitespace, metavar="REASON",
