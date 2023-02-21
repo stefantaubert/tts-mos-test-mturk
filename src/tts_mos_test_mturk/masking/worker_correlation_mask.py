@@ -65,7 +65,7 @@ def get_stats_df(workers: OrderedSet[str], ratings: np.ndarray, masked_indices: 
     col_alg_corr: result[col_alg_corr].mean(),
     col_both_corr: result[col_both_corr].mean(),
     col_used: result[col_used].mean(),
-    col_percent: 100,
+    col_percent: np.nan,
     col_masked: result[col_masked].all(),
   }
   result = pd.concat([result, pd.DataFrame.from_records([row])], ignore_index=True)
