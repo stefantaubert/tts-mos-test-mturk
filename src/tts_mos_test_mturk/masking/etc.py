@@ -10,6 +10,6 @@ def sort_indices_after_values(indices: np.ndarray, values: np.ndarray) -> np.nda
   return sub_windices_sorted
 
 
-def mask_values_in_boundary(a: np.ndarray, min_incl: float, max_excl: float):
-  outlying_ratings = (min_incl <= a) & (a < max_excl)
-  return outlying_ratings
+def mask_values_in_boundary(array: np.ndarray, min_incl: float, max_excl: float) -> np.ndarray:
+  result = (min_incl <= array) & (array < max_excl)
+  return result

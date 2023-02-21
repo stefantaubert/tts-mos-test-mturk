@@ -42,10 +42,10 @@ def init_mask_assignments_by_worktime_parser(parser: ArgumentParser):
   parser.description = "Mask assignments by their worktime."
   add_req_project_argument(parser)
   add_opt_masks_argument(parser)
-  parser.add_argument("to_time", type=parse_positive_integer, metavar="TO-TIME",
-                      help="mask all assignments, which have a worktime smaller than TO-TIME (exclusive); in (0; inf)")
   parser.add_argument("--from-time", type=parse_non_negative_integer, metavar="FROM-TIME",
                       help="mask all assignments, which have a worktime greater than or equal to FROM-TIME (inclusive); in [0; inf)", default=0)
+  parser.add_argument("to_time", type=parse_positive_integer, metavar="TO-TIME",
+                      help="mask all assignments, which have a worktime smaller than TO-TIME (exclusive); in (0; inf)")
   add_req_output_mask_argument(parser)
   add_opt_dry_argument(parser)
 
@@ -84,14 +84,17 @@ def init_workers_by_masked_ratings_count_parser(parser: ArgumentParser):
   add_opt_masks_argument(parser)
   parser.add_argument("ref_masks", type=parse_non_empty_or_whitespace, nargs="+",
                       metavar="REF-MASK", help="masks on which the masked ratings should be counted", action=ConvertToSetAction)
-  parser.add_argument("percent", type=parse_positive_float, metavar="PERCENT",
-                      help=f"mask workers that have at least PERCENT % of all masked ratings")
+  parser.add_argument("from_percent", type=parse_non_negative_float, metavar="FROM-PERCENT",
+                      help="mask workers that have at least FROM-PERCENT of all masked ratings (inclusive); in [0, 100)")
+  parser.add_argument("--to-percent", type=parse_positive_float, metavar="TO-PERCENT",
+                      help="mask workers that have at maximum TO-PERCENT of all masked ratings (exclusive); in (0, 100]", default=100)
   add_req_output_mask_argument(parser)
   add_opt_dry_argument(parser)
 
   def main(ns: Namespace) -> None:
     ensure_masks_exist(ns.project, ns.masks)
-    mask_ratings_by_masked_count(ns.project, ns.masks, ns.ref_masks, ns.percent, ns.output_mask)
+    mask_ratings_by_masked_count(ns.project, ns.masks, ns.ref_masks,
+                                 ns.from_percent / 100, ns.to_percent / 100, ns.output_mask)
 
     if not ns.dry:
       save_project(ns.project)
@@ -102,10 +105,10 @@ def init_mask_workers_by_assignments_count_parser(parser: ArgumentParser):
   parser.description = "Mask workers based on their amount of assignments."
   add_req_project_argument(parser)
   add_opt_masks_argument(parser)
-  parser.add_argument("to_count", type=parse_positive_integer, metavar="TO-COUNT",
-                      help="mask workers that have fewer than TO-COUNT assignments (exclusive); in (0; inf)")
   parser.add_argument("--from-count", type=parse_non_negative_integer, metavar="FROM-COUNT",
                       help="mask workers that have at least FROM-COUNT assignments (inclusive); in [0; inf)", default=0)
+  parser.add_argument("to_count", type=parse_positive_integer, metavar="TO-COUNT",
+                      help="mask workers that have fewer than TO-COUNT assignments (exclusive); in (0; inf)")
   add_req_output_mask_argument(parser)
   add_opt_dry_argument(parser)
 
@@ -123,10 +126,10 @@ def init_mask_workers_by_correlation_parser(parser: ArgumentParser):
   parser.description = "Mask workers based on their sentence or algorithm correlation compared to other workers."
   add_req_project_argument(parser)
   add_opt_masks_argument(parser)
-  parser.add_argument("to_threshold", type=float, metavar="TO-THRESHOLD",
-                      help="mask workers that have a correlation smaller than TO-THRESHOLD (exclusive); in (-1; 1]")
   parser.add_argument("--from-threshold", type=float, metavar="FROM-THRESHOLD",
                       help="mask workers that have a correlation with at least FROM-THRESHOLD (inclusive); in [-1; 1)", default=-1)
+  parser.add_argument("to_threshold", type=float, metavar="TO-THRESHOLD",
+                      help="mask workers that have a correlation smaller than TO-THRESHOLD (exclusive); in (-1; 1]")
   add_mode_argument(parser)
   add_req_output_mask_argument(parser)
   add_opt_dry_argument(parser)
@@ -145,18 +148,18 @@ def init_mask_workers_by_correlation_percent_parser(parser: ArgumentParser):
   parser.description = "Mask workers based on their sentence or algorithm correlation compared to other workers (percentage-wise)."
   add_req_project_argument(parser)
   add_opt_masks_argument(parser)
-  parser.add_argument("to_percent", type=parse_positive_float, metavar="TO-PERCENT",
-                      help="exclusive top boundary; in (0; 1]")
   parser.add_argument("--from-percent", type=parse_non_negative_float,
-                      metavar="FROM-PERCENT", help="inclusive lower boundary; in [0; 1)", default=0)
+                      metavar="FROM-PERCENT", help="inclusive lower boundary; in [0; 100)", default=0)
+  parser.add_argument("to_percent", type=parse_positive_float, metavar="TO-PERCENT",
+                      help="exclusive top boundary; in (0; 100]")
   add_mode_argument(parser)
   add_req_output_mask_argument(parser)
   add_opt_dry_argument(parser)
 
   def main(ns: Namespace) -> None:
     ensure_masks_exist(ns.project, ns.masks)
-    mask_workers_by_correlation_percent(ns.project, ns.masks, ns.from_percent,
-                                        ns.to_percent, ns.mode, ns.output_mask)
+    mask_workers_by_correlation_percent(ns.project, ns.masks, ns.from_percent / 100,
+                                        ns.to_percent / 100, ns.mode, ns.output_mask)
 
     if not ns.dry:
       save_project(ns.project)

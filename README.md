@@ -210,7 +210,7 @@ mos-cli stats print-mos \
 Example output:
 
 ```log
-Count of ratings (masked/all): 3616/4320 -> on average 904/1080 per algorithm
+Count of ratings (unmasked/all): 3616/4320 -> on average 904/1080 per algorithm
 
   Algorithm       MOS      CI95
 0      alg0  3.155134  0.178079

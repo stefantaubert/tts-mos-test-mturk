@@ -1,11 +1,12 @@
 import numpy as np
 
-from tts_mos_test_mturk.masking.worktime_mask import get_worktime_mask
+from tts_mos_test_mturk.masking.etc import mask_values_in_boundary
 
 
 def test_component():
   worktimes = np.array([
     12,
+    20,
     21,
     22,
     23,
@@ -13,10 +14,11 @@ def test_component():
     np.nan,
   ])
 
-  res = get_worktime_mask(worktimes, 20, 22.5)
+  res = mask_values_in_boundary(worktimes, 20, 23)
 
   np.testing.assert_equal(res, [
     False,
+    True,
     True,
     True,
     False,

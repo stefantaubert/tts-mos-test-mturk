@@ -1,17 +1,79 @@
 import math
+from collections import OrderedDict
 from typing import Literal, Set, Tuple
 
 import numpy as np
+import pandas as pd
+from ordered_set import OrderedSet
 
-from tts_mos_test_mturk.calculation.correlations import get_mos_correlations
+from tts_mos_test_mturk.calculation.correlations import (get_algorithm_mos_correlations,
+                                                         get_mos_correlations,
+                                                         get_sentence_mos_correlations_3dim,
+                                                         get_worker_mos_correlations)
 from tts_mos_test_mturk.evaluation_data import EvaluationData
-from tts_mos_test_mturk.logging import get_detail_logger
-from tts_mos_test_mturk.masking.etc import sort_indices_after_values
+from tts_mos_test_mturk.logging import get_detail_logger, log_full_df_info
+from tts_mos_test_mturk.masking.etc import mask_values_in_boundary, sort_indices_after_values
 from tts_mos_test_mturk.statistics.update_stats import print_stats_masks
 
 
+def get_stats_df(workers: OrderedSet[str], ratings: np.ndarray, masked_indices: np.ndarray, used_correlations: np.ndarray, already_masked_worker_indices: np.ndarray, mode: Literal["sentence", "algorithm", "both"]) -> pd.DataFrame:
+  col_worker = "Worker"
+  col_ratings = "# Ratings"
+  col_sent_corr = "Sentence correlation"
+  col_alg_corr = "Algorithm correlation"
+  col_both_corr = "Both correlation"
+  col_percent = "Ranking %"
+  col_used = "Used (tmp)"
+  col_masked = "Masked?"
+
+  if mode == "sentence":
+    col_sent_corr = f"[{col_sent_corr}]"
+  elif mode == "algorithm":
+    col_alg_corr = f"[{col_alg_corr}]"
+  else:
+    assert mode == "both"
+    col_both_corr = f"[{col_both_corr}]"
+
+  w_sent_corr = get_sentence_mos_correlations_3dim(ratings)
+  w_algo_corr = get_algorithm_mos_correlations(ratings)
+  w_both_corr = get_worker_mos_correlations(ratings)
+
+  lines = []
+  for w_i, worker in enumerate(workers):
+    if w_i in already_masked_worker_indices:
+      continue
+    lines.append(OrderedDict((
+      (col_worker, worker),
+      (col_ratings, np.sum(~np.isnan(ratings[:, w_i, :]))),
+      (col_sent_corr, w_sent_corr[w_i]),
+      (col_alg_corr, w_algo_corr[w_i]),
+      (col_both_corr, w_both_corr[w_i]),
+      (col_used, used_correlations[w_i]),
+      (col_percent, 0),
+      (col_masked, w_i in masked_indices),
+    )))
+
+  result = pd.DataFrame.from_records(lines)
+  result.sort_values(by=[col_used, col_worker], inplace=True)
+  for nr, (i, row) in enumerate(result.iterrows(), start=1):
+    result.at[i, col_percent] = nr / len(result.index) * 100
+
+  row = {
+    col_worker: "All",
+    col_ratings: result[col_ratings].sum(),
+    col_sent_corr: result[col_sent_corr].mean(),
+    col_alg_corr: result[col_alg_corr].mean(),
+    col_both_corr: result[col_both_corr].mean(),
+    col_used: result[col_used].mean(),
+    col_percent: 100,
+    col_masked: result[col_masked].all(),
+  }
+  result = pd.concat([result, pd.DataFrame.from_records([row])], ignore_index=True)
+  result.drop(columns=[col_used], inplace=True)
+  return result
+
+
 def mask_workers_by_correlation(data: EvaluationData, mask_names: Set[str], from_threshold_incl: float, to_threshold_excl: float, mode: Literal["sentence", "algorithm", "both"], output_mask_name: str):
-  dlogger = get_detail_logger()
   masks = data.get_masks_from_names(mask_names)
   factory = data.get_mask_factory()
 
@@ -21,35 +83,22 @@ def mask_workers_by_correlation(data: EvaluationData, mask_names: Set[str], from
   ratings = data.get_ratings()
   rmask.apply_by_nan(ratings)
 
-  if wmask.n_masked > 0:
-    dlogger.info('Already masked workers:')
-    for worker_name in sorted(data.workers[wmask.masked_indices]):
-      dlogger.info(f'- "{worker_name}"')
-
   wcorrelations = get_mos_correlations(ratings, mode)
+  res_wmask_np = mask_values_in_boundary(
+    wcorrelations, from_threshold_incl, to_threshold_excl)
+  res_wmask = factory.convert_ndarray_to_wmask(res_wmask_np)
 
-  windices = np.arange(data.n_workers)
-  windices_sorted = sort_indices_after_values(windices, wcorrelations)
+  stats_df = get_stats_df(data.workers, ratings, res_wmask.masked_indices,
+                          wcorrelations, wmask.masked_indices, mode)
+  log_full_df_info(stats_df, "Statistics:")
 
-  bad_worker_np_mask = (from_threshold_incl <= wcorrelations) & (wcorrelations < to_threshold_excl)
-  bad_worker_mask = factory.convert_ndarray_to_wmask(bad_worker_np_mask)
-  masked_indices = bad_worker_mask.masked_indices
+  data.add_or_update_mask(output_mask_name, res_wmask)
 
-  dlogger.info("Worker ranking by correlation:")
-  for nr, w_i in enumerate(windices_sorted, start=1):
-    if w_i in wmask.masked_indices:
-      break
-    masked_str = " [masked]" if w_i in masked_indices else ""
-    dlogger.info(
-      f"{nr}. \"{data.workers[w_i]}\": {wcorrelations[w_i]}{masked_str}")
-
-  data.add_or_update_mask(output_mask_name, bad_worker_mask)
-
-  print_stats_masks(data, masks, [bad_worker_mask])
+  print_stats_masks(data, masks, [res_wmask])
 
 
 def mask_workers_by_correlation_percent(data: EvaluationData, mask_names: Set[str], from_percent_incl: float, to_percent_excl: float, mode: Literal["sentence", "algorithm", "both"], output_mask_name: str):
-  dlogger = get_detail_logger()
+  # dlogger = get_detail_logger()
   masks = data.get_masks_from_names(mask_names)
   factory = data.get_mask_factory()
 
@@ -62,29 +111,30 @@ def mask_workers_by_correlation_percent(data: EvaluationData, mask_names: Set[st
   wcorrelations = get_mos_correlations(ratings, mode)
   sub_wcorrelations = wmask.apply_by_del(wcorrelations)
 
-  dlogger.info('Already masked workers:')
-  for worker_name in sorted(data.workers[wmask.masked_indices]):
-    dlogger.info(f'- "{worker_name}"')
+  # dlogger.info('Already masked workers:')
+  # for worker_name in sorted(data.workers[wmask.masked_indices]):
+  #   dlogger.info(f'- "{worker_name}"')
 
   windices = np.arange(data.n_workers)
   sub_windices = wmask.apply_by_del(windices)
 
-  sub_windices_sorted = sort_indices_after_values(sub_windices, sub_wcorrelations)
-  sub_sel_windices = get_range_percent(sub_windices_sorted, from_percent_incl, to_percent_excl)
-
-  # sub_sel_windices = get_indices(sub_windices, sub_wcorrelations,
-  #                                from_percent_incl, to_percent_excl)
-
-  dlogger.info("Worker ranking by correlation:")
-  for nr, w_i in enumerate(sub_windices_sorted, start=1):
-    masked_str = " [masked]" if w_i in sub_sel_windices else ""
-    dlogger.info(
-      f"{nr}. \"{data.workers[w_i]}\": {nr/len(sub_windices_sorted)*100:.2f}% {wcorrelations[w_i]}{masked_str}")
+  sub_sel_windices = get_indices(sub_windices, sub_wcorrelations,
+                                 from_percent_incl, to_percent_excl)
 
   # workers_sorted_2 = data.workers[sub_sel_worker_indices]
   res_wmask = factory.get_wmask()
   res_wmask.mask_indices(sub_sel_windices)
   res_wmask.combine_mask(wmask)
+
+  stats_df = get_stats_df(data.workers, ratings, res_wmask.masked_indices,
+                          wcorrelations, wmask.masked_indices, mode)
+  log_full_df_info(stats_df, "Statistics:")
+
+  # dlogger.info("Worker ranking by correlation:")
+  # for nr, w_i in enumerate(sub_windices_sorted, start=1):
+  #   masked_str = " [masked]" if w_i in sub_sel_windices else ""
+  #   dlogger.info(
+  #     f"{nr}. \"{data.workers[w_i]}\": {nr/len(sub_windices_sorted)*100:.2f}% {wcorrelations[w_i]}{masked_str}")
 
   data.add_or_update_mask(output_mask_name, res_wmask)
 
@@ -122,6 +172,8 @@ def get_indices(sub_windices: np.ndarray, sub_wcorrelations: np.ndarray, from_pe
 
 
 def get_range_percent(vec: np.ndarray, from_percent_incl: float, to_percent_excl: float) -> np.ndarray:
+  if len(vec) == 0:
+    return vec[0:0]
   a, b = get_range_start_end_percent(len(vec), from_percent_incl, to_percent_excl)
   # if from_percent_incl == 0:
   #   if to_position == 0 and len(vec) > 0:
@@ -129,7 +181,11 @@ def get_range_percent(vec: np.ndarray, from_percent_incl: float, to_percent_excl
   # else:
   #   if from_position == 0 and len(vec) > 0:
   #     from_position = 1
-  sub_sel_windices = vec[a:b]
+  if a == b:
+    sub_sel_windices = [vec[a]]
+  else:
+    assert a < b
+    sub_sel_windices = vec[a:b]
   return sub_sel_windices
 
 
@@ -142,15 +198,29 @@ def get_range_start_end_percent(n: int, start: float, end: float) -> Tuple[int, 
 
 
 def get_range_start_incl_percent(n: int, p: float) -> int:
-  p = max(p, 0.0)
-  from_position = math.floor(n * p)
-  return from_position
+  p = max(p, 0)
+  p = min(p, 1)
+  if n == 0:
+    raise ValueError("Argument 'n': Value needs to be greater than zero!")
+  if p == 1.0:
+    raise ValueError("Argument 'p': Value needs to be < 1")
+  from_position = math.ceil(n * p)
+  if from_position == 0:
+    return 0
+  return from_position - 1
 
 
 def get_range_end_excl_percent(n: int, p: float) -> int:
-  p = min(1.0, p)
-  if p == 1.0:
-    to_position = n
-  else:
-    to_position = math.ceil(n * p) - 1
-  return to_position
+  p = max(p, 0)
+  p = min(p, 1)
+  if n == 0:
+    raise ValueError("Argument 'n': Value needs to be greater than zero!")
+  if p == 0:
+    raise ValueError("Argument 'p': Value needs to be > 0!")
+  to = math.ceil(n * p)
+  if to == 1:
+    # raise ValueError(f"Argument 'p': needs to be greater than {1/n}!")
+    return 1
+  if to == n and p == 1.0:
+    return n
+  return to - 1

@@ -25,7 +25,7 @@ def get_mos_df(data: EvaluationData, mask_names: Set[str]) -> pd.DataFrame:
   ratings_count = np.sum(~np.isnan(ratings))
 
   logger.info(
-    f"Count of ratings (masked/all): {ratings_count}/{all_ratings_count} -> on average {round(ratings_count/data.n_algorithms)}/{round(all_ratings_count/data.n_algorithms)} per algorithm")
+    f"Count of ratings (unmasked/all): {ratings_count}/{all_ratings_count} -> on average {round(ratings_count/data.n_algorithms)}/{round(all_ratings_count/data.n_algorithms)} per algorithm")
 
   scores: List[Dict] = []
   for algo_i, alg_name in enumerate(data.algorithms):
