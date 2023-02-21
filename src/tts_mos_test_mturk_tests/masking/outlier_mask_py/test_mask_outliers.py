@@ -1,3 +1,5 @@
+from math import inf
+
 import numpy as np
 
 from tts_mos_test_mturk.masking.outlier_mask import mask_outliers
@@ -13,7 +15,7 @@ def test_component_simple():
     [_, _, _],
   ])
 
-  res = mask_outliers(worktimes, 1)
+  res = mask_outliers(worktimes, 1, inf)
 
   np.testing.assert_equal(res, [
     [False, False, False],
@@ -31,7 +33,7 @@ def test_component():
     [_, _, _, _, _, _],
   ])
 
-  res = mask_outliers(worktimes, 1)
+  res = mask_outliers(worktimes, 1, inf)
 
   # all 1's and 5's are outliers
   np.testing.assert_equal(res, [

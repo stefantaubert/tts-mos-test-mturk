@@ -148,8 +148,7 @@ Workers/assignments/ratings can be masked in order to ignore them later in the M
 ```sh
 mos-cli masks mask-assignments-by-worktime \
   "/tmp/project.pkl" \
-  30 \
-  "too-fast"
+  30 "too-fast"
 ```
 
 Example output:
@@ -211,11 +210,13 @@ mos-cli stats print-mos \
 Example output:
 
 ```log
+Count of ratings (masked/all): 3616/4320 -> on average 904/1080 per algorithm
+
   Algorithm       MOS      CI95
-0      alg0  3.155134  0.101647
-1      alg1  2.985620  0.103292
-2      alg2  2.868565  0.100480
-3      alg3  2.890365  0.097933
+0      alg0  3.155134  0.178079
+1      alg1  2.985620  0.161751
+2      alg2  2.868565  0.175135
+3      alg3  2.890365  0.183059
 Log: "/tmp/tts-mos-test-mturk.log"
 ```
 

@@ -1,4 +1,4 @@
-from typing import Generator, Iterable, Iterator, List, Set
+from typing import Generator, Iterator, List, Set
 
 import numpy as np
 

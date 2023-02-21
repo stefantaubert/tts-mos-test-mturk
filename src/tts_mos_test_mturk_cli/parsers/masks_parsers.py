@@ -1,8 +1,6 @@
 import math
 from argparse import ArgumentParser, Namespace
 
-import numpy as np
-
 from tts_mos_test_mturk.masking.assignment_count_mask import mask_workers_by_assignment_count
 from tts_mos_test_mturk.masking.listening_device_mask import mask_assignments_by_listening_device
 from tts_mos_test_mturk.masking.masked_count_mask import mask_ratings_by_masked_count

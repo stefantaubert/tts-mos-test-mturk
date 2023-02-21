@@ -1,3 +1,5 @@
+from math import inf
+
 import numpy as np
 
 from tts_mos_test_mturk.masking.outlier_mask import mask_outliers_alg
@@ -21,7 +23,7 @@ def test_component():
     ]
   ])
 
-  res = mask_outliers_alg(worktimes, 1)
+  res = mask_outliers_alg(worktimes, 1, inf)
   np.testing.assert_equal(res, [
     [
       [False, False, False],

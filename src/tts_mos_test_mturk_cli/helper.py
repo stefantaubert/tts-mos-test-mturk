@@ -28,7 +28,7 @@ def save_project(project: EvaluationData):
 def log_full_df(df: pd.DataFrame) -> None:
   logger = get_cli_logger()
   with pd.option_context('display.max_rows', None, 'display.max_columns', None, "display.width", None):
-    logger.info(f"Output:\n{df}")
+    logger.info(f"\n{df}")
 
 
 def save_csv(path: Path, df: pd.DataFrame, output_name: str = "output") -> None:

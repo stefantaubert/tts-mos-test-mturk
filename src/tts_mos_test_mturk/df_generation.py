@@ -53,12 +53,16 @@ def generate_approve_csv(data: EvaluationData, mask_names: Set[str], reason: Opt
     dlogger.info("Unmasked workers (will be approved):")
     for nr, w in enumerate(sorted(unmasked_workers), start=1):
       dlogger.info(f"{nr}. \"{w}\"")
+  else:
+    dlogger.info("No unmasked workers exist.")
 
   masked_workers = data.workers[wmask.masked_indices]
   if len(masked_workers) > 0:
     dlogger.info("Masked workers (will not be approved):")
     for nr, w in enumerate(sorted(masked_workers), start=1):
       dlogger.info(f"{nr}. \"{w}\"")
+  else:
+    dlogger.info("No masked workers exist.")
 
   assignment_indices = amask.unmasked_indices
   assignments_worker_matrix = factory.get_assignments_worker_index_matrix()
@@ -102,13 +106,17 @@ def generate_reject_csv(data: EvaluationData, mask_names: Set[str], reason: str)
     dlogger.info("Masked workers (will be rejected):")
     for nr, w in enumerate(sorted(masked_workers), start=1):
       dlogger.info(f"{nr}. \"{w}\"")
+  else:
+    dlogger.info("No masked workers exist.")
 
   unmasked_workers = data.workers[wmask.unmasked_indices]
   if len(unmasked_workers) > 0:
     dlogger.info("Unmasked workers (will not be rejected):")
     for nr, w in enumerate(sorted(unmasked_workers), start=1):
       dlogger.info(f"{nr}. \"{w}\"")
-
+  else:
+    dlogger.info("No unmasked workers exist.")
+    
   assignment_indices = amask.masked_indices
   assignments_worker_matrix = factory.get_assignments_worker_index_matrix()
 
@@ -144,12 +152,16 @@ def generate_bonus_csv(data: EvaluationData, mask_names: Set[str], bonus: float,
     dlogger.info("Unmasked workers (will be paid a bonus):")
     for nr, w in enumerate(sorted(unmasked_workers), start=1):
       dlogger.info(f"{nr}. \"{w}\"")
+  else:
+    dlogger.info("No unmasked workers exist.")
 
   masked_workers = data.workers[wmask.masked_indices]
   if len(masked_workers) > 0:
     dlogger.info("Masked workers (will not be paid a bonus):")
     for nr, w in enumerate(sorted(masked_workers), start=1):
       dlogger.info(f"{nr}. \"{w}\"")
+  else:
+    dlogger.info("No masked workers exist.")
 
   assignment_indices = amask.unmasked_indices
   assignments_worker_matrix = factory.get_assignments_worker_index_matrix()
