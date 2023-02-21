@@ -40,10 +40,10 @@ def init_mask_assignments_by_worktime_parser(parser: ArgumentParser):
   parser.description = "Mask assignments by their worktime."
   add_project_argument(parser)
   add_masks_argument(parser)
-  parser.add_argument("from_time", type=parse_non_negative_integer, metavar="FROM-TIME",
-                      help="mask all assignments, which have a worktime greater than or equal to TO-TIME (inclusive); in [0; inf)")
   parser.add_argument("to_time", type=parse_positive_integer, metavar="TO-TIME",
                       help="mask all assignments, which have a worktime smaller than TO-TIME (exclusive); in (0; inf]")
+  parser.add_argument("--from-time", type=parse_non_negative_integer, metavar="FROM-TIME",
+                      help="mask all assignments, which have a worktime greater than or equal to FROM-TIME (inclusive); in [0; inf)", default=0)
   add_output_mask_argument(parser)
   add_dry_argument(parser)
 
@@ -98,10 +98,10 @@ def init_mask_workers_by_assignments_count_parser(parser: ArgumentParser):
   parser.description = "Mask workers based on their amount of assignments."
   add_project_argument(parser)
   add_masks_argument(parser)
-  parser.add_argument("from_count", type=parse_non_negative_integer, metavar="FROM-COUNT",
-                      help="mask workers that have at least FROM-COUNT assignments (inclusive); in [0; inf)")
   parser.add_argument("to_count", type=parse_positive_integer, metavar="TO-COUNT",
                       help="mask workers that have fewer than TO-COUNT assignments (exclusive); in (0; inf]")
+  parser.add_argument("--from-count", type=parse_non_negative_integer, metavar="FROM-COUNT",
+                      help="mask workers that have at least FROM-COUNT assignments (inclusive); in [0; inf)", default=0)
   add_output_mask_argument(parser)
   add_dry_argument(parser)
 
@@ -119,10 +119,10 @@ def init_mask_workers_by_correlation_parser(parser: ArgumentParser):
   parser.description = "Mask workers based on their sentence or algorithm correlation compared to other workers."
   add_project_argument(parser)
   add_masks_argument(parser)
-  parser.add_argument("from_threshold", type=float, metavar="FROM-THRESHOLD",
-                      help="mask workers that have a correlation with at least FROM-THRESHOLD (inclusive); in [-1; 1)")
   parser.add_argument("to_threshold", type=float, metavar="TO-THRESHOLD",
                       help="mask workers that have a correlation smaller than TO-THRESHOLD (exclusive); in (-1; 1]")
+  parser.add_argument("--from-threshold", type=float, metavar="FROM-THRESHOLD",
+                      help="mask workers that have a correlation with at least FROM-THRESHOLD (inclusive); in [-1; 1)", default=-1)
   add_mode_argument(parser)
   add_output_mask_argument(parser)
   add_dry_argument(parser)
@@ -141,10 +141,10 @@ def init_mask_workers_by_correlation_percent_parser(parser: ArgumentParser):
   parser.description = "Mask workers based on their sentence or algorithm correlation compared to other workers (percentage-wise)."
   add_project_argument(parser)
   add_masks_argument(parser)
-  parser.add_argument("from_percent", type=parse_non_negative_float, metavar="FROM-PERCENT",
-                      help="inclusive lower boundary; in [0; 1)")
   parser.add_argument("to_percent", type=parse_positive_float, metavar="TO-PERCENT",
                       help="exclusive top boundary; in (0; 1]")
+  parser.add_argument("--from-percent", type=parse_non_negative_float,
+                      metavar="FROM-PERCENT", help="inclusive lower boundary; in [0; 1)", default=0)
   add_mode_argument(parser)
   add_output_mask_argument(parser)
   add_dry_argument(parser)
