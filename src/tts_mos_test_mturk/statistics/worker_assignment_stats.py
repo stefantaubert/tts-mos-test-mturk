@@ -98,9 +98,9 @@ def get_data(data: EvaluationData, masks: List[MaskBase]):
     entry.worktimes.append(data_point.worktime)
 
     if entry.algorithm_corr is None:
-      entry.algorithm_corr = get_algorithm_mos_correlation(w_i, os)
+      entry.algorithm_corr = get_algorithm_mos_correlation(w_i, ratings)
     if entry.sentence_corr is None:
-      entry.sentence_corr = get_sentence_mos_correlation_3dim(w_i, os)
+      entry.sentence_corr = get_sentence_mos_correlation_3dim(w_i, ratings)
 
   return stats
 

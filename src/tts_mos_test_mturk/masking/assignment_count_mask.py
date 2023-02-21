@@ -30,7 +30,6 @@ def mask_workers_by_assignment_count(data: EvaluationData, mask_names: Set[str],
   masked_indices = matching_a_counts.nonzero()[0]
   matching_w = windices[masked_indices]
 
-  # windices = np.arange(data.n_workers)
   windices_sorted = sort_indices_after_values(windices, a_counts)
   a_counts_sorted = sort_indices_after_values(a_counts, a_counts)
 
