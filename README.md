@@ -13,30 +13,34 @@ The calculation of the confidence intervals is done in the same manner as descri
 
 ## Features
 
-- `init`: initialize project
-- `masks`
-  - `mask-workers-by-assignments-count`: mask workers by their count of assignments
-  - `mask-workers-by-masked-ratings-count`: mask workers by their count of masked ratings
-  - `mask-workers-by-correlation`: mask workers by their algorithm/sentence correlation
-  - `mask-workers-by-correlation-percent`: mask workers by their algorithm/sentence correlation (percentage-wise)
-  - `mask-assignments-by-device`: mask assignments by their listening device
-  - `mask-assignments-by-worktime`: mask assignments by their worktime
-  - `mask-rating-outliers`: mask outlying ratings
-- `stats`
-  - `print-mos`: print MOS and CI95
-  - `print-masking-stats`: print masking statistics
-  - `print-worker-stats`: print worker statistics for each algorithm
-  - `print-assignment-stats`: print assignment statistics for each worker
-  - `print-sentence-stats`: print sentence statistics for each algorithm
-  - `print-data`: print all data points
-- `mturk`
-  - `prepare-approval`: generate approval CSV-file
-  - `approve`: approve assignments from CSV-file
-  - `prepare-rejection`: generate rejection CSV-file
-  - `reject`: reject assignments from CSV-file
-  - `prepare-bonus-payment`: generate bonus payment CSV-file
-  - `pay-bonus`: pay bonus to assignments from CSV-file
-- `gen-example-input`: generate example input data
+- `mturk-template-cli`:
+  - `prepare-evaluation`: create evaluation .json-file
+  - `gen-example-input`: generate example input data
+- `mos-cli`:
+  - `init`: initialize project from .json-file
+  - `masks`
+    - `mask-workers-by-assignments-count`: mask workers by their count of assignments
+    - `mask-workers-by-masked-ratings-count`: mask workers by their count of masked ratings
+    - `mask-workers-by-correlation`: mask workers by their algorithm/sentence correlation
+    - `mask-workers-by-correlation-percent`: mask workers by their algorithm/sentence correlation (percentage-wise)
+    - `mask-assignments-by-device`: mask assignments by their listening device
+    - `mask-assignments-by-worktime`: mask assignments by their worktime
+    - `mask-rating-outliers`: mask outlying ratings
+  - `stats`
+    - `print-mos`: print MOS and CI95
+    - `print-masking-stats`: print masking statistics
+    - `print-worker-stats`: print worker statistics for each algorithm
+    - `print-assignment-stats`: print assignment statistics for each worker
+    - `print-sentence-stats`: print sentence statistics for each algorithm
+    - `print-data`: print all data points
+  - `mturk`
+    - `prepare-approval`: generate approval CSV-file
+    - `approve`: approve assignments from CSV-file
+    - `prepare-rejection`: generate rejection CSV-file
+    - `reject`: reject assignments from CSV-file
+    - `prepare-bonus-payment`: generate bonus payment CSV-file
+    - `pay-bonus`: pay bonus to assignments from CSV-file
+
 
 ## Installation
 

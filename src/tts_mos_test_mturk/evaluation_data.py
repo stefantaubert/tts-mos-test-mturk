@@ -119,3 +119,6 @@ class EvaluationData():
       file_i = self.files.get_loc(data_point.file)
       Z[alg_i, worker_i, file_i] = data_point.rating
     return Z
+
+def parse_json(data: Dict) -> EvaluationData:
+  

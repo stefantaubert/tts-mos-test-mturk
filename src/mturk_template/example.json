@@ -1,0 +1,31 @@
+{
+  "files": [
+    "file1",
+    "file2"
+  ],
+  "algorithms": [
+    "alg1",
+    "alg2"
+  ],
+  "workers": [
+    {
+      "worker_id": "Worker1",
+      "assignments": [
+        {
+          "assignment_id": "Assignment1",
+          "device": "in-ear",
+          "state": "Accepted",
+          "worktime": 30,
+          "comments": "",
+          "ratings": [
+            {
+              "rating": 5,
+              "algorithm": "alg1",
+              "file": "file1"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
