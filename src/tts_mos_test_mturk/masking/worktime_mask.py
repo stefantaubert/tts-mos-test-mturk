@@ -18,11 +18,6 @@ def mask_assignments_by_worktime(data: EvaluationData, mask_names: Set[str], fro
 
   amask = factory.merge_masks_into_amask(masks)
 
-  # if amask.n_masked > 0:
-  #   dlogger.info('Already masked assignments:')
-  #   for assignment_name in sorted(data.assignments[amask.masked_indices]):
-  #     dlogger.info(f'- "{assignment_name}"')
-
   worktimes = get_worktimes(data)
   amask.apply_by_nan(worktimes)
 

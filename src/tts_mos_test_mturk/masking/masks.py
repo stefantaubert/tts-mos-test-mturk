@@ -30,13 +30,11 @@ class MaskBase():
 
   @property
   def n_masked(self) -> int:
-    # result = np.sum(~np.isnan(self.mask))
     result = np.sum(self.mask)
     return result
 
   @property
   def n_unmasked(self) -> int:
-    # result = np.sum(~np.isnan(self.mask))
     result = np.sum(~self.mask)
     return result
 

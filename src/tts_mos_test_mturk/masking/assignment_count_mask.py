@@ -19,11 +19,6 @@ def mask_workers_by_assignment_count(data: EvaluationData, mask_names: Set[str],
   amask = factory.merge_masks_into_amask(masks)
   wmask = factory.merge_masks_into_wmask(masks)
 
-  # if wmask.n_masked > 0:
-  #   dlogger.info('Already masked workers:')
-  #   for worker_name in sorted(data.workers[wmask.masked_indices]):
-  #     dlogger.info(f'- "{worker_name}"')
-
   aw_matrix = factory.get_assignments_worker_index_matrix()
   aw_matrix = amask.apply_by_del(aw_matrix)
 

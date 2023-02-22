@@ -87,7 +87,7 @@ class EvaluationData():
     self.masks[name] = mask
 
   def get_ratings(self) -> np.ndarray:
-    Z = np.full(
+    ratings = np.full(
       (self.n_algorithms, self.n_workers, self.n_files),
       fill_value=np.nan,
       dtype=np.float32
@@ -99,5 +99,5 @@ class EvaluationData():
         for rating_data in assignment_data.ratings:
           alg_i = self.algorithms.get_loc(rating_data.algorithm)
           file_i = self.files.get_loc(rating_data.file)
-          Z[alg_i, worker_i, file_i] = rating_data.rating
-    return Z
+          ratings[alg_i, worker_i, file_i] = rating_data.rating
+    return ratings
