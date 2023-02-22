@@ -7,11 +7,12 @@ import pandas as pd
 
 from tts_mos_test_mturk.calculation.correlations import (get_algorithm_mos_correlation,
                                                          get_sentence_mos_correlation_3dim)
-from tts_mos_test_mturk.data_point import (DEVICE_DESKTOP, DEVICE_IN_EAR, DEVICE_LAPTOP,
-                                           DEVICE_ON_EAR, STATE_ACCEPTED, STATE_APPROVED,
-                                           STATE_REJECTED)
 from tts_mos_test_mturk.evaluation_data import EvaluationData
+from tts_mos_test_mturk.masking.mask_factory import MaskFactory
 from tts_mos_test_mturk.masking.masks import MaskBase
+from tts_mos_test_mturk.statistics.globals import (DEVICE_DESKTOP, DEVICE_IN_EAR, DEVICE_LAPTOP,
+                                                   DEVICE_ON_EAR, STATE_ACCEPTED, STATE_APPROVED,
+                                                   STATE_REJECTED)
 
 
 @dataclass
@@ -45,7 +46,7 @@ class WorkerEntry:
 
 
 def get_data(data: EvaluationData, masks: List[MaskBase]):
-  factory = data.get_mask_factory()
+  factory = MaskFactory(data)
 
   wmask = factory.merge_masks_into_wmask(masks)
   amask = factory.merge_masks_into_amask(masks)
@@ -59,48 +60,48 @@ def get_data(data: EvaluationData, masks: List[MaskBase]):
   for worker in data.workers:
     stats[worker] = WorkerEntry()
 
-  for data_point in data.data:
-    entry = stats[data_point.worker_id]
+  for worker, worker_data in data.worker_data.items():
+    w_i = data.workers.get_loc(worker)
+    for assignment, assignment_data in worker_data.assignments.items():
+      entry = stats[worker]
 
-    skip = False
-    w_i = data.workers.get_loc(data_point.worker_id)
-    w_is_masked = wmask.mask[w_i]
-    if w_is_masked:
-      entry.masked = True
-      skip = True
-    a_i = data.assignments.get_loc(data_point.assignment_id)
-    a_is_masked = amask.mask[a_i]
-    if a_is_masked:
-      entry.masked_assignments += 1
-      skip = True
+      skip = False
+      w_is_masked = wmask.mask[w_i]
+      if w_is_masked:
+        entry.masked = True
+        skip = True
+      a_i = data.assignments.get_loc(assignment)
+      a_is_masked = amask.mask[a_i]
+      if a_is_masked:
+        entry.masked_assignments += 1
+        skip = True
 
-    if skip:
-      continue
+      if skip:
+        continue
 
-    entry = stats[data_point.worker_id]
-    if data_point.listening_device == DEVICE_IN_EAR:
-      entry.in_ear += 1
-    elif data_point.listening_device == DEVICE_ON_EAR:
-      entry.over_ear += 1
-    elif data_point.listening_device == DEVICE_LAPTOP:
-      entry.laptop += 1
-    else:
-      assert data_point.listening_device == DEVICE_DESKTOP
-      entry.desktop += 1
+      if assignment_data.device == DEVICE_IN_EAR:
+        entry.in_ear += 1
+      elif assignment_data.device == DEVICE_ON_EAR:
+        entry.over_ear += 1
+      elif assignment_data.device == DEVICE_LAPTOP:
+        entry.laptop += 1
+      else:
+        assert assignment_data.device == DEVICE_DESKTOP
+        entry.desktop += 1
 
-    if data_point.state == STATE_ACCEPTED:
-      entry.accepted_assignments += 1
-    elif data_point.state == STATE_REJECTED:
-      entry.rejected_assignments += 1
-    else:
-      assert data_point.state == STATE_APPROVED
-      entry.approved_assignments += 1
-    entry.worktimes.append(data_point.worktime)
+      if assignment_data.state == STATE_ACCEPTED:
+        entry.accepted_assignments += 1
+      elif assignment_data.state == STATE_REJECTED:
+        entry.rejected_assignments += 1
+      else:
+        assert assignment_data.state == STATE_APPROVED
+        entry.approved_assignments += 1
+      entry.worktimes.append(assignment_data.worktime)
 
-    if entry.algorithm_corr is None:
-      entry.algorithm_corr = get_algorithm_mos_correlation(w_i, ratings)
-    if entry.sentence_corr is None:
-      entry.sentence_corr = get_sentence_mos_correlation_3dim(w_i, ratings)
+      if entry.algorithm_corr is None:
+        entry.algorithm_corr = get_algorithm_mos_correlation(w_i, ratings)
+      if entry.sentence_corr is None:
+        entry.sentence_corr = get_sentence_mos_correlation_3dim(w_i, ratings)
 
   return stats
 

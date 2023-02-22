@@ -1,24 +1,18 @@
-
 from typing import List
 
 import numpy as np
-from ordered_set import OrderedSet
 
-from tts_mos_test_mturk.data_point import DataPoint
+from tts_mos_test_mturk.evaluation_data import EvaluationData
 from tts_mos_test_mturk.masking.masks import AssignmentsMask, MaskBase, RatingsMask, WorkersMask
 
 
 class MaskFactory():
-  def __init__(self, algorithms: OrderedSet[str], workers: OrderedSet[str], files: OrderedSet[str], assignments: OrderedSet[str], data_points: List[DataPoint]) -> None:
-    self.algorithms = algorithms
-    self.workers = workers
-    self.files = files
-    self.assignments = assignments
-    self.data_points = data_points
+  def __init__(self, data: EvaluationData) -> None:
+    self.__data = data
 
   def get_rmask(self) -> RatingsMask:
     mask = np.full(
-      (len(self.algorithms), len(self.workers), len(self.files)),
+      (self.__data.n_algorithms, self.__data.n_workers, self.__data.n_files),
       fill_value=False,
       dtype=bool,
     )
@@ -26,7 +20,7 @@ class MaskFactory():
 
   def get_amask(self) -> AssignmentsMask:
     mask = np.full(
-      len(self.assignments),
+      self.__data.n_assignments,
       fill_value=False,
       dtype=bool,
     )
@@ -34,28 +28,28 @@ class MaskFactory():
 
   def get_wmask(self) -> WorkersMask:
     mask = np.full(
-      len(self.workers),
+      self.__data.n_workers,
       fill_value=False,
       dtype=bool,
     )
     return WorkersMask(mask)
 
   def convert_ndarray_to_rmask(self, array: np.ndarray) -> RatingsMask:
-    if array.shape != (len(self.algorithms), len(self.workers), len(self.files)):
+    if array.shape != (self.__data.n_algorithms, self.__data.n_workers, self.__data.n_files):
       raise ValueError("Invalid format!")
     if array.dtype != bool:
       raise ValueError("Invalid format!")
     return RatingsMask(array)
 
   def convert_ndarray_to_amask(self, array: np.ndarray) -> AssignmentsMask:
-    if array.shape != (len(self.assignments),):
+    if array.shape != (self.__data.n_assignments,):
       raise ValueError("Invalid format!")
     if array.dtype != bool:
       raise ValueError("Invalid format!")
     return AssignmentsMask(array)
 
   def convert_ndarray_to_wmask(self, array: np.ndarray) -> WorkersMask:
-    if array.shape != (len(self.workers),):
+    if array.shape != (self.__data.n_workers,):
       raise ValueError("Invalid format!")
     if array.dtype != bool:
       raise ValueError("Invalid format!")
@@ -78,17 +72,19 @@ class MaskFactory():
 
   def get_ratings_assignments_index_matrix(self) -> np.ndarray:
     res = np.full(
-      (len(self.algorithms), len(self.workers), len(self.files)),
+      (self.__data.n_algorithms, self.__data.n_workers, self.__data.n_files),
       fill_value=np.nan,
       dtype=np.float32,
     )
 
-    for data_point in self.data_points:
-      alg_i = self.algorithms.get_loc(data_point.algorithm)
-      worker_i = self.workers.get_loc(data_point.worker_id)
-      file_i = self.files.get_loc(data_point.file)
-      ass_i = self.assignments.get_loc(data_point.assignment_id)
-      res[alg_i, worker_i, file_i] = ass_i
+    for worker, worker_data in self.__data.worker_data.items():
+      worker_i = self.__data.workers.get_loc(worker)
+      for assignment, assignment_data in worker_data.assignments.items():
+        ass_i = self.__data.assignments.get_loc(assignment)
+        for rating_data in assignment_data.ratings:
+          alg_i = self.__data.algorithms.get_loc(rating_data.algorithm)
+          file_i = self.__data.files.get_loc(rating_data.file)
+          res[alg_i, worker_i, file_i] = ass_i
     return res
 
   def convert_amask_to_rmask(self, amask: AssignmentsMask) -> RatingsMask:
@@ -117,15 +113,17 @@ class MaskFactory():
 
   def get_assignments_worker_index_matrix(self) -> np.ndarray:
     res = np.full(
-      len(self.assignments),
+      self.__data.n_assignments,
       fill_value=-1,
       dtype=np.int32,
     )
 
-    for data_point in self.data_points:
-      ass_i = self.assignments.get_loc(data_point.assignment_id)
-      worker_i = self.workers.get_loc(data_point.worker_id)
-      res[ass_i] = worker_i
+    for worker, worker_data in self.__data.worker_data.items():
+      worker_i = self.__data.workers.get_loc(worker)
+      for assignment in worker_data.assignments.keys():
+        ass_i = self.__data.assignments.get_loc(assignment)
+        res[ass_i] = worker_i
+
     return res
 
   def convert_wmask_to_amask(self, wmask: WorkersMask) -> AssignmentsMask:
@@ -151,3 +149,8 @@ class MaskFactory():
         continue
       result.combine_mask(mask)
     return result
+
+
+# def get_mask_factory(data: EvaluationData) -> MaskFactory:
+#   result = MaskFactory(data)
+#   return result

@@ -1,4 +1,3 @@
-import numpy as np
 from pytest import raises
 
 from tts_mos_test_mturk.masking.worker_correlation_mask import get_range_start_incl_percent

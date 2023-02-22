@@ -53,6 +53,7 @@ Issues = "https://github.com/stefantaubert/tts_mos_test_mturk/issues"
 
 [project.scripts]
 mos-cli = "tts_mos_test_mturk_cli.cli:run_prod"
+mturk-template-cli = "mturk_template_cli.cli:run_prod"
 
 [tool.setuptools.packages.find]
 where = ["src"]

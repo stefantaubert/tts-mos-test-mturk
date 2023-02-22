@@ -7,12 +7,13 @@ import pandas as pd
 from tts_mos_test_mturk.calculation.mos_variance import compute_alg_mos_ci95
 from tts_mos_test_mturk.evaluation_data import EvaluationData
 from tts_mos_test_mturk.logging import get_detail_logger, get_logger
+from tts_mos_test_mturk.masking.mask_factory import MaskFactory
 
 
 def get_mos_df(data: EvaluationData, mask_names: Set[str]) -> pd.DataFrame:
   logger = get_logger()
   masks = data.get_masks_from_names(mask_names)
-  factory = data.get_mask_factory()
+  factory = MaskFactory(data)
 
   ratings = data.get_ratings()
   all_ratings_count = np.sum(~np.isnan(ratings))
@@ -43,7 +44,7 @@ def generate_approve_csv(data: EvaluationData, mask_names: Set[str], reason: Opt
   logger = get_logger()
   dlogger = get_detail_logger()
   masks = data.get_masks_from_names(mask_names)
-  factory = data.get_mask_factory()
+  factory = MaskFactory(data)
 
   amask = factory.merge_masks_into_amask(masks)
   wmask = factory.merge_masks_into_wmask(masks)
@@ -96,7 +97,7 @@ def generate_reject_csv(data: EvaluationData, mask_names: Set[str], reason: str)
   dlogger = get_detail_logger()
 
   masks = data.get_masks_from_names(mask_names)
-  factory = data.get_mask_factory()
+  factory = MaskFactory(data)
 
   amask = factory.merge_masks_into_amask(masks)
   wmask = factory.merge_masks_into_wmask(masks)
@@ -116,7 +117,7 @@ def generate_reject_csv(data: EvaluationData, mask_names: Set[str], reason: str)
       dlogger.info(f"{nr}. \"{w}\"")
   else:
     dlogger.info("No unmasked workers exist.")
-    
+
   assignment_indices = amask.masked_indices
   assignments_worker_matrix = factory.get_assignments_worker_index_matrix()
 
@@ -142,7 +143,7 @@ def generate_bonus_csv(data: EvaluationData, mask_names: Set[str], bonus: float,
   logger = get_logger()
   dlogger = get_detail_logger()
   masks = data.get_masks_from_names(mask_names)
-  factory = data.get_mask_factory()
+  factory = MaskFactory(data)
 
   amask = factory.merge_masks_into_amask(masks)
   wmask = factory.merge_masks_into_wmask(masks)
@@ -189,28 +190,30 @@ def generate_bonus_csv(data: EvaluationData, mask_names: Set[str], bonus: float,
 
 def generate_ground_truth_table(data: EvaluationData, mask_names: Set[str]) -> pd.DataFrame:
   masks = data.get_masks_from_names(mask_names)
-  factory = data.get_mask_factory()
+  factory = MaskFactory(data)
 
   rmask = factory.merge_masks_into_rmask(masks)
 
   results: List[Dict[str, Any]] = []
-  for data_point in data.data:
-    w_i = data.workers.get_loc(data_point.worker_id)
-    a_i = data.algorithms.get_loc(data_point.algorithm)
-    s_i = data.files.get_loc(data_point.file)
-    is_masked = rmask.mask[a_i, w_i, s_i]
-    line = OrderedDict((
-        ("WorkerId", data_point.worker_id),
-        ("Algorithm", data_point.algorithm),
-        ("File", data_point.file),
-        ("Rating", data_point.rating),
-        ("AssignmentWorktime (s)", data_point.worktime),
-        ("Device", data_point.listening_device),
-        ("AssignmentState", data_point.state),
-        ("AssignmentId", data_point.assignment_id),
-        ("Masked", is_masked),
-        ("Audio-URL", data_point.audio_url),
-      ))
+
+  for worker, worker_data in data.worker_data.items():
+    w_i = data.workers.get_loc(worker)
+    for assignment, assignment_data in worker_data.assignments.items():
+      for rating_data in assignment_data.ratings:
+        alg_i = data.algorithms.get_loc(rating_data.algorithm)
+        file_i = data.files.get_loc(rating_data.file)
+        is_masked = rmask.mask[alg_i, w_i, file_i]
+        line = OrderedDict((
+            ("Worker", worker),
+            ("Algorithm", rating_data.algorithm),
+            ("File", rating_data.file),
+            ("Rating", rating_data.rating),
+            ("Worktime (s)", assignment_data.worktime),
+            ("Device", assignment_data.device),
+            ("State", assignment_data.state),
+            ("Assignment", assignment),
+            ("Masked?", is_masked),
+          ))
     results.append(line)
   result = pd.DataFrame.from_records(results)
   return result

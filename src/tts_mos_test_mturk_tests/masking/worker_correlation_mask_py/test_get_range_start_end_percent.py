@@ -1,4 +1,3 @@
-import numpy as np
 
 from tts_mos_test_mturk.masking.worker_correlation_mask import get_range_start_end_percent
 

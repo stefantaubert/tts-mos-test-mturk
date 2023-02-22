@@ -5,9 +5,9 @@ from typing import Dict, List, Set
 import numpy as np
 import pandas as pd
 
-from tts_mos_test_mturk.data_point import (DEVICE_DESKTOP, DEVICE_IN_EAR, DEVICE_LAPTOP,
-                                           DEVICE_ON_EAR)
+from tts_mos_test_mturk.statistics.globals import DEVICE_DESKTOP, DEVICE_IN_EAR, DEVICE_LAPTOP, DEVICE_ON_EAR
 from tts_mos_test_mturk.evaluation_data import EvaluationData
+from tts_mos_test_mturk.masking.mask_factory import MaskFactory
 from tts_mos_test_mturk.masking.masks import MaskBase
 
 
@@ -46,7 +46,7 @@ class WorkerEntry:
 
 
 def get_worker_stats(data: EvaluationData, masks: List[MaskBase]):
-  factory = data.get_mask_factory()
+  factory = MaskFactory(data)
 
   rmask = factory.merge_masks_into_rmask(masks)
 
@@ -60,28 +60,30 @@ def get_worker_stats(data: EvaluationData, masks: List[MaskBase]):
     for worker in data.workers:
       stats[algorithm][worker] = WorkerEntry()
 
-  for data_point in data.data:
-    entry = stats[data_point.algorithm][data_point.worker_id]
+  for worker, worker_data in data.worker_data.items():
+    w_i = data.workers.get_loc(worker)
+    for assignment_data in worker_data.assignments.values():
+      for rating_data in assignment_data.ratings:
+        alg_i = data.algorithms.get_loc(rating_data.algorithm)
+        file_i = data.files.get_loc(rating_data.file)
+        entry = stats[rating_data.algorithm][worker]
 
-    w_i = data.workers.get_loc(data_point.worker_id)
-    a_i = data.algorithms.get_loc(data_point.algorithm)
-    f_i = data.files.get_loc(data_point.file)
-    o_is_masked = rmask.mask[a_i, w_i, f_i]
-    if o_is_masked:
-      entry.masked += 1
-      continue
+        o_is_masked = rmask.mask[alg_i, w_i, file_i]
+        if o_is_masked:
+          entry.masked += 1
+          continue
 
-    if data_point.listening_device == DEVICE_IN_EAR:
-      entry.in_ear += 1
-    elif data_point.listening_device == DEVICE_ON_EAR:
-      entry.over_ear += 1
-    elif data_point.listening_device == DEVICE_LAPTOP:
-      entry.laptop += 1
-    else:
-      assert data_point.listening_device == DEVICE_DESKTOP
-      entry.desktop += 1
+        if assignment_data.device == DEVICE_IN_EAR:
+          entry.in_ear += 1
+        elif assignment_data.device == DEVICE_ON_EAR:
+          entry.over_ear += 1
+        elif assignment_data.device == DEVICE_LAPTOP:
+          entry.laptop += 1
+        else:
+          assert assignment_data.device == DEVICE_DESKTOP
+          entry.desktop += 1
 
-    entry.ratings.append(data_point.rating)
+        entry.ratings.append(rating_data.rating)
 
   return stats
 

@@ -6,14 +6,15 @@ from ordered_set import OrderedSet
 from pandas import DataFrame, concat
 
 from tts_mos_test_mturk.evaluation_data import EvaluationData
-from tts_mos_test_mturk.logging import get_detail_logger, log_full_df_info
+from tts_mos_test_mturk.logging import log_full_df_info
 from tts_mos_test_mturk.masking.etc import mask_values_in_boundary
+from tts_mos_test_mturk.masking.mask_factory import MaskFactory
 from tts_mos_test_mturk.statistics.update_stats import print_stats_masks
 
 
 def mask_outlying_ratings(data: EvaluationData, mask_names: Set[str], min_std_dev_diff: float, max_std_dev_diff: float, output_mask_name: str):
   masks = data.get_masks_from_names(mask_names)
-  factory = data.get_mask_factory()
+  factory = MaskFactory(data)
 
   rmask = factory.merge_masks_into_rmask(masks)
 

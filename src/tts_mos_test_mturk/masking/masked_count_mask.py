@@ -6,14 +6,15 @@ import pandas as pd
 from ordered_set import OrderedSet
 
 from tts_mos_test_mturk.evaluation_data import EvaluationData
-from tts_mos_test_mturk.logging import get_detail_logger, log_full_df_info
+from tts_mos_test_mturk.logging import log_full_df_info
 from tts_mos_test_mturk.masking.etc import mask_values_in_boundary
+from tts_mos_test_mturk.masking.mask_factory import MaskFactory
 from tts_mos_test_mturk.masking.masks import RatingsMask
 from tts_mos_test_mturk.statistics.update_stats import print_stats_masks
 
 
 def mask_ratings_by_masked_count(data: EvaluationData, mask_names: Set[str], ref_masks: Set[str], from_percent_incl: float, to_percent_excl: float, output_mask_name: str):
-  factory = data.get_mask_factory()
+  factory = MaskFactory(data)
   masks = data.get_masks_from_names(mask_names)
   ref_masks = data.get_masks_from_names(ref_masks)
   ref_rmask = factory.merge_masks_into_rmask(ref_masks)

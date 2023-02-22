@@ -1,9 +1,10 @@
 import argparse
 import codecs
+import json
 from argparse import ArgumentTypeError
 from functools import partial
 from pathlib import Path
-from typing import Callable, List, Optional, TypeVar
+from typing import Callable, Dict, List, Optional, TypeVar
 
 import pandas as pd
 from ordered_set import OrderedSet
@@ -43,6 +44,16 @@ def parse_data_frame(value: str) -> pd.DataFrame:
   except Exception as ex:
     raise ArgumentTypeError("CSV couldn't be parsed!") from ex
   return df
+
+
+def parse_json(value: str) -> Dict:
+  path = parse_path(value)
+  try:
+    with open(path, mode="r", encoding="utf-8") as file:
+      result = json.load(file)
+  except Exception as ex:
+    raise ArgumentTypeError("JSON couldn't be parsed!") from ex
+  return result
 
 
 def parse_codec(value: str) -> str:

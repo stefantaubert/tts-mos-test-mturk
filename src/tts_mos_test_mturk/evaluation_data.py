@@ -1,56 +1,47 @@
 from collections import OrderedDict
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import List, Optional
 from typing import OrderedDict as ODType
 from typing import Set, cast
 
 import numpy as np
 from ordered_set import OrderedSet
-from pandas import DataFrame
 
-from tts_mos_test_mturk.data_point import DataPoint, get_n_urls_per_assignment, parse_data_points
 from tts_mos_test_mturk.io import load_obj, save_obj
-from tts_mos_test_mturk.masking.mask_factory import MaskFactory
 from tts_mos_test_mturk.masking.masks import MaskBase
-
-
-def get_file_dict_from_df(ground_truth_df: DataFrame) -> Dict[str, str]:
-  ground_truth_dict = ground_truth_df.to_dict("index")
-  file_dict: Dict[str, str] = {}
-
-  for row in ground_truth_dict.values():
-    audio_url = row["audio_url"]
-    file_dict[audio_url] = row["file"]
-  return file_dict
-
-
-def get_alg_dict_from_df(ground_truth_df: DataFrame) -> Dict[str, str]:
-  ground_truth_dict = ground_truth_df.to_dict("index")
-  alg_dict: Dict[str, str] = {}
-
-  for row in ground_truth_dict.values():
-    audio_url = row["audio_url"]
-    alg_dict[audio_url] = row["algorithm"]
-  return alg_dict
+from tts_mos_test_mturk.result import Result, Worker
 
 
 class EvaluationData():
-  def __init__(self, results_df: DataFrame, ground_truth_df: DataFrame):
-    super().__init__()
-    results_dict = results_df.to_dict("index")
+  def __init__(self, result: Result):
+    self.__result = result
+    self.workers = OrderedSet(result.workers.keys())
+    self.assignments = OrderedSet(
+      assignment
+      for worker in result.workers.values()
+      for assignment in worker.assignments.keys()
+    )
+    self.n_ratings: int = sum(
+      1
+      for worker in result.workers.values()
+      for assignment in worker.assignments.values()
+      for _ in assignment.ratings
+    )
 
-    alg_dict = get_alg_dict_from_df(ground_truth_df)
-    file_dict = get_file_dict_from_df(ground_truth_df)
-
-    self.audio_urls = OrderedSet(sorted(alg_dict.keys()))
-    self.algorithms = OrderedSet(sorted(alg_dict.values()))
-    self.files = OrderedSet(sorted(file_dict.values()))
-    self.data: List[DataPoint] = list(parse_data_points(results_dict, alg_dict, file_dict))
-    self.workers = OrderedSet(sorted(set(data_point.worker_id for data_point in self.data)))
-    self.assignments = OrderedSet(sorted(set(data_point.assignment_id for data_point in self.data)))
-    self.n_urls_per_assignment = get_n_urls_per_assignment(self.data)
     self.masks: ODType[str, MaskBase] = OrderedDict()
     self.file_path: Optional[Path] = None
+
+  @property
+  def algorithms(self) -> OrderedSet[str]:
+    return self.__result.algorithms
+
+  @property
+  def files(self) -> OrderedSet[str]:
+    return self.__result.files
+
+  @property
+  def worker_data(self) -> ODType[str, Worker]:
+    return self.__result.workers
 
   @classmethod
   def load(cls, path: Path):
@@ -79,16 +70,8 @@ class EvaluationData():
     return len(self.workers)
 
   @property
-  def n_ratings(self) -> int:
-    return len(self.data)
-
-  @property
   def n_files(self) -> int:
     return len(self.files)
-
-  @property
-  def n_urls(self) -> int:
-    return len(self.audio_urls)
 
   def get_mask(self, mask_name: str) -> MaskBase:
     if mask_name not in self.masks:
@@ -103,22 +86,18 @@ class EvaluationData():
     assert name is not None
     self.masks[name] = mask
 
-  def get_mask_factory(self) -> MaskFactory:
-    result = MaskFactory(self.algorithms, self.workers, self.files, self.assignments, self.data)
-    return result
-
   def get_ratings(self) -> np.ndarray:
     Z = np.full(
       (self.n_algorithms, self.n_workers, self.n_files),
       fill_value=np.nan,
       dtype=np.float32
     )
-    for data_point in self.data:
-      alg_i = self.algorithms.get_loc(data_point.algorithm)
-      worker_i = self.workers.get_loc(data_point.worker_id)
-      file_i = self.files.get_loc(data_point.file)
-      Z[alg_i, worker_i, file_i] = data_point.rating
-    return Z
 
-def parse_json(data: Dict) -> EvaluationData:
-  
+    for worker, worker_data in self.__result.workers.items():
+      worker_i = self.workers.get_loc(worker)
+      for assignment_data in worker_data.assignments.values():
+        for rating_data in assignment_data.ratings:
+          alg_i = self.algorithms.get_loc(rating_data.algorithm)
+          file_i = self.files.get_loc(rating_data.file)
+          Z[alg_i, worker_i, file_i] = rating_data.rating
+    return Z

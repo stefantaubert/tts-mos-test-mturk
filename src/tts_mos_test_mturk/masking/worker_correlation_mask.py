@@ -11,8 +11,9 @@ from tts_mos_test_mturk.calculation.correlations import (get_algorithm_mos_corre
                                                          get_sentence_mos_correlations_3dim,
                                                          get_worker_mos_correlations)
 from tts_mos_test_mturk.evaluation_data import EvaluationData
-from tts_mos_test_mturk.logging import get_detail_logger, log_full_df_info
+from tts_mos_test_mturk.logging import log_full_df_info
 from tts_mos_test_mturk.masking.etc import mask_values_in_boundary, sort_indices_after_values
+from tts_mos_test_mturk.masking.mask_factory import MaskFactory
 from tts_mos_test_mturk.statistics.update_stats import print_stats_masks
 
 
@@ -75,7 +76,7 @@ def get_stats_df(workers: OrderedSet[str], ratings: np.ndarray, masked_indices: 
 
 def mask_workers_by_correlation(data: EvaluationData, mask_names: Set[str], from_threshold_incl: float, to_threshold_excl: float, mode: Literal["sentence", "algorithm", "both"], output_mask_name: str):
   masks = data.get_masks_from_names(mask_names)
-  factory = data.get_mask_factory()
+  factory = MaskFactory(data)
 
   rmask = factory.merge_masks_into_rmask(masks)
   wmask = factory.merge_masks_into_wmask(masks)
@@ -100,7 +101,7 @@ def mask_workers_by_correlation(data: EvaluationData, mask_names: Set[str], from
 def mask_workers_by_correlation_percent(data: EvaluationData, mask_names: Set[str], from_percent_incl: float, to_percent_excl: float, mode: Literal["sentence", "algorithm", "both"], output_mask_name: str):
   # dlogger = get_detail_logger()
   masks = data.get_masks_from_names(mask_names)
-  factory = data.get_mask_factory()
+  factory = MaskFactory(data)
 
   rmask = factory.merge_masks_into_rmask(masks)
   wmask = factory.merge_masks_into_wmask(masks)

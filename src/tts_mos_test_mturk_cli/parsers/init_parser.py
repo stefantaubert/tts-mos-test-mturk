@@ -1,21 +1,24 @@
 from argparse import ArgumentParser, Namespace
 
 from tts_mos_test_mturk.evaluation_data import EvaluationData
-from tts_mos_test_mturk_cli.argparse_helper import parse_data_frame, parse_path
+from tts_mos_test_mturk.result import parse_result_from_json
+from tts_mos_test_mturk_cli.argparse_helper import parse_data_frame, parse_json, parse_path
 from tts_mos_test_mturk_cli.helper import save_project
-
+from tts_mos_test_mturk_cli.logging_configuration import get_cli_logger
 
 def init_init_project_parser(parser: ArgumentParser):
   parser.description = "Initialize a project from the ground truth and batch results."
-  parser.add_argument("ground_truth_path", type=parse_data_frame, metavar="GROUND-TRUTH-CSV",
-                      help="path containing the ground truths for each url, i.e. a CSV-file with columns \"audio_url, algorithm, file\"")
-  parser.add_argument("results_path", type=parse_data_frame, metavar="RESULTS-CSV",
-                      help="path to the batch results file (something like \"Batch_374625_batch_results.csv\")")
+  parser.add_argument("result_json", type=parse_json, metavar="RESULT-JSON",
+                      help="path containing the results (.json-file)")
   parser.add_argument("output", type=parse_path, metavar="OUTPUT-PROJECT-PATH",
                       help="output project file (.pkl)")
 
   def main(ns: Namespace) -> None:
-    data = EvaluationData(ns.results_path, ns.ground_truth_path)
+    result = parse_result_from_json(ns.result_json)
+    data = EvaluationData(result)
     data.file_path = ns.output
+    logger = get_cli_logger()
+    logger.info(f"Parsed {data.n_workers} workers, {data.n_assignments} assignments and {data.n_ratings} ratings for {data.n_algorithms} algorithms and {data.n_files} files.")
+    
     save_project(data)
   return main

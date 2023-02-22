@@ -11,16 +11,15 @@ from tempfile import gettempdir
 from time import perf_counter
 from typing import Callable, Generator, List, Tuple
 
-from tts_mos_test_mturk.logging import (attach_boto_to_detail_logger,
-                                        attach_urllib3_to_detail_logger, get_detail_logger,
-                                        get_logger)
+from mturk_template.logging import get_detail_logger, get_logger
+from mturk_template_cli.example_parser import init_generate_example_input_parser
+from mturk_template_cli.init_parser import init_convert_to_json_parser
+from mturk_template_cli.types import CLIError, ExecutionResult
 from tts_mos_test_mturk_cli.argparse_helper import get_optional, parse_path, parse_positive_integer
 from tts_mos_test_mturk_cli.globals import APP_NAME
 from tts_mos_test_mturk_cli.logging_configuration import (configure_root_logger, get_file_logger,
                                                           init_and_return_loggers,
                                                           try_init_file_buffer_logger)
-from tts_mos_test_mturk_cli.parsers import *
-from tts_mos_test_mturk_cli.types import CLIError, ExecutionResult
 
 __version__ = version(APP_NAME)
 
@@ -38,39 +37,9 @@ def formatter(prog):
   return argparse.ArgumentDefaultsHelpFormatter(prog, max_help_position=40)
 
 
-def get_masks_parsers() -> Parsers:
-  yield "mask-workers-by-assignments-count", "mask workers by their count of assignments", init_mask_workers_by_assignments_count_parser
-  yield "mask-workers-by-masked-ratings-count", "mask workers by their count of masked ratings", init_workers_by_masked_ratings_count_parser
-  yield "mask-workers-by-correlation", "mask workers by their algorithm/sentence correlation", init_mask_workers_by_correlation_parser
-  yield "mask-workers-by-correlation-percent", "mask workers by their algorithm/sentence correlation (percentage-wise)", init_mask_workers_by_correlation_percent_parser
-  yield "mask-assignments-by-device", "mask assignments by their listening device", get_mask_assignments_by_device_parser
-  yield "mask-assignments-by-worktime", "mask assignments by their worktime", init_mask_assignments_by_worktime_parser
-  yield "mask-rating-outliers", "mask outlying ratings", init_mask_rating_outliers_parser
-
-
-def get_stats_parsers() -> Parsers:
-  yield "print-mos", "print MOS and CI95", init_print_mos_parser
-  yield "print-masking-stats", "print masking statistics", init_print_masking_stats_parser
-  yield "print-worker-stats", "print worker statistics for each algorithm", init_print_worker_stats_parser
-  yield "print-assignment-stats", "print assignment statistics for each worker", init_print_assignment_stats_parser
-  yield "print-sentence-stats", "print sentence statistics for each algorithm", init_print_sentence_stats_parser
-  yield "print-data", "print all data points", init_print_data_parser
-
-
-def get_mturk_parsers() -> Parsers:
-  yield "prepare-approval", "generate approval CSV-file", init_prepare_approval_parser
-  yield "approve", "approve assignments from CSV-file", init_approve_parser
-  yield "prepare-rejection", "generate rejection CSV-file", init_prepare_rejection_parser
-  yield "reject", "reject assignments from CSV-file", init_reject_parser
-  yield "prepare-bonus-payment", "generate bonus payment CSV-file", init_prepare_bonus_payment_parser
-  yield "pay-bonus", "pay bonus to assignments from CSV-file", init_pay_bonus_parser
-
-
 def get_parsers():
-  yield "init", "initialize project", init_init_project_parser
-  yield "masks", "masks commands", list(get_masks_parsers())
-  yield "stats", "stats commands", list(get_stats_parsers())
-  yield "mturk", "mturk commands", list(get_mturk_parsers())
+  yield "convert-to-json", "convert input data and results to .json-file", init_convert_to_json_parser
+  yield "gen-example-input", "generate example input data", init_generate_example_input_parser
 
 
 def print_features():
@@ -86,7 +55,7 @@ def print_features():
 
 
 def add_logging_group(parser: ArgumentParser) -> None:
-  default_log_path = Path(gettempdir()) / f"{APP_NAME}.log"
+  default_log_path = Path(gettempdir()) / "mturk-template.log"
   logging_group = parser.add_argument_group("logging arguments")
   logging_group.add_argument("--log", type=get_optional(parse_path), metavar="FILE",
                              nargs="?", const=None, help="path to write the log", default=default_log_path)
@@ -211,8 +180,6 @@ def parse_args(args: List[str]) -> None:
   core_main_logger.parent = cmd_logger
   core_detail_logger = get_detail_logger()
   core_detail_logger.parent = cmd_flogger
-  attach_boto_to_detail_logger()
-  attach_urllib3_to_detail_logger()
 
   success = True
   try:
@@ -257,12 +224,12 @@ def run_prod():
 
 
 def debug_file_exists():
-  return (Path(gettempdir()) / f"{APP_NAME}-debug").is_file()
+  return (Path(gettempdir()) / f"mturk-template-debug").is_file()
 
 
 def create_debug_file():
   if not debug_file_exists():
-    (Path(gettempdir()) / f"{APP_NAME}-debug").write_text("", "UTF-8")
+    (Path(gettempdir()) / f"mturk-template-debug").write_text("", "UTF-8")
 
 
 if __name__ == "__main__":

@@ -4,6 +4,7 @@ import numpy as np
 
 from tts_mos_test_mturk.evaluation_data import EvaluationData
 from tts_mos_test_mturk.logging import get_detail_logger, get_logger
+from tts_mos_test_mturk.masking.mask_factory import MaskFactory
 from tts_mos_test_mturk.masking.masks import AssignmentsMask, MaskBase, WorkersMask
 
 
@@ -28,7 +29,7 @@ def print_stats_masks(data: EvaluationData, masks: List[MaskBase], added_masks: 
 
 def print_rating_stats(data: EvaluationData, masks: List[MaskBase], added_masks: List[MaskBase]) -> None:
   logger = get_logger()
-  factory = data.get_mask_factory()
+  factory = MaskFactory(data)
 
   ratings = data.get_ratings()
 
@@ -59,7 +60,7 @@ def print_assignment_stats(data: EvaluationData, masks: List[MaskBase], added_ma
   logger = get_logger()
   dlogger = get_detail_logger()
 
-  factory = data.get_mask_factory()
+  factory = MaskFactory(data)
 
   assignments_mask_before = factory.merge_masks_into_amask(masks)
   assignments_mask_after = factory.merge_masks_into_amask(masks + added_masks)
@@ -102,7 +103,7 @@ def print_assignment_stats(data: EvaluationData, masks: List[MaskBase], added_ma
 def print_worker_stats(data: EvaluationData, masks: List[MaskBase], added_masks: List[MaskBase]) -> None:
   logger = get_logger()
   dlogger = get_detail_logger()
-  factory = data.get_mask_factory()
+  factory = MaskFactory(data)
 
   workers_mask_before = factory.merge_masks_into_wmask(masks)
   workers_mask_after = factory.merge_masks_into_wmask(masks + added_masks)

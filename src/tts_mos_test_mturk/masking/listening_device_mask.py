@@ -5,14 +5,14 @@ import numpy as np
 import pandas as pd
 
 from tts_mos_test_mturk.evaluation_data import EvaluationData
-from tts_mos_test_mturk.logging import get_detail_logger, log_full_df_info
+from tts_mos_test_mturk.logging import log_full_df_info
 from tts_mos_test_mturk.masking.mask_factory import MaskFactory
 from tts_mos_test_mturk.statistics.update_stats import print_stats_masks
 
 
 def mask_assignments_by_listening_device(data: EvaluationData, mask_names: Set[str], listening_devices: Set[str], output_mask_name: str):
   masks = data.get_masks_from_names(mask_names)
-  factory = data.get_mask_factory()
+  factory = MaskFactory(data)
 
   lts = get_listening_devices(data)
   amask = factory.merge_masks_into_amask(masks)
@@ -64,10 +64,10 @@ def get_listening_devices_amask(listening_devices: np.ndarray, mask_listening_de
 
 
 def get_listening_devices(data: EvaluationData) -> np.ndarray:
-  worktimes = [np.nan] * data.n_assignments
-  for data_point in data.data:
-    ass_i = data.assignments.get_loc(data_point.assignment_id)
-    if worktimes[ass_i] != data_point.listening_device:
-      worktimes[ass_i] = data_point.listening_device
-  worktimes_np = np.array(worktimes)
-  return worktimes_np
+  devices = [np.nan] * data.n_assignments
+  for worker_data in data.worker_data.values():
+    for assignment, assignment_data in worker_data.assignments.items():
+      ass_i = data.assignments.get_loc(assignment)
+      devices[ass_i] = assignment_data.device
+  devices_np = np.array(devices)
+  return devices_np

@@ -6,15 +6,15 @@ import pandas as pd
 from ordered_set import OrderedSet
 
 from tts_mos_test_mturk.evaluation_data import EvaluationData
-from tts_mos_test_mturk.logging import get_detail_logger, log_full_df_info
-from tts_mos_test_mturk.masking.etc import mask_values_in_boundary, sort_indices_after_values
+from tts_mos_test_mturk.logging import log_full_df_info
+from tts_mos_test_mturk.masking.etc import mask_values_in_boundary
+from tts_mos_test_mturk.masking.mask_factory import MaskFactory
 from tts_mos_test_mturk.statistics.update_stats import print_stats_masks
 
 
 def mask_workers_by_assignment_count(data: EvaluationData, mask_names: Set[str], from_threshold_incl: int, to_threshold_excl: int, output_mask_name: str):
-  dlogger = get_detail_logger()
   masks = data.get_masks_from_names(mask_names)
-  factory = data.get_mask_factory()
+  factory = MaskFactory(data)
 
   amask = factory.merge_masks_into_amask(masks)
   wmask = factory.merge_masks_into_wmask(masks)

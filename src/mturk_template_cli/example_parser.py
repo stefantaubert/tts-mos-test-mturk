@@ -1,6 +1,6 @@
 from argparse import ArgumentParser, Namespace
 
-from tts_mos_test_mturk.example_df_creation import generate_example_data
+from mturk_template.example_df_creation import generate_example_data
 from tts_mos_test_mturk_cli.argparse_helper import (get_optional, parse_non_negative_integer,
                                                     parse_path)
 from tts_mos_test_mturk_cli.helper import save_csv
