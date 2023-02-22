@@ -3,6 +3,7 @@ from ordered_set import OrderedSet
 from pandas import DataFrame
 
 from mturk_template.convert_to_json import convert_to_json
+from tts_mos_test_mturk.common import get_ratings
 from tts_mos_test_mturk.evaluation_data import EvaluationData
 from tts_mos_test_mturk.result import parse_result_from_json
 
@@ -65,7 +66,7 @@ def test_component():
   assert data.n_assignments == 2
   assert data.assignments == OrderedSet(("assignment0", "assignment1"))
 
-  np.testing.assert_equal(data.get_ratings(), [
+  np.testing.assert_equal(get_ratings(data), [
     [
       [1, 5, _],
       [_, _, _],

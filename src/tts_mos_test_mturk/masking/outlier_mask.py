@@ -5,6 +5,7 @@ import numpy as np
 from ordered_set import OrderedSet
 from pandas import DataFrame, concat
 
+from tts_mos_test_mturk.common import get_ratings
 from tts_mos_test_mturk.evaluation_data import EvaluationData
 from tts_mos_test_mturk.logging import log_full_df_info
 from tts_mos_test_mturk.masking.etc import mask_values_in_boundary
@@ -18,7 +19,7 @@ def mask_outlying_ratings(data: EvaluationData, mask_names: Set[str], min_std_de
 
   rmask = factory.merge_masks_into_rmask(masks)
 
-  ratings = data.get_ratings()
+  ratings = get_ratings(data)
   rmask.apply_by_nan(ratings)
 
   stats_df = mask_outliers_alg_stats_df(

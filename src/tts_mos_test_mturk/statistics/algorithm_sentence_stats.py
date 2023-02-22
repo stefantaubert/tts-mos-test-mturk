@@ -5,6 +5,7 @@ from typing import Dict, List, Set, Union
 import numpy as np
 import pandas as pd
 
+from tts_mos_test_mturk.common import get_ratings
 from tts_mos_test_mturk.evaluation_data import EvaluationData
 from tts_mos_test_mturk.masking.mask_factory import MaskFactory
 from tts_mos_test_mturk.masking.masks import MaskBase
@@ -57,7 +58,7 @@ def get_worker_stats(data: EvaluationData, masks: List[MaskBase]):
 
   rmask = factory.merge_masks_into_rmask(masks)
 
-  ratings = data.get_ratings()
+  ratings = get_ratings(data)
   rmask.apply_by_nan(ratings)
 
   stats: Dict[str, Dict[str, FileEntry]] = {}

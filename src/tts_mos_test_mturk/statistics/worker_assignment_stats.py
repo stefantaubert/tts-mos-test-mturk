@@ -7,6 +7,7 @@ import pandas as pd
 
 from tts_mos_test_mturk.calculation.correlations import (get_algorithm_mos_correlation,
                                                          get_sentence_mos_correlation_3dim)
+from tts_mos_test_mturk.common import get_ratings
 from tts_mos_test_mturk.evaluation_data import EvaluationData
 from tts_mos_test_mturk.masking.mask_factory import MaskFactory
 from tts_mos_test_mturk.masking.masks import MaskBase
@@ -57,7 +58,7 @@ def get_data(data: EvaluationData, masks: List[MaskBase]):
   amask = factory.merge_masks_into_amask(masks)
   rmask = factory.merge_masks_into_rmask(masks)
 
-  ratings = data.get_ratings()
+  ratings = get_ratings(data)
   rmask.apply_by_nan(ratings)
 
   stats: Dict[str, WorkerEntry] = {}

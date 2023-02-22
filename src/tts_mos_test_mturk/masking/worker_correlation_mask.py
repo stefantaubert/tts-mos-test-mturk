@@ -10,6 +10,7 @@ from tts_mos_test_mturk.calculation.correlations import (get_algorithm_mos_corre
                                                          get_mos_correlations,
                                                          get_sentence_mos_correlations_3dim,
                                                          get_worker_mos_correlations)
+from tts_mos_test_mturk.common import get_ratings
 from tts_mos_test_mturk.evaluation_data import EvaluationData
 from tts_mos_test_mturk.logging import log_full_df_info
 from tts_mos_test_mturk.masking.etc import mask_values_in_boundary, sort_indices_after_values
@@ -24,7 +25,7 @@ def mask_workers_by_correlation(data: EvaluationData, mask_names: Set[str], from
   rmask = factory.merge_masks_into_rmask(masks)
   wmask = factory.merge_masks_into_wmask(masks)
 
-  ratings = data.get_ratings()
+  ratings = get_ratings(data)
   rmask.apply_by_nan(ratings)
 
   wcorrelations = get_mos_correlations(ratings, mode)
@@ -48,7 +49,7 @@ def mask_workers_by_correlation_percent(data: EvaluationData, mask_names: Set[st
   rmask = factory.merge_masks_into_rmask(masks)
   wmask = factory.merge_masks_into_wmask(masks)
 
-  ratings = data.get_ratings()
+  ratings = get_ratings(data)
   rmask.apply_by_nan(ratings)
 
   wcorrelations = get_mos_correlations(ratings, mode)

@@ -4,7 +4,6 @@ from typing import List, Optional
 from typing import OrderedDict as ODType
 from typing import Set, cast
 
-import numpy as np
 from ordered_set import OrderedSet
 
 from tts_mos_test_mturk.io import load_obj, save_obj
@@ -85,19 +84,3 @@ class EvaluationData():
   def add_or_update_mask(self, name: str, mask: MaskBase) -> None:
     assert name is not None
     self.masks[name] = mask
-
-  def get_ratings(self) -> np.ndarray:
-    ratings = np.full(
-      (self.n_algorithms, self.n_workers, self.n_files),
-      fill_value=np.nan,
-      dtype=np.float32
-    )
-
-    for worker, worker_data in self.__result.workers.items():
-      worker_i = self.workers.get_loc(worker)
-      for assignment_data in worker_data.assignments.values():
-        for rating_data in assignment_data.ratings:
-          alg_i = self.algorithms.get_loc(rating_data.algorithm)
-          file_i = self.files.get_loc(rating_data.file)
-          ratings[alg_i, worker_i, file_i] = rating_data.rating
-    return ratings

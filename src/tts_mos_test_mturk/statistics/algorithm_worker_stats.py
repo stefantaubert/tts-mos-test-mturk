@@ -51,13 +51,15 @@ class WorkerEntry:
       return np.nan
     return np.std(self.ratings)
 
+from tts_mos_test_mturk.common import get_ratings
+
 
 def get_worker_stats(data: EvaluationData, masks: List[MaskBase]):
   factory = MaskFactory(data)
 
   rmask = factory.merge_masks_into_rmask(masks)
 
-  ratings = data.get_ratings()
+  ratings = get_ratings(data)
   rmask.apply_by_nan(ratings)
 
   stats: Dict[str, Dict[str, WorkerEntry]] = {}

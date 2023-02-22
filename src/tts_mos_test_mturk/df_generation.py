@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 
 from tts_mos_test_mturk.calculation.mos_variance import compute_alg_mos_ci95
+from tts_mos_test_mturk.common import get_ratings
 from tts_mos_test_mturk.evaluation_data import EvaluationData
 from tts_mos_test_mturk.logging import get_detail_logger, get_logger
 from tts_mos_test_mturk.masking.mask_factory import MaskFactory
@@ -15,7 +16,7 @@ def get_mos_df(data: EvaluationData, mask_names: Set[str]) -> pd.DataFrame:
   masks = data.get_masks_from_names(mask_names)
   factory = MaskFactory(data)
 
-  ratings = data.get_ratings()
+  ratings = get_ratings(data)
   all_ratings_count = np.sum(~np.isnan(ratings))
 
   rmask = factory.merge_masks_into_rmask(masks)

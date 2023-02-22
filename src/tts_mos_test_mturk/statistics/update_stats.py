@@ -2,6 +2,7 @@ from typing import Generator, Iterator, List, Set
 
 import numpy as np
 
+from tts_mos_test_mturk.common import get_ratings
 from tts_mos_test_mturk.evaluation_data import EvaluationData
 from tts_mos_test_mturk.logging import get_detail_logger, get_logger
 from tts_mos_test_mturk.masking.mask_factory import MaskFactory
@@ -31,7 +32,7 @@ def print_rating_stats(data: EvaluationData, masks: List[MaskBase], added_masks:
   logger = get_logger()
   factory = MaskFactory(data)
 
-  ratings = data.get_ratings()
+  ratings = get_ratings(data)
 
   ratings_mask_before = factory.merge_masks_into_rmask(masks)
   ratings_mask_before.apply_by_nan(ratings)
