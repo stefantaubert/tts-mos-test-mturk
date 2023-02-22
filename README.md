@@ -106,6 +106,8 @@ print(f"MOS algorithm 2: {results[0][1]:.3f} ± {results[1][1]:.3f}")
 
 ## Pipeline
 
+Note: The creation of the template and survey is not fully described yet. The evaluation can be done using a .json-file which interacts as a interface between the template and the evaluation (see "Project JSON example").
+
 ### 1. Create MTurk Template
 
 To create the MTurk Template the script at [mturk-template/create-template.sh](mturk-template/create-template.sh) could be used.
@@ -121,9 +123,9 @@ mos-cli gen-example-input \
   "/tmp/upload.csv" --seed 1234
 ```
 
-### 3. Initialize project
+### 3. Prepare evaluation
 
-To initialize a project these two files are needed:
+To prepare the evaluation these two files are needed:
 
 - a file containing the algorithm and sentence for each url
   - it needs to contain 3 columns `audio_url`, `algorithm` and `file`
@@ -136,16 +138,30 @@ To initialize a project these two files are needed:
   - Then click on `Download CSV`
   - You get a file which is named something like `Batch_374625_batch_results.csv`
 
-Then initialize a new project with:
+Then create the .json-file for the evaluation with:
+
+```sh
+mturk-template-cli prepare-evaluation \
+  "/tmp/algorithms-and-files.csv" \
+  "/tmp/Batch_374625_batch_results.csv" \
+  "/tmp/project.json"
+```
+
+The .json-file contains all relevant information for the evaluation.
+
+Note: If *another template* is used then a .json-file needs to be created for the evaluation containing all required fields.
+
+### 4. Initialize project
+
+From the previously created .json-file a new project can be initialized with:
 
 ```sh
 mos-cli init \
-  "/tmp/algorithms-and-files.csv" \
-  "/tmp/Batch_374625_batch_results.csv" \
+  "/tmp/project.json"
   "/tmp/project.pkl"
 ```
 
-### 4. Mask workers/assignments/ratings
+### 5. Mask workers/assignments/ratings
 
 Workers/assignments/ratings can be masked in order to ignore them later in the MOS calculation. For these operations the command `mos-cli masks [operation]` is used. For example: Mask assignments that were done too fast  (e.g., less than 30 seconds):
 
@@ -199,7 +215,7 @@ Log: "/tmp/tts-mos-test-mturk.log"
 
 This operation masked 54 further assignments (incl. their 432 ratings) that were done without a headphone. All assignments that were done too fast were already masked.
 
-### 5. Calculate MOS and CI95
+### 6. Calculate MOS and CI95
 
 To calculate the MOS for all ratings while ignoring ratings that were done without a headphone or were taken too fast, the masks `too-fast` and `too-fast > no-headphone` need to be applied:
 
@@ -224,7 +240,7 @@ Count of ratings (unmasked/all): 3616/4320 -> on average 904/1080 per algorithm
 Log: "/tmp/tts-mos-test-mturk.log"
 ```
 
-### 6. Approve/reject assignments
+### 7. Approve/reject assignments
 
 To approve all assignments that weren't done too fast, a CSV can be generated using:
 
@@ -282,10 +298,48 @@ mos-cli mturk reject \
   "/tmp/reject.csv"
 ```
 
+## Project JSON example
+
+```json
+{
+  "files": [
+    "file1",
+    "file2",
+    ...more files
+  ],
+  "algorithms": [
+    "alg1",
+    "alg2",
+    ...more algorithms
+  ],
+  "workers": {
+    "Worker1": {
+      "Assignment1": {
+        "device": "in-ear",
+        "state": "Accepted",
+        "worktime": 30,
+        "comments": "",
+        "ratings": [
+          {
+            "rating": 5,
+            "algorithm": "alg1",
+            "file": "file1"
+          },
+          ...more ratings
+        ]
+      },
+      ...more assignments
+    },
+    ...more workers
+  }
+}
+```
+
 ## Roadmap
 
 - add `masks mask-workers-by-id`
 - add `masks mask-assignments-by-id`
+- add `masks mask-assignments-by-status`
 - add `masks mask-assignments-by-date`
 - add `masks mask-assignments-not-of-last-month/week/day`
 - add `masks reverse-mask`

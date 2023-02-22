@@ -67,7 +67,7 @@ def get_mturk_parsers() -> Parsers:
 
 
 def get_parsers():
-  yield "init", "initialize project", init_init_project_parser
+  yield "init", "initialize project from .json-file", init_init_project_parser
   yield "masks", "masks commands", list(get_masks_parsers())
   yield "stats", "stats commands", list(get_stats_parsers())
   yield "mturk", "mturk commands", list(get_mturk_parsers())

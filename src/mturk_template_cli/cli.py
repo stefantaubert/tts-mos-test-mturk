@@ -38,7 +38,7 @@ def formatter(prog):
 
 
 def get_parsers():
-  yield "convert-to-json", "convert input data and results to .json-file", init_convert_to_json_parser
+  yield "prepare-evaluation", "convert input data and results to .json-file", init_convert_to_json_parser
   yield "gen-example-input", "generate example input data", init_generate_example_input_parser
 
 
