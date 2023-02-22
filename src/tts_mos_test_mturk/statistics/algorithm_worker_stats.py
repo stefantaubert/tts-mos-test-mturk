@@ -5,10 +5,11 @@ from typing import Dict, List, Set
 import numpy as np
 import pandas as pd
 
-from tts_mos_test_mturk.statistics.globals import DEVICE_DESKTOP, DEVICE_IN_EAR, DEVICE_LAPTOP, DEVICE_ON_EAR
 from tts_mos_test_mturk.evaluation_data import EvaluationData
 from tts_mos_test_mturk.masking.mask_factory import MaskFactory
 from tts_mos_test_mturk.masking.masks import MaskBase
+from tts_mos_test_mturk.statistics.globals import (DEVICE_DESKTOP, DEVICE_IN_EAR, DEVICE_LAPTOP,
+                                                   DEVICE_ON_EAR)
 
 
 @dataclass

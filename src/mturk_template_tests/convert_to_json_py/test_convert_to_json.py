@@ -1,7 +1,5 @@
 from collections import OrderedDict
 
-import numpy as np
-from ordered_set import OrderedSet
 from pandas import DataFrame
 
 from mturk_template.convert_to_json import convert_to_json

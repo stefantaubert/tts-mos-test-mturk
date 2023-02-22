@@ -2,9 +2,10 @@ from argparse import ArgumentParser, Namespace
 
 from tts_mos_test_mturk.evaluation_data import EvaluationData
 from tts_mos_test_mturk.result import parse_result_from_json
-from tts_mos_test_mturk_cli.argparse_helper import parse_data_frame, parse_json, parse_path
+from tts_mos_test_mturk_cli.argparse_helper import parse_json, parse_path
 from tts_mos_test_mturk_cli.helper import save_project
 from tts_mos_test_mturk_cli.logging_configuration import get_cli_logger
+
 
 def init_init_project_parser(parser: ArgumentParser):
   parser.description = "Initialize a project from the ground truth and batch results."

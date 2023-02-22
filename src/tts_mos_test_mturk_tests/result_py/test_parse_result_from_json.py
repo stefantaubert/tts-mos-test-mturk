@@ -1,10 +1,8 @@
-import numpy as np
 from ordered_set import OrderedSet
 from pandas import DataFrame
 
 from mturk_template.convert_to_json import convert_to_json
-from tts_mos_test_mturk.evaluation_data import EvaluationData
-from tts_mos_test_mturk.result import Result, parse_result_from_json
+from tts_mos_test_mturk.result import parse_result_from_json
 
 
 def test_component():

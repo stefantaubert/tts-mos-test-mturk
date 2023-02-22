@@ -2,9 +2,7 @@ import json
 from argparse import ArgumentParser, Namespace
 
 from mturk_template.convert_to_json import convert_to_json
-from tts_mos_test_mturk.evaluation_data import EvaluationData
-from tts_mos_test_mturk_cli.argparse_helper import parse_data_frame, parse_json, parse_path
-from tts_mos_test_mturk_cli.helper import save_project
+from tts_mos_test_mturk_cli.argparse_helper import parse_data_frame, parse_path
 from tts_mos_test_mturk_cli.logging_configuration import get_cli_logger
 
 
