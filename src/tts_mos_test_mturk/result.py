@@ -21,7 +21,7 @@ class Assignment:
   # TODO make optional
   state: str
   # TODO make optional
-  worktime: str
+  worktime: float
   ratings: List[Rating] = field(default_factory=list)
 
 
@@ -53,7 +53,7 @@ def parse_result_from_json(data: Dict) -> Result:
     for assignment_id, assignment_data in assignments.items():
       device = str(assignment_data["device"])
       state = str(assignment_data["state"])
-      worktime = str(assignment_data["worktime"])
+      worktime = float(assignment_data["worktime"])
       if assignment_id in assignment_ids:
         raise ValueError(f"Assignment \"{assignment_id}\" exist multiple times!")
       assignment_ids.add(assignment_id)

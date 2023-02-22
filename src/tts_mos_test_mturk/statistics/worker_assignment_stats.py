@@ -1,4 +1,4 @@
-from collections import OrderedDict
+from collections import Counter, OrderedDict
 from dataclasses import dataclass, field
 from typing import Dict, List, Set
 
@@ -10,29 +10,34 @@ from tts_mos_test_mturk.calculation.correlations import (get_algorithm_mos_corre
 from tts_mos_test_mturk.evaluation_data import EvaluationData
 from tts_mos_test_mturk.masking.mask_factory import MaskFactory
 from tts_mos_test_mturk.masking.masks import MaskBase
-from tts_mos_test_mturk.statistics.globals import (DEVICE_DESKTOP, DEVICE_IN_EAR, DEVICE_LAPTOP,
-                                                   DEVICE_ON_EAR, STATE_ACCEPTED, STATE_APPROVED,
-                                                   STATE_REJECTED)
+
+COL_WORKER = "WorkerId"
+COL_TOT_ASSIGNMENTS = "#Assignments"
+COL_STATE = "#S="
+COL_DEVICE = "#D="
+COL_SENT_CORR = "Sent. corr."
+COL_ALGO_CORR = "Alg. corr."
+COL_BOTH_CORR = "Corr."
+COL_AVG_WORKTIME = "Avg. worktime (s)"
+COL_TOT_WORKTIME = "Tot. worktime (min)"
+COL_MASKED_ASSIGNMENTS = "#Masked assignments"
+COL_MASKED = "Masked?"
+COL_ALL = "ALL"
 
 
 @dataclass
 class WorkerEntry:
   masked: bool = False
   masked_assignments: int = 0
-  rejected_assignments: int = 0
-  accepted_assignments: int = 0
-  approved_assignments: int = 0
+  statuses: List[str] = field(default_factory=list)
   worktimes: List[float] = field(default_factory=list)
-  in_ear: int = 0
-  over_ear: int = 0
-  laptop: int = 0
-  desktop: int = 0
+  devices: List[str] = field(default_factory=list)
   sentence_corr: float = None
   algorithm_corr: float = None
 
   @property
   def total_assignments(self) -> int:
-    return self.rejected_assignments + self.accepted_assignments + self.approved_assignments
+    return len(self.statuses)
 
   @property
   def correlation_mean(self) -> float:
@@ -79,23 +84,8 @@ def get_data(data: EvaluationData, masks: List[MaskBase]):
       if skip:
         continue
 
-      if assignment_data.device == DEVICE_IN_EAR:
-        entry.in_ear += 1
-      elif assignment_data.device == DEVICE_ON_EAR:
-        entry.over_ear += 1
-      elif assignment_data.device == DEVICE_LAPTOP:
-        entry.laptop += 1
-      else:
-        assert assignment_data.device == DEVICE_DESKTOP
-        entry.desktop += 1
-
-      if assignment_data.state == STATE_ACCEPTED:
-        entry.accepted_assignments += 1
-      elif assignment_data.state == STATE_REJECTED:
-        entry.rejected_assignments += 1
-      else:
-        assert assignment_data.state == STATE_APPROVED
-        entry.approved_assignments += 1
+      entry.devices.append(assignment_data.device)
+      entry.statuses.append(assignment_data.state)
       entry.worktimes.append(assignment_data.worktime)
 
       if entry.algorithm_corr is None:
@@ -108,49 +98,71 @@ def get_data(data: EvaluationData, masks: List[MaskBase]):
 
 def stats_to_df(stats: Dict[str, WorkerEntry]) -> pd.DataFrame:
   csv_data = []
+  unique_statuses = sorted({
+    s
+    for x in stats.values()
+    for s in x.statuses
+  })
+
+  unique_devices = sorted({
+    d
+    for x in stats.values()
+    for d in x.devices
+  })
+
   for worker, entry in stats.items():
-    data_entry = OrderedDict((
-      ("WorkerId", worker),
-      ("Total Assignments", entry.total_assignments),
-      ("Rejected Assignments", entry.rejected_assignments),
-      ("Approved Assignments", entry.approved_assignments),
-      ("Accepted Assignments", entry.accepted_assignments),
-      ("Average worktime (s)", np.mean(entry.worktimes)),
-      ("Total worktime (min)", np.sum(entry.worktimes) / 60),
-      (DEVICE_IN_EAR, entry.in_ear),
-      (DEVICE_ON_EAR, entry.over_ear),
-      (DEVICE_LAPTOP, entry.laptop),
-      (DEVICE_DESKTOP, entry.desktop),
-      ("Sentence correlation", entry.sentence_corr),
-      ("Algorithm correlation", entry.algorithm_corr),
-      ("Correlation", entry.correlation_mean),
-      ("Masked Assignments", entry.masked_assignments),
-      ("Masked", entry.masked),
-    ))
+    data_entry = OrderedDict()
+    data_entry[COL_WORKER] = worker
+
+    status_counts = Counter(entry.statuses)
+    for status in unique_statuses:
+      key = f"{COL_STATE}{status}"
+      assert key not in data_entry
+      data_entry[key] = status_counts.get(status, 0)
+    data_entry[COL_TOT_ASSIGNMENTS] = entry.total_assignments
+
+    data_entry[COL_AVG_WORKTIME] = np.mean(entry.worktimes)
+    data_entry[COL_TOT_WORKTIME] = np.sum(entry.worktimes) / 60
+
+    device_counts = Counter(entry.devices)
+    for device in unique_devices:
+      key = f"{COL_DEVICE}{device}"
+      assert key not in data_entry
+      data_entry[key] = device_counts.get(device, 0)
+
+    data_entry[COL_SENT_CORR] = entry.sentence_corr
+    data_entry[COL_ALGO_CORR] = entry.algorithm_corr
+    data_entry[COL_BOTH_CORR] = entry.correlation_mean
+    data_entry[COL_MASKED_ASSIGNMENTS] = entry.masked_assignments
+    data_entry[COL_MASKED] = entry.masked
     csv_data.append(data_entry)
   result = pd.DataFrame.from_records(csv_data)
   return result
 
 
 def add_all_row(df: pd.DataFrame) -> pd.DataFrame:
-  row = OrderedDict((
-    ("WorkerId", "All"),
-    ("Total Assignments", df["Total Assignments"].sum()),
-    ("Rejected Assignments", df["Rejected Assignments"].sum()),
-    ("Approved Assignments", df["Approved Assignments"].sum()),
-    ("Accepted Assignments", df["Accepted Assignments"].sum()),
-    ("Average worktime (s)", df["Average worktime (s)"].mean()),
-    ("Total worktime (min)", df["Total worktime (min)"].sum()),
-    (DEVICE_IN_EAR, df[DEVICE_IN_EAR].sum()),
-    (DEVICE_ON_EAR, df[DEVICE_ON_EAR].sum()),
-    (DEVICE_LAPTOP, df[DEVICE_LAPTOP].sum()),
-    (DEVICE_DESKTOP, df[DEVICE_DESKTOP].sum()),
-    ("Sentence correlation", df["Sentence correlation"].mean()),
-    ("Algorithm correlation", df["Algorithm correlation"].mean()),
-    ("Correlation", df["Correlation"].mean()),
-    ("Masked Assignments", df["Masked Assignments"].sum()),
-    ("Masked", df["Masked"].sum()),
-  ))
+  row = OrderedDict()
+  row[COL_WORKER] = COL_ALL
+
+  for col in df.columns:
+    if col.startswith(COL_STATE):
+      assert col not in row
+      row[col] = df[col].sum()
+  row[COL_TOT_ASSIGNMENTS] = df[COL_TOT_ASSIGNMENTS].sum()
+
+  row[COL_AVG_WORKTIME] = df[COL_AVG_WORKTIME].mean()
+  row[COL_TOT_WORKTIME] = df[COL_TOT_WORKTIME].sum()
+
+  for col in df.columns:
+    if col.startswith(COL_DEVICE):
+      assert col not in row
+      row[col] = df[col].sum()
+
+  row[COL_SENT_CORR] = df[COL_SENT_CORR].mean()
+  row[COL_ALGO_CORR] = df[COL_ALGO_CORR].mean()
+  row[COL_BOTH_CORR] = df[COL_BOTH_CORR].mean()
+  row[COL_MASKED_ASSIGNMENTS] = df[COL_MASKED_ASSIGNMENTS].sum()
+  row[COL_MASKED] = df[COL_MASKED].all()
   df = pd.concat([df, pd.DataFrame.from_records([row])], ignore_index=True)
   return df
 
@@ -161,5 +173,5 @@ def get_worker_assignment_stats(data: EvaluationData, mask_names: Set[str]) -> p
   df = stats_to_df(stats)
   if len(df.index) > 0:
     df = add_all_row(df)
-    df.sort_values(["WorkerId"], inplace=True)
+    df.sort_values([COL_WORKER], inplace=True)
   return df

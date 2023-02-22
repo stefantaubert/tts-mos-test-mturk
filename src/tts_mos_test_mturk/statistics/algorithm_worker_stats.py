@@ -9,16 +9,16 @@ from tts_mos_test_mturk.evaluation_data import EvaluationData
 from tts_mos_test_mturk.masking.mask_factory import MaskFactory
 from tts_mos_test_mturk.masking.masks import MaskBase
 
-COL_ALG = "Algorithm"
+COL_ALG = "Alg."
 COL_WORKER = "WorkerId"
 COL_MIN = "Min"
 COL_MAX = "Max"
-COL_MOS = "Mean"
+COL_MOS = "Avg"
 COL_STD = "Std"
-COL_DEVICE = "# D: "
-COL_RATING = "# R: "
-COL_MASKED = "# Masked"
-COL_ALL = "All"
+COL_DEVICE = "#D="
+COL_RATING = "#R="
+COL_MASKED = "#Masked"
+COL_ALL = "ALL"
 
 
 @dataclass
