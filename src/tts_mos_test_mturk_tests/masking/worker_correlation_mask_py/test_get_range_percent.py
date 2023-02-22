@@ -45,22 +45,22 @@ def test_4__0_101__returns_0_1_2_3():
   np.testing.assert_equal(result, [0, 1, 2, 3])
 
 
-def test_4__25_51__returns_1():
+def test_4__25_51__returns_0_1():
   indices = np.array([0, 1, 2, 3])
   result = get_range_percent(indices, 0.25, 0.51)
-  np.testing.assert_equal(result, [1])
+  np.testing.assert_equal(result, [0, 1])
 
 
 def test_2__0_25__returns_empty():
   indices = np.array([0, 1])
   result = get_range_percent(indices, 0, 0.25)
-  np.testing.assert_equal(result, [])
+  np.testing.assert_equal(result, [0])
 
 
 def test_2__0_50__returns_0():
   indices = np.array([0, 1])
   result = get_range_percent(indices, 0, 0.5)
-  np.testing.assert_equal(result, [])
+  np.testing.assert_equal(result, [0])
 
 
 def test_2__0_51__returns_0():
@@ -90,31 +90,31 @@ def test_2__25_101__returns_0_1():
 def test_2__50_101__returns_1():
   indices = np.array([0, 1])
   result = get_range_percent(indices, 0.5, 1.01)
-  np.testing.assert_equal(result, [1])
+  np.testing.assert_equal(result, [0, 1])
 
 
-def test_2__50_50__returns_empty():
+def test_2__50_50__returns_0():
   indices = np.array([0, 1])
   result = get_range_percent(indices, 0.5, 0.5)
-  np.testing.assert_equal(result, [])
+  np.testing.assert_equal(result, [0])
 
 
-def test_2__49_50__returns_empty():
+def test_2__49_50__returns_0():
   indices = np.array([0, 1])
   result = get_range_percent(indices, 0.49, 0.5)
-  np.testing.assert_equal(result, [])
+  np.testing.assert_equal(result, [0])
 
 
-def test_2__0_33__returns_empty():
+def test_2__0_33__returns_0():
   indices = np.array([0, 1])
   result = get_range_percent(indices, 0, 0.33)
-  np.testing.assert_equal(result, [])
+  np.testing.assert_equal(result, [0])
 
 
-def test_2__33_33__returns_empty():
+def test_2__33_33__returns_0():
   indices = np.array([0, 1])
   result = get_range_percent(indices, 0.33, 0.33)
-  np.testing.assert_equal(result, [])
+  np.testing.assert_equal(result, [0])
 
 
 def test_2__33_101__returns_0_1():
@@ -141,16 +141,16 @@ def test_7__0_30__returns_0_1():
   np.testing.assert_equal(result, [0, 1])
 
 
-def test_7__0_1_0_1__returns_empty():
+def test_7__0_1_0_1__returns_0():
   indices = np.array([0, 1, 2, 3, 4, 5, 6])
   result = get_range_percent(indices, 0.1, 0.1)
-  np.testing.assert_equal(result, [])
+  np.testing.assert_equal(result, [0])
 
 
-def test_7__0_1_0_14__returns_empty():
+def test_7__0_1_0_14__returns_0():
   indices = np.array([0, 1, 2, 3, 4, 5, 6])
   result = get_range_percent(indices, 0.1, 0.14)
-  np.testing.assert_equal(result, [])
+  np.testing.assert_equal(result, [0])
 
 
 def test_7__0_1_0_15__returns_0():

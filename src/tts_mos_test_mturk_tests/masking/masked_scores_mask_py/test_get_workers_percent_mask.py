@@ -21,7 +21,7 @@ def test_component_25():
     ]
   ])
 
-  result = get_wmask_percent(mask, 0.25)
+  result = get_wmask_percent(mask, 0.25, 1.0)
   np.testing.assert_array_equal(result, [
     False,
     True,
@@ -49,7 +49,7 @@ def test_all_false():
     ]
   ])
 
-  result = get_wmask_percent(mask, 0.25)
+  result = get_wmask_percent(mask, 0.25, 1.0)
   np.testing.assert_array_equal(result, [
     False,
     False,
@@ -70,7 +70,7 @@ def test_component_50():
     ]
   ])
 
-  result = get_wmask_percent(mask, 0.5)
+  result = get_wmask_percent(mask, 0.5, 1.0)
   np.testing.assert_array_equal(result, [
     False,
     False,
@@ -91,7 +91,7 @@ def test_component_51():
     ]
   ])
 
-  result = get_wmask_percent(mask, 0.51)
+  result = get_wmask_percent(mask, 0.51, 1.0)
   np.testing.assert_array_equal(result, [
     False,
     False,
@@ -103,5 +103,5 @@ def test_component_51():
 
 def test_empty__returns_empty():
   mask = np.empty((0, 0, 0))
-  result = get_wmask_percent(mask, from_percent_incl=0.5)
+  result = get_wmask_percent(mask, 0.5, 1.0)
   np.testing.assert_array_equal(result, np.empty((0,)))
