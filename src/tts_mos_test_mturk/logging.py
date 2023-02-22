@@ -33,5 +33,9 @@ def attach_urllib3_to_detail_logger():
 
 def log_full_df_info(df: pd.DataFrame, title: str = "") -> None:
   logger = get_detail_logger()
-  with pd.option_context('display.max_rows', None, 'display.max_columns', None, "display.width", None):
+  with pd.option_context(
+    'display.max_rows', None,
+    'display.max_columns', None,
+    "display.width", None,
+    "display.precision", 4):
     logger.info(f"{title}\n{df}")

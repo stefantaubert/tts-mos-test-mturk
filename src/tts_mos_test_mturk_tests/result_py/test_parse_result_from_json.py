@@ -52,3 +52,5 @@ def test_component():
   assert data.algorithms == OrderedSet(("alg1", "alg2", "alg3"))
   assert data.files == OrderedSet(("file1", "file2", "file3"))
   assert data.workers.keys() == set(("worker00", "worker01"))
+  assert str(data.workers["worker00"].assignments["assignment0"].ratings[0].rating).isdigit()
+  assert data.workers["worker00"].assignments["assignment0"].ratings[0].rating == 1

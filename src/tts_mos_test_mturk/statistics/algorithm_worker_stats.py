@@ -1,6 +1,6 @@
 from collections import Counter, OrderedDict
 from dataclasses import dataclass, field
-from typing import Dict, List, Set
+from typing import Dict, List, Set, Union
 
 import numpy as np
 import pandas as pd
@@ -23,18 +23,18 @@ COL_ALL = "ALL"
 
 @dataclass
 class WorkerEntry:
-  ratings: List[float] = field(default_factory=list)
+  ratings: List[Union[int, float]] = field(default_factory=list)
   devices: List[str] = field(default_factory=list)
   masked: int = 0
 
   @property
-  def min_ratings(self) -> float:
+  def min_ratings(self) -> Union[int, float]:
     if len(self.ratings) == 0:
       return np.nan
     return np.min(self.ratings)
 
   @property
-  def max_ratings(self) -> float:
+  def max_ratings(self) -> Union[int, float]:
     if len(self.ratings) == 0:
       return np.nan
     return np.max(self.ratings)

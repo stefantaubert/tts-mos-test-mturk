@@ -5,6 +5,7 @@ from typing import Generator
 import pandas as pd
 
 from tts_mos_test_mturk.evaluation_data import EvaluationData
+from tts_mos_test_mturk_cli.globals import DISPLAY_PRECISION
 from tts_mos_test_mturk_cli.logging_configuration import get_cli_logger
 from tts_mos_test_mturk_cli.types import CLIError
 
@@ -27,7 +28,11 @@ def save_project(project: EvaluationData):
 
 def log_full_df(df: pd.DataFrame) -> None:
   logger = get_cli_logger()
-  with pd.option_context('display.max_rows', None, 'display.max_columns', None, "display.width", None):
+  with pd.option_context(
+    'display.max_rows', None,
+    'display.max_columns', None,
+    "display.width", None,
+    "display.precision", DISPLAY_PRECISION):
     logger.info(f"\n{df}")
 
 

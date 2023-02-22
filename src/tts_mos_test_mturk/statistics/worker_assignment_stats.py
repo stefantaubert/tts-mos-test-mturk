@@ -1,6 +1,6 @@
 from collections import Counter, OrderedDict
 from dataclasses import dataclass, field
-from typing import Dict, List, Set
+from typing import Dict, List, Set, Union
 
 import numpy as np
 import pandas as pd
@@ -30,7 +30,7 @@ class WorkerEntry:
   masked: bool = False
   masked_assignments: int = 0
   statuses: List[str] = field(default_factory=list)
-  worktimes: List[float] = field(default_factory=list)
+  worktimes: List[Union[int, float]] = field(default_factory=list)
   devices: List[str] = field(default_factory=list)
   sentence_corr: float = None
   algorithm_corr: float = None
