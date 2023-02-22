@@ -14,7 +14,7 @@ from typing import Callable, Generator, List, Tuple
 from mturk_template.logging import get_detail_logger, get_logger
 from mturk_template_cli.example_parser import init_generate_example_input_parser
 from mturk_template_cli.init_parser import init_convert_to_json_parser
-from mturk_template_cli.types import CLIError, ExecutionResult
+from mturk_template_cli.types import CLIError
 from tts_mos_test_mturk_cli.argparse_helper import get_optional, parse_path, parse_positive_integer
 from tts_mos_test_mturk_cli.globals import APP_NAME
 from tts_mos_test_mturk_cli.logging_configuration import (configure_root_logger, get_file_logger,
@@ -144,7 +144,7 @@ def parse_args(args: List[str]) -> None:
     parser.print_help()
     sys.exit(0)
 
-  invoke_handler: Callable[..., ExecutionResult] = getattr(ns, INVOKE_HANDLER_VAR)
+  invoke_handler: Callable[..., None] = getattr(ns, INVOKE_HANDLER_VAR)
   delattr(ns, INVOKE_HANDLER_VAR)
   log_to_file = ns.log is not None
   if log_to_file:

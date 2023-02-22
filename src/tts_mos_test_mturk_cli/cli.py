@@ -20,7 +20,7 @@ from tts_mos_test_mturk_cli.logging_configuration import (configure_root_logger,
                                                           init_and_return_loggers,
                                                           try_init_file_buffer_logger)
 from tts_mos_test_mturk_cli.parsers import *
-from tts_mos_test_mturk_cli.types import CLIError, ExecutionResult
+from tts_mos_test_mturk_cli.types import CLIError
 
 __version__ = version(APP_NAME)
 
@@ -175,7 +175,7 @@ def parse_args(args: List[str]) -> None:
     parser.print_help()
     sys.exit(0)
 
-  invoke_handler: Callable[..., ExecutionResult] = getattr(ns, INVOKE_HANDLER_VAR)
+  invoke_handler: Callable[..., None] = getattr(ns, INVOKE_HANDLER_VAR)
   delattr(ns, INVOKE_HANDLER_VAR)
   log_to_file = ns.log is not None
   if log_to_file:
