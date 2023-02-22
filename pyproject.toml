@@ -64,10 +64,18 @@ include = [
   "tts_mos_test_mturk_cli.*",
   "tts_mos_test_mturk_tests",
   "tts_mos_test_mturk_tests.*",
+  "mturk_template",
+  "mturk_template.*",
+  "mturk_template_cli",
+  "mturk_template_cli.*",
+  "mturk_template_tests",
+  "mturk_template_tests.*",
 ]
 exclude = [
   "tts_mos_test_mturk_debug",
   "tts_mos_test_mturk_debug.*",
+  "mturk_template_debug",
+  "mturk_template_debug.*",
 ]
 namespaces = true
 
@@ -76,6 +84,7 @@ log_cli = true
 log_level = "DEBUG"
 testpaths = [
   "src/tts_mos_test_mturk_tests",
+  "src/mturk_template_tests",
 ]
 
 [tool.autopep8]
@@ -105,6 +114,8 @@ commands =
   pytest
   mos-cli
   mos-cli -v
+  mturk-template-cli
+  mturk-template-cli -v
 """
 
 [build-system]

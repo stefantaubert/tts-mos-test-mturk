@@ -49,33 +49,8 @@ def test_component():
   )
 
   result = convert_to_json(res_df, gt_df)
-  r = parse_result_from_json(result)
-  data = EvaluationData(r)
+  data = parse_result_from_json(result)
 
-  _ = np.nan
-  assert data.n_workers == 2
-  assert data.workers == OrderedSet(("worker00", "worker01"))
-
-  assert data.n_algorithms == 3
   assert data.algorithms == OrderedSet(("alg1", "alg2", "alg3"))
-
-  assert data.n_files == 3
   assert data.files == OrderedSet(("file1", "file2", "file3"))
-
-  assert data.n_assignments == 2
-  assert data.assignments == OrderedSet(("assignment0", "assignment1"))
-
-  np.testing.assert_equal(data.get_ratings(), [
-    [
-      [1, 5, _],
-      [_, _, _],
-    ],
-    [
-      [_, _, _],
-      [2, 3, _],
-    ],
-    [
-      [_, _, _],
-      [_, _, _],
-    ],
-  ])
+  assert data.workers.keys() == set(("worker00", "worker01"))

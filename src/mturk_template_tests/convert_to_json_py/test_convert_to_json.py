@@ -1,10 +1,10 @@
+from collections import OrderedDict
+
 import numpy as np
 from ordered_set import OrderedSet
 from pandas import DataFrame
 
 from mturk_template.convert_to_json import convert_to_json
-from tts_mos_test_mturk.evaluation_data import EvaluationData
-from tts_mos_test_mturk.result import Result, parse_result_from_json
 
 
 def test_component():
@@ -49,33 +49,47 @@ def test_component():
   )
 
   result = convert_to_json(res_df, gt_df)
-  r = parse_result_from_json(result)
-  data = EvaluationData(r)
 
-  _ = np.nan
-  assert data.n_workers == 2
-  assert data.workers == OrderedSet(("worker00", "worker01"))
-
-  assert data.n_algorithms == 3
-  assert data.algorithms == OrderedSet(("alg1", "alg2", "alg3"))
-
-  assert data.n_files == 3
-  assert data.files == OrderedSet(("file1", "file2", "file3"))
-
-  assert data.n_assignments == 2
-  assert data.assignments == OrderedSet(("assignment0", "assignment1"))
-
-  np.testing.assert_equal(data.get_ratings(), [
-    [
-      [1, 5, _],
-      [_, _, _],
-    ],
-    [
-      [_, _, _],
-      [2, 3, _],
-    ],
-    [
-      [_, _, _],
-      [_, _, _],
-    ],
-  ])
+  assert result == OrderedDict([
+    ('algorithms', ['alg1', 'alg2', 'alg3']),
+    ('files', ['file1', 'file2', 'file3']),
+    ('workers', OrderedDict([
+      ('worker00', OrderedDict([
+        ('assignment0', OrderedDict([
+          ('device', 'desktop'),
+          ('state', 'Approved'),
+          ('worktime', 37),
+          ('ratings', [
+            OrderedDict([
+              ('algorithm', 'alg1'),
+              ('file', 'file1'),
+              ('rating', 1)]),
+            OrderedDict([
+              ('algorithm', 'alg1'),
+              ('file', 'file2'),
+              ('rating', 5)
+            ])
+          ])
+        ]))
+      ])),
+      ('worker01', OrderedDict([
+        ('assignment1', OrderedDict([
+          ('device', 'laptop'),
+          ('state', 'Approved'),
+          ('worktime', 38),
+          ('ratings', [
+            OrderedDict([
+              ('algorithm', 'alg2'),
+              ('file', 'file1'),
+              ('rating', 2)
+            ]),
+            OrderedDict([
+              ('algorithm', 'alg2'),
+              ('file', 'file2'),
+              ('rating', 3)
+            ])
+          ])
+        ])
+        )])
+       )]
+    ))])
