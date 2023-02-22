@@ -8,17 +8,23 @@ import pandas as pd
 from tts_mos_test_mturk.evaluation_data import EvaluationData
 from tts_mos_test_mturk.masking.mask_factory import MaskFactory
 from tts_mos_test_mturk.masking.masks import MaskBase
-from tts_mos_test_mturk.statistics.globals import (DEVICE_DESKTOP, DEVICE_IN_EAR, DEVICE_LAPTOP,
-                                                   DEVICE_ON_EAR)
+
+COL_ALG = "Algorithm"
+COL_WORKER = "WorkerId"
+COL_MIN = "Min"
+COL_MAX = "Max"
+COL_MOS = "Mean"
+COL_STD = "Std"
+COL_DEVICE = "# D: "
+COL_RATING = "# R: "
+COL_MASKED = "# Masked"
+COL_ALL = "All"
 
 
 @dataclass
 class WorkerEntry:
   ratings: List[float] = field(default_factory=list)
-  in_ear: int = 0
-  over_ear: int = 0
-  laptop: int = 0
-  desktop: int = 0
+  devices: List[str] = field(default_factory=list)
   masked: int = 0
 
   @property
@@ -74,16 +80,7 @@ def get_worker_stats(data: EvaluationData, masks: List[MaskBase]):
           entry.masked += 1
           continue
 
-        if assignment_data.device == DEVICE_IN_EAR:
-          entry.in_ear += 1
-        elif assignment_data.device == DEVICE_ON_EAR:
-          entry.over_ear += 1
-        elif assignment_data.device == DEVICE_LAPTOP:
-          entry.laptop += 1
-        else:
-          assert assignment_data.device == DEVICE_DESKTOP
-          entry.desktop += 1
-
+        entry.devices.append(assignment_data.device)
         entry.ratings.append(rating_data.rating)
 
   return stats
@@ -91,75 +88,87 @@ def get_worker_stats(data: EvaluationData, masks: List[MaskBase]):
 
 def stats_to_df(stats: Dict[str, Dict[str, WorkerEntry]]) -> pd.DataFrame:
   csv_data = []
+  unique_ratings = sorted({
+    r
+    for x in stats.values()
+    for y in x.values()
+    for r in y.ratings
+  })
+
+  unique_devices = sorted({
+    d
+    for x in stats.values()
+    for y in x.values()
+    for d in y.devices
+  })
+
   for algorithm, xx in stats.items():
     for worker, entry in xx.items():
-      mos_counts = Counter(entry.ratings)
+      rating_counts = Counter(entry.ratings)
+      device_counts = Counter(entry.devices)
       data_entry = OrderedDict((
-        ("Algorithm", algorithm),
-        ("WorkerId", worker),
-        ("Min", entry.min_ratings),
-        ("Max", entry.max_ratings),
-        ("MOS", entry.mean_ratings),
-        ("STD", entry.std_ratings),
-        (DEVICE_IN_EAR, entry.in_ear),
-        (DEVICE_ON_EAR, entry.over_ear),
-        (DEVICE_LAPTOP, entry.laptop),
-        (DEVICE_DESKTOP, entry.desktop),
-        ("Rating 1", mos_counts.get(1, 0)),
-        ("Rating 2", mos_counts.get(2, 0)),
-        ("Rating 3", mos_counts.get(3, 0)),
-        ("Rating 4", mos_counts.get(4, 0)),
-        ("Rating 5", mos_counts.get(5, 0)),
-        ("Masked", entry.masked),
+        (COL_ALG, algorithm),
+        (COL_WORKER, worker),
+        (COL_MIN, entry.min_ratings),
+        (COL_MAX, entry.max_ratings),
+        (COL_MOS, entry.mean_ratings),
+        (COL_STD, entry.std_ratings),
       ))
+      for device in unique_devices:
+        key = f"{COL_DEVICE}{device}"
+        assert key not in data_entry
+        data_entry[key] = device_counts.get(device, 0)
+      for rating in unique_ratings:
+        key = f"{COL_RATING}{rating}"
+        assert key not in data_entry
+        data_entry[key] = rating_counts.get(rating, 0)
+      data_entry[COL_MASKED] = entry.masked
       csv_data.append(data_entry)
   result = pd.DataFrame.from_records(csv_data)
   return result
 
 
 def add_all_to_df(df: pd.DataFrame) -> pd.DataFrame:
-  algorithms = df["Algorithm"].unique()
+  algorithms = df[COL_ALG].unique()
 
-  row = OrderedDict((
-    ("Algorithm", "All"),
-    ("WorkerId", "All"),
-    ("Min", df["Min"].min()),
-    ("Max", df["Max"].max()),
-    ("MOS", df["MOS"].mean()),
-    ("STD", df["STD"].mean()),
-    (DEVICE_IN_EAR, df[DEVICE_IN_EAR].sum()),
-    (DEVICE_ON_EAR, df[DEVICE_ON_EAR].sum()),
-    (DEVICE_LAPTOP, df[DEVICE_LAPTOP].sum()),
-    (DEVICE_DESKTOP, df[DEVICE_DESKTOP].sum()),
-    ("Rating 1", df["Rating 1"].sum()),
-    ("Rating 2", df["Rating 2"].sum()),
-    ("Rating 3", df["Rating 3"].sum()),
-    ("Rating 4", df["Rating 4"].sum()),
-    ("Rating 5", df["Rating 5"].sum()),
-    ("Masked", df["Masked"].sum()),
-  ))
+  row = {
+    COL_ALG: COL_ALL,
+    COL_WORKER: COL_ALL,
+    COL_MIN: df[COL_MIN].min(),
+    COL_MAX: df[COL_MAX].max(),
+    COL_MOS: df[COL_MOS].mean(),
+    COL_STD: df[COL_STD].mean(),
+  }
+
+  for col in df.columns:
+    if col.startswith(COL_DEVICE):
+      assert col not in row
+      row[col] = df[col].sum()
+    if col.startswith(COL_RATING):
+      assert col not in row
+      row[col] = df[col].sum()
+
+  row[COL_MASKED] = df[COL_MASKED].sum()
   df = pd.concat([df, pd.DataFrame.from_records([row])], ignore_index=True)
 
   for algorithm in algorithms:
-    subset: pd.DataFrame = df.loc[df['Algorithm'] == algorithm]
-    row = OrderedDict((
-      ("Algorithm", algorithm),
-      ("WorkerId", "All"),
-      ("Min", subset["Min"].min()),
-      ("Max", subset["Max"].max()),
-      ("MOS", subset["MOS"].mean()),
-      ("STD", subset["STD"].mean()),
-      (DEVICE_IN_EAR, subset[DEVICE_IN_EAR].sum()),
-      (DEVICE_ON_EAR, subset[DEVICE_ON_EAR].sum()),
-      (DEVICE_LAPTOP, subset[DEVICE_LAPTOP].sum()),
-      (DEVICE_DESKTOP, subset[DEVICE_DESKTOP].sum()),
-      ("Rating 1", subset["Rating 1"].sum()),
-      ("Rating 2", subset["Rating 2"].sum()),
-      ("Rating 3", subset["Rating 3"].sum()),
-      ("Rating 4", subset["Rating 4"].sum()),
-      ("Rating 5", subset["Rating 5"].sum()),
-      ("Masked", subset["Masked"].sum()),
-    ))
+    subset: pd.DataFrame = df.loc[df[COL_ALG] == algorithm]
+    row = {
+      COL_ALG: algorithm,
+      COL_WORKER: COL_ALL,
+      COL_MIN: subset[COL_MIN].min(),
+      COL_MAX: subset[COL_MAX].max(),
+      COL_MOS: subset[COL_MOS].mean(),
+      COL_STD: subset[COL_STD].mean(),
+    }
+
+    for col in subset.columns:
+      if col.startswith(COL_DEVICE):
+        row[col] = subset[col].sum()
+      if col.startswith(COL_RATING):
+        row[col] = subset[col].sum()
+
+    row[COL_MASKED] = subset[COL_MASKED].sum()
     df = pd.concat([df, pd.DataFrame.from_records([row])], ignore_index=True)
 
   return df
@@ -171,5 +180,5 @@ def get_worker_algorithm_stats(data: EvaluationData, mask_names: Set[str]) -> pd
   df = stats_to_df(stats)
   if len(df.index) > 0:
     df = add_all_to_df(df)
-    df.sort_values(["Algorithm", "WorkerId"], inplace=True)
+    df.sort_values([COL_ALG, COL_WORKER], inplace=True)
   return df

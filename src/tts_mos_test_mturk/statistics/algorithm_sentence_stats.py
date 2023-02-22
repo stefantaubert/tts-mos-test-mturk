@@ -1,4 +1,4 @@
-from collections import Counter
+from collections import Counter, OrderedDict
 from dataclasses import dataclass, field
 from typing import Dict, List, Set
 
@@ -8,55 +8,23 @@ import pandas as pd
 from tts_mos_test_mturk.evaluation_data import EvaluationData
 from tts_mos_test_mturk.masking.mask_factory import MaskFactory
 from tts_mos_test_mturk.masking.masks import MaskBase
-from tts_mos_test_mturk.statistics.globals import (DEVICE_DESKTOP, DEVICE_IN_EAR, DEVICE_LAPTOP,
-                                                   DEVICE_ON_EAR)
 
 COL_ALG = "Algorithm"
 COL_SENT = "Sentence"
 COL_MIN = "Min"
 COL_MAX = "Max"
-COL_MOS = "MOS"
-COL_STD = "STD"
-COL_INEAR = DEVICE_IN_EAR
-COL_ONEAR = DEVICE_ON_EAR
-COL_LAPTOP = DEVICE_LAPTOP
-COL_DESKTOP = DEVICE_DESKTOP
-COL_MOS1 = "Rating 1"
-COL_MOS2 = "Rating 2"
-COL_MOS3 = "Rating 3"
-COL_MOS4 = "Rating 4"
-COL_MOS5 = "Rating 5"
-COL_MASKED = "Masked"
+COL_MOS = "Mean"
+COL_STD = "Std"
+COL_DEVICE = "# D: "
+COL_RATING = "# R: "
+COL_MASKED = "# Masked"
 COL_ALL = "All"
-
-
-COLS = [
-  COL_ALG,
-  COL_SENT,
-  COL_MIN,
-  COL_MAX,
-  COL_MOS,
-  COL_STD,
-  COL_INEAR,
-  COL_ONEAR,
-  COL_LAPTOP,
-  COL_DESKTOP,
-  COL_MOS1,
-  COL_MOS2,
-  COL_MOS3,
-  COL_MOS4,
-  COL_MOS5,
-  COL_MASKED,
-]
 
 
 @dataclass
 class FileEntry:
   ratings: List[float] = field(default_factory=list)
-  in_ear: int = 0
-  over_ear: int = 0
-  laptop: int = 0
-  desktop: int = 0
+  devices: List[str] = field(default_factory=list)
   masked: int = 0
 
   @property
@@ -112,16 +80,7 @@ def get_worker_stats(data: EvaluationData, masks: List[MaskBase]):
           entry.masked += 1
           continue
 
-        if assignment_data.device == DEVICE_IN_EAR:
-          entry.in_ear += 1
-        elif assignment_data.device == DEVICE_ON_EAR:
-          entry.over_ear += 1
-        elif assignment_data.device == DEVICE_LAPTOP:
-          entry.laptop += 1
-        else:
-          assert assignment_data.device == DEVICE_DESKTOP
-          entry.desktop += 1
-
+        entry.devices.append(assignment_data.device)
         entry.ratings.append(rating_data.rating)
 
   return stats
@@ -129,29 +88,43 @@ def get_worker_stats(data: EvaluationData, masks: List[MaskBase]):
 
 def stats_to_df(stats: Dict[str, Dict[str, FileEntry]]) -> pd.DataFrame:
   csv_data = []
+  unique_ratings = sorted({
+    r
+    for x in stats.values()
+    for y in x.values()
+    for r in y.ratings
+  })
+
+  unique_devices = sorted({
+    d
+    for x in stats.values()
+    for y in x.values()
+    for d in y.devices
+  })
+
   for algorithm, xx in stats.items():
     for file, entry in xx.items():
       rating_counts = Counter(entry.ratings)
-      data_entry = {
-        COL_ALG: algorithm,
-        COL_SENT: file,
-        COL_MIN: entry.min_os,
-        COL_MAX: entry.max_os,
-        COL_MOS: entry.mean_os,
-        COL_STD: entry.std_os,
-        COL_INEAR: entry.in_ear,
-        COL_ONEAR: entry.over_ear,
-        COL_LAPTOP: entry.laptop,
-        COL_DESKTOP: entry.desktop,
-        COL_MOS1: rating_counts.get(1, 0),
-        COL_MOS2: rating_counts.get(2, 0),
-        COL_MOS3: rating_counts.get(3, 0),
-        COL_MOS4: rating_counts.get(4, 0),
-        COL_MOS5: rating_counts.get(5, 0),
-        COL_MASKED: entry.masked,
-      }
+      device_counts = Counter(entry.devices)
+      data_entry = OrderedDict((
+        (COL_ALG, algorithm),
+        (COL_SENT, file),
+        (COL_MIN, entry.min_ratings),
+        (COL_MAX, entry.max_ratings),
+        (COL_MOS, entry.mean_ratings),
+        (COL_STD, entry.std_ratings),
+      ))
+      for device in unique_devices:
+        key = f"{COL_DEVICE}{device}"
+        assert key not in data_entry
+        data_entry[key] = device_counts.get(device, 0)
+      for rating in unique_ratings:
+        key = f"{COL_RATING}{rating}"
+        assert key not in data_entry
+        data_entry[key] = rating_counts.get(rating, 0)
+      data_entry[COL_MASKED] = entry.masked
       csv_data.append(data_entry)
-  result = pd.DataFrame.from_records(csv_data, columns=COLS)
+  result = pd.DataFrame.from_records(csv_data)
   return result
 
 
@@ -165,17 +138,17 @@ def add_all_to_df(df: pd.DataFrame) -> pd.DataFrame:
     COL_MAX: df[COL_MAX].max(),
     COL_MOS: df[COL_MOS].mean(),
     COL_STD: df[COL_STD].mean(),
-    COL_INEAR: df[COL_INEAR].sum(),
-    COL_ONEAR: df[COL_ONEAR].sum(),
-    COL_LAPTOP: df[COL_LAPTOP].sum(),
-    COL_DESKTOP: df[COL_DESKTOP].sum(),
-    COL_MOS1: df[COL_MOS1].sum(),
-    COL_MOS2: df[COL_MOS2].sum(),
-    COL_MOS3: df[COL_MOS3].sum(),
-    COL_MOS4: df[COL_MOS4].sum(),
-    COL_MOS5: df[COL_MOS5].sum(),
-    COL_MASKED: df[COL_MASKED].sum(),
   }
+
+  for col in df.columns:
+    if col.startswith(COL_DEVICE):
+      assert col not in row
+      row[col] = df[col].sum()
+    if col.startswith(COL_RATING):
+      assert col not in row
+      row[col] = df[col].sum()
+
+  row[COL_MASKED] = df[COL_MASKED].sum()
   df = pd.concat([df, pd.DataFrame.from_records([row])], ignore_index=True)
 
   for algorithm in algorithms:
@@ -187,17 +160,15 @@ def add_all_to_df(df: pd.DataFrame) -> pd.DataFrame:
       COL_MAX: subset[COL_MAX].max(),
       COL_MOS: subset[COL_MOS].mean(),
       COL_STD: subset[COL_STD].mean(),
-      COL_INEAR: subset[COL_INEAR].sum(),
-      COL_ONEAR: subset[COL_ONEAR].sum(),
-      COL_LAPTOP: subset[COL_LAPTOP].sum(),
-      COL_DESKTOP: subset[COL_DESKTOP].sum(),
-      COL_MOS1: subset[COL_MOS1].sum(),
-      COL_MOS2: subset[COL_MOS2].sum(),
-      COL_MOS3: subset[COL_MOS3].sum(),
-      COL_MOS4: subset[COL_MOS4].sum(),
-      COL_MOS5: subset[COL_MOS5].sum(),
-      COL_MASKED: subset[COL_MASKED].sum(),
     }
+
+    for col in subset.columns:
+      if col.startswith(COL_DEVICE):
+        row[col] = subset[col].sum()
+      if col.startswith(COL_RATING):
+        row[col] = subset[col].sum()
+
+    row[COL_MASKED] = subset[COL_MASKED].sum()
     df = pd.concat([df, pd.DataFrame.from_records([row])], ignore_index=True)
 
   return df
