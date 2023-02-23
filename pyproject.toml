@@ -1,7 +1,7 @@
 [project]
 name = "tts-mos-test-mturk"
 version = "0.0.1"
-description = "Command-line interface and Python library to evaluate text-to-speech mean opinion score studies done on Amazon Mechanical Turk."
+description = "Command-line interface to evaluate text-to-speech mean opinion score studies done on Amazon Mechanical Turk."
 readme = "README.md"
 requires-python = ">=3.8, <3.12"
 license = {text = "MIT"}
@@ -39,12 +39,13 @@ classifiers = [
   "License :: OSI Approved :: MIT License",
 ]
 dependencies = [
+  "numpy",
   "pandas",
   "tqdm",
   "boto3",
   "boto3-stubs[mturk]",
   "ordered-set>=4.1.0",
-  "scipy",
+  "mean-opinion-score==0.0.1",
 ]
 
 [project.urls]

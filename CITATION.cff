@@ -1,6 +1,6 @@
 cff-version: 1.2.0
 title: tts-mos-test-mturk
-abstract: Command-line interface and Python library to evaluate text-to-speech mean opinion score studies done on Amazon Mechanical Turk.
+abstract: Command-line interface to evaluate text-to-speech mean opinion score studies done on Amazon Mechanical Turk.
 message: >-
   If you use this software, please cite it using the
   metadata from this file.

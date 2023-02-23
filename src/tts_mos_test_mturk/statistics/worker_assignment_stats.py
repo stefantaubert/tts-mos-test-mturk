@@ -5,7 +5,7 @@ from typing import Dict, List, Set, Union
 import numpy as np
 import pandas as pd
 
-from tts_mos_test_mturk.calculation.correlations import (get_algorithm_mos_correlation,
+from tts_mos_test_mturk.correlations import (get_algorithm_mos_correlation,
                                                          get_sentence_mos_correlation_3dim)
 from tts_mos_test_mturk.common import get_ratings
 from tts_mos_test_mturk.evaluation_data import EvaluationData

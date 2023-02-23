@@ -8,8 +8,7 @@
 [![PyPI](https://img.shields.io/github/commits-since/stefantaubert/tts-mos-test-mturk/latest/master.svg)](https://github.com/stefantaubert/tts-mos-test-mturk/compare/v0.0.1...master)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7669641.svg)](https://doi.org/10.5281/zenodo.7669641)
 
-Command-line interface (CLI) and Python library to evaluate text-to-speech (TTS) mean opinion score (MOS) studies done on Amazon Mechanical Turk (MTurk).
-The calculation of the confidence intervals is done in the same manner as described in (Ribeiro et al., 2011).
+Command-line interface (CLI) to evaluate text-to-speech (TTS) mean opinion score (MOS) studies done on Amazon Mechanical Turk (MTurk).
 
 ## Features
 
@@ -49,7 +48,7 @@ The tool is split into two command line interfaces named `mturk-template-cli` an
 pip install tts-mos-test-mturk --user
 ```
 
-## Usage as CLI
+## Usage
 
 ### mturk-template-cli
 
@@ -87,46 +86,6 @@ positional arguments:
 options:
   -h, --help                            show this help message and exit
   -v, --version                         show program's version number and exit
-```
-
-## Usage as library
-
-```py
-import numpy as np
-
-from tts_mos_test_mturk import compute_mos, compute_ci95
-
-_ = np.nan
-
-ratings = np.array([
-    # columns represent sentences
-    # algorithm 1
-    [
-      [4, 5, _, 4],  # rater 1
-      [4, 4, 4, 5],  # rater 2
-      [_, 3, 5, 4],  # rater 3
-      [_, _, _, _],  # rater 4
-    ],
-    # algorithm 2
-    [
-      [1, 2, _, _],  # rater 1
-      [1, 1, 1, _],  # rater 2
-      [_, 2, 5, 1],  # rater 3
-      [_, 1, _, 1],  # rater 4
-    ]
-])
-
-alg1_mos = compute_mos(ratings[0])
-alg1_ci95 = compute_ci95(ratings[0])
-
-print(f"MOS algorithm 1: {alg1_mos:.2f} ± {alg1_ci95:.4f}")
-# MOS algorithm 1: 4.20 ± 0.6997
-
-alg2_mos = compute_mos(ratings[1])
-alg2_ci95 = compute_ci95(ratings[1])
-
-print(f"MOS algorithm 2: {alg2_mos:.2f} ± {alg2_ci95:.4f}")
-# MOS algorithm 2: 1.60 ± 1.7912
 ```
 
 ## Pipeline
@@ -182,7 +141,7 @@ From the previously created .json-file a new project can be initialized with:
 
 ```sh
 mos-cli init \
-  "/tmp/project.json"
+  "/tmp/project.json" \
   "/tmp/project.pkl"
 ```
 
@@ -258,10 +217,10 @@ Example output:
 Count of ratings (unmasked/all): 3616/4320 -> on average 904/1080 per algorithm
 
   Algorithm       MOS      CI95
-0      alg0  3.155134  0.178079
-1      alg1  2.985620  0.161751
-2      alg2  2.868565  0.175135
-3      alg3  2.890365  0.183059
+0      alg0  3.1551  0.1781
+1      alg1  2.9856  0.1618
+2      alg2  2.8686  0.1751
+3      alg3  2.8904  0.1831
 Log: "/tmp/tts-mos-test-mturk.log"
 ```
 
@@ -370,12 +329,12 @@ mos-cli mturk reject \
 
 ## Dependencies
 
+- `numpy`
 - `pandas`
 - `tqdm`
 - `boto3`
 - `boto3-stubs`
 - `ordered-set>=4.1.0`
-- `scipy`
 
 ## Contributing
 
@@ -430,7 +389,7 @@ MIT License
 
 ## Acknowledgments
 
-Calculation and template are based on:
+Template is based on:
 
 - Ribeiro, F., Florêncio, D., Zhang, C., & Seltzer, M. (2011). CrowdMOS: An approach for crowdsourcing mean opinion score studies. 2011 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP), 2416–2419. [https://doi.org/10.1109/ICASSP.2011.5946971](https://doi.org/10.1109/ICASSP.2011.5946971)
 

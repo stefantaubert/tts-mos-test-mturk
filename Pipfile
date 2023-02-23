@@ -17,12 +17,13 @@ build = "*"
 tox = "*"
 
 [packages]
+numpy = "*"
 pandas = "*"
 tqdm = "*"
 boto3 = "*"
 boto3-stubs = {extras = ["mturk"], version = "*"}
 ordered-set = ">=4.1.0"
-scipy = "*"
+mean-opinion-score = "==0.0.1"
 
 [requires]
 python_version = "3.11"

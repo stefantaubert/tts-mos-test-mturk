@@ -3,8 +3,8 @@ from typing import Any, Dict, List, Optional, Set
 
 import numpy as np
 import pandas as pd
+from mean_opinion_score import get_ci95, get_mos
 
-from tts_mos_test_mturk.calculation.mos_variance import compute_alg_mos_ci95
 from tts_mos_test_mturk.common import get_ratings
 from tts_mos_test_mturk.evaluation_data import EvaluationData
 from tts_mos_test_mturk.logging import get_detail_logger, get_logger
@@ -22,8 +22,6 @@ def get_mos_df(data: EvaluationData, mask_names: Set[str]) -> pd.DataFrame:
   rmask = factory.merge_masks_into_rmask(masks)
   rmask.apply_by_nan(ratings)
 
-  alg_mos_ci95 = compute_alg_mos_ci95(ratings)
-
   ratings_count = np.sum(~np.isnan(ratings))
 
   logger.info(
@@ -31,10 +29,13 @@ def get_mos_df(data: EvaluationData, mask_names: Set[str]) -> pd.DataFrame:
 
   scores: List[Dict] = []
   for algo_i, alg_name in enumerate(data.algorithms):
+    alg_ratings = ratings[algo_i]
+    mos = get_mos(alg_ratings)
+    ci = get_ci95(alg_ratings)
     row = OrderedDict((
       ("Algorithm", alg_name),
-      ("MOS", alg_mos_ci95[0, algo_i]),
-      ("CI95", alg_mos_ci95[1, algo_i]),
+      ("MOS", mos),
+      ("CI95", ci),
     ))
     scores.append(row)
   result = pd.DataFrame.from_records(scores)

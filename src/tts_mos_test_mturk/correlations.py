@@ -2,8 +2,7 @@ import warnings
 from typing import Literal
 
 import numpy as np
-
-from tts_mos_test_mturk.calculation.mos_variance import compute_mos
+from mean_opinion_score import get_mos
 
 
 def get_sentence_mos_correlation(worker: int, Z: np.ndarray) -> float:
@@ -16,7 +15,7 @@ def get_sentence_mos_correlation(worker: int, Z: np.ndarray) -> float:
 
   for sentence_i in range(n_sentences):
     mos_ratings[0, sentence_i] = Z[worker, sentence_i]
-    mos_ratings[1, sentence_i] = compute_mos(Z[others, sentence_i])
+    mos_ratings[1, sentence_i] = get_mos(Z[others, sentence_i])
 
   return get_corrcoef(mos_ratings)
 
@@ -47,8 +46,8 @@ def get_algorithm_mos_correlation(worker: int, ratings: np.ndarray) -> float:
   others = [w_i for w_i in range(n_workers) if w_i != worker]
 
   for alg_i in range(n_alg):
-    mos_ratings[0, alg_i] = compute_mos(ratings[alg_i, worker, :])
-    mos_ratings[1, alg_i] = compute_mos(ratings[alg_i, others, :])
+    mos_ratings[0, alg_i] = get_mos(ratings[alg_i, worker, :])
+    mos_ratings[1, alg_i] = get_mos(ratings[alg_i, others, :])
 
   return get_corrcoef(mos_ratings)
 
