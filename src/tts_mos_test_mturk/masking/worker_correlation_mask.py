@@ -6,11 +6,10 @@ import numpy as np
 import pandas as pd
 from ordered_set import OrderedSet
 
-from tts_mos_test_mturk.correlations import (get_algorithm_mos_correlations,
-                                                         get_mos_correlations,
-                                                         get_sentence_mos_correlations_3dim,
-                                                         get_worker_mos_correlations)
 from tts_mos_test_mturk.common import get_ratings
+from tts_mos_test_mturk.correlations import (get_algorithm_mos_correlations, get_mos_correlations,
+                                             get_sentence_mos_correlations_3dim,
+                                             get_worker_mos_correlations)
 from tts_mos_test_mturk.evaluation_data import EvaluationData
 from tts_mos_test_mturk.logging import log_full_df_info
 from tts_mos_test_mturk.masking.etc import mask_values_in_boundary, sort_indices_after_values
