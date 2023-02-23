@@ -4,7 +4,8 @@
 N_FILES_PER_HIT=8
 
 BASEDIR=$(dirname "$0")
-header_path="$BASEDIR/header.html"
+# header_path="$BASEDIR/header.html"
+header_path="$BASEDIR/header-two-opts.html"
 audio_path="$BASEDIR/audio.html"
 footer_path="$BASEDIR/footer.html"
 
