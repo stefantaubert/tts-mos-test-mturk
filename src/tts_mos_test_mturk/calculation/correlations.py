@@ -1,3 +1,4 @@
+import warnings
 from typing import Literal
 
 import numpy as np
@@ -59,9 +60,10 @@ def get_worker_mos_correlations(ratings: np.ndarray) -> np.ndarray:
   correlations[0, :] = get_algorithm_mos_correlations(ratings)
   correlations[1, :] = get_sentence_mos_correlations_3dim(ratings)
 
-  # print(correlations)
-  worker_correlations = np.nanmean(correlations, axis=0)
-  # print(worker_correlations)
+  # ignore warning "RuntimeWarning: Mean of empty slice" if both correlations are NaN
+  with warnings.catch_warnings():
+    warnings.simplefilter("ignore", category=RuntimeWarning)
+    worker_correlations = np.nanmean(correlations, axis=0)
   return worker_correlations
 
 
@@ -92,6 +94,19 @@ def get_corrcoef(v: np.ndarray) -> float:
   nan_rows_mask = np.any(np.isnan(v), axis=0)
   masked_v = v[:, ~nan_rows_mask]
 
+  n_values_per_vec = masked_v.shape[1]
+  if n_values_per_vec < 2:
+    return np.nan
+
+  sd0 = np.std(masked_v[0])
+  sd1 = np.std(masked_v[1])
+
+  if sd0 == 0 or sd1 == 0:
+    return np.nan
+
+  # ignore warning RuntimeWarnings if both correlations are NaN
+  # with warnings.catch_warnings():
+  #   warnings.simplefilter("ignore", category=RuntimeWarning)
   result = np.corrcoef(masked_v)
   result = result[0, 1]
 

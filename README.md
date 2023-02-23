@@ -13,10 +13,12 @@ The calculation of the confidence intervals is done in the same manner as descri
 
 ## Features
 
-- `mturk-template-cli`:
+The tool is split into two command line interfaces named `mturk-template-cli` and `mos-cli` to be able to evaluate studies performed with a template other than the one proposed.
+
+- `mturk-template-cli`: CLI to prepare MOS evaluation with results from MTurk.
   - `prepare-evaluation`: create evaluation .json-file
   - `gen-example-input`: generate example input data
-- `mos-cli`:
+- `mos-cli`: CLI to evaluate text-to-speech MOS studies done on MTurk.
   - `init`: initialize project from .json-file
   - `masks`
     - `mask-workers-by-assignments-count`: mask workers by their count of assignments
@@ -41,7 +43,6 @@ The calculation of the confidence intervals is done in the same manner as descri
     - `prepare-bonus-payment`: generate bonus payment CSV-file
     - `pay-bonus`: pay bonus to assignments from CSV-file
 
-
 ## Installation
 
 ```sh
@@ -50,19 +51,38 @@ pip install tts-mos-test-mturk --user
 
 ## Usage as CLI
 
+### mturk-template-cli
+
 ```txt
-usage: mos-cli [-h] [-v] {init,masks,stats,mturk,gen-example-input} ...
+usage: mturk-template-cli [-h] [-v] {prepare-evaluation,gen-example-input} ...
 
 CLI to evaluate MOS results from MTurk and approve/reject workers.
 
 positional arguments:
-  {init,masks,stats,mturk,gen-example-input}
+  {prepare-evaluation,gen-example-input}
+                                        description
+    prepare-evaluation                  convert input data and results to .json-file
+    gen-example-input                   generate example input data
+
+options:
+  -h, --help                            show this help message and exit
+  -v, --version                         show program's version number and exit
+```
+
+### mos-cli
+
+```txt
+usage: mos-cli [-h] [-v] {init,masks,stats,mturk} ...
+
+CLI to evaluate MOS results from MTurk and approve/reject workers.
+
+positional arguments:
+  {init,masks,stats,mturk}
                                         description
     init                                initialize project
     masks                               masks commands
     stats                               stats commands
     mturk                               mturk commands
-    gen-example-input                   generate example input data
 
 options:
   -h, --help                            show this help message and exit
@@ -74,7 +94,7 @@ options:
 ```py
 import numpy as np
 
-from tts_mos_test_mturk import compute_alg_mos_ci95
+from tts_mos_test_mturk import compute_mos, compute_ci95
 
 _ = np.nan
 
@@ -96,28 +116,33 @@ ratings = np.array([
     ]
 ])
 
-results = compute_alg_mos_ci95(ratings)
+alg1_mos = compute_mos(ratings[0])
+alg1_ci95 = compute_ci95(ratings[0])
 
-print(f"MOS algorithm 1: {results[0][0]:.3f} ± {results[1][0]:.3f}")
-# MOS algorithm 1: 4.200 ± 0.700
-print(f"MOS algorithm 2: {results[0][1]:.3f} ± {results[1][1]:.3f}")
-# MOS algorithm 2: 1.600 ± 1.791
+print(f"MOS algorithm 1: {alg1_mos:.2f} ± {alg1_ci95:.4f}")
+# MOS algorithm 1: 4.20 ± 0.6997
+
+alg2_mos = compute_mos(ratings[1])
+alg2_ci95 = compute_ci95(ratings[1])
+
+print(f"MOS algorithm 2: {alg2_mos:.2f} ± {alg2_ci95:.4f}")
+# MOS algorithm 2: 1.60 ± 1.7912
 ```
 
 ## Pipeline
 
-Note: The creation of the template and survey is not fully described yet. The evaluation can be done using a .json-file which interacts as a interface between the template and the evaluation (see "Project JSON example").
+Note: The creation of the template and survey is not fully described yet. The evaluation can be done using a .json-file which interacts as a interface between the template and the evaluation (see "Project JSON example"); start at step 4 in this case.
 
 ### 1. Create MTurk Template
 
-To create the MTurk Template the script at [mturk-template/create-template.sh](mturk-template/create-template.sh) could be used.
+To create the MTurk Template the script at [mturk-template/create-template.sh](mturk-template/create-template.sh) can be used. To prepare the audio files for the template and to create the upload CSV for MTurk the script at [mturk-template/create-upload-csv.sh](mturk-template/create-upload-csv.sh) can be used.
 
 ### 2. Run survey on MTurk
 
 The survey needs to be started at MTurk. Alternatively some example data can be generated with:
 
 ```py
-mos-cli gen-example-input \
+mturk-template-cli gen-example-input \
   "/tmp/algorithms-and-files.csv" \
   "/tmp/Batch_374625_batch_results.csv" \
   "/tmp/upload.csv" --seed 1234

@@ -68,7 +68,7 @@ def add_logging_group(parser: ArgumentParser) -> None:
 def _init_parser():
   main_parser = ArgumentParser(
     formatter_class=formatter,
-    description="CLI to evaluate MOS results from MTurk and approve/reject workers.",
+    description="CLI to prepare MOS evaluation with results from MTurk.",
   )
   main_parser.add_argument('-v', '--version', action='version', version='%(prog)s ' + __version__)
   subparsers = main_parser.add_subparsers(help="description")

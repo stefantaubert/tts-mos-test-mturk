@@ -39,6 +39,8 @@ def compute_alg_mos_ci95(ratings: np.ndarray) -> np.ndarray:
 
 
 def compute_mos(Z: np.ndarray) -> float:
+  if np.isnan(Z).all():
+    return np.nan
   mos = np.nanmean(Z)
   return mos
 
@@ -213,6 +215,9 @@ def get_mean_vertical_variance(Z: np.ndarray) -> float:
   )
   for index in range(vertical_dim):
     vertical_variances[index] = get_custom_variance(Z[:, index])
+
+  if np.isnan(vertical_variances).all():
+    return np.nan
   mean_variance = np.nanmean(vertical_variances)
   return mean_variance
 
