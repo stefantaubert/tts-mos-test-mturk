@@ -48,8 +48,8 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/stefantaubert/tts_mos_test_mturk"
-Issues = "https://github.com/stefantaubert/tts_mos_test_mturk/issues"
+Homepage = "https://github.com/stefantaubert/tts-mos-test-mturk"
+Issues = "https://github.com/stefantaubert/tts-mos-test-mturk/issues"
 
 [project.scripts]
 mos-cli = "tts_mos_test_mturk_cli.cli:run_prod"
