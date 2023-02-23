@@ -1,6 +1,6 @@
 cff-version: 1.2.0
 title: tts-mos-test-mturk
-abstract: CLI to evaluate MOS results from MTurk and approve/reject workers.
+abstract: Command-line interface and Python library to evaluate text-to-speech mean opinion score studies done on Amazon Mechanical Turk.
 message: >-
   If you use this software, please cite it using the
   metadata from this file.
@@ -13,7 +13,7 @@ authors:
     orcid: 'https://orcid.org/0000-0002-4932-2874'
     website: 'https://stefantaubert.com/'
 version: 0.0.1
-date-released: 2022-08-17
+date-released: 2023-02-23
 license: MIT
 url: https://github.com/stefantaubert/tts_mos_test_mturk
-doi: 10.5281/zenodo.??
+doi: 10.5281/zenodo.7669641

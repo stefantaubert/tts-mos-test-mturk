@@ -6,7 +6,7 @@
 [![PyPI](https://img.shields.io/pypi/wheel/tts-mos-test-mturk.svg)](https://pypi.python.org/pypi/tts-mos-test-mturk/#files)
 ![PyPI](https://img.shields.io/pypi/implementation/tts-mos-test-mturk.svg)
 [![PyPI](https://img.shields.io/github/commits-since/stefantaubert/tts-mos-test-mturk/latest/master.svg)](https://github.com/stefantaubert/tts-mos-test-mturk/compare/v0.0.1...master)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7534707.svg)](https://doi.org/10.5281/zenodo.7534707)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7669641.svg)](https://doi.org/10.5281/zenodo.7669641)
 
 Command-line interface (CLI) and Python library to evaluate text-to-speech (TTS) mean opinion score (MOS) studies done on Amazon Mechanical Turk (MTurk).
 The calculation of the confidence intervals is done in the same manner as described in (Ribeiro et al., 2011).
