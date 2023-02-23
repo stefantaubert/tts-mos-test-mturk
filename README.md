@@ -446,5 +446,5 @@ Taubert, S. (2023). tts-mos-test-mturk (Version 0.0.1) [Computer software]. http
 
 ## Changelog
 
-- v0.0.1 (unreleased)
+- v0.0.1 (2023-02-23)
   - Initial release
