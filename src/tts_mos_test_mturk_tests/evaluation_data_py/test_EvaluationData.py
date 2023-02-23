@@ -7,6 +7,8 @@ from tts_mos_test_mturk.common import get_ratings
 from tts_mos_test_mturk.evaluation_data import EvaluationData
 from tts_mos_test_mturk.result import parse_result_from_json
 
+_ = np.nan
+
 
 def test_component():
   gt_df = DataFrame([
@@ -53,7 +55,6 @@ def test_component():
   r = parse_result_from_json(result)
   data = EvaluationData(r)
 
-  _ = np.nan
   assert data.n_workers == 2
   assert data.workers == OrderedSet(("worker00", "worker01"))
 

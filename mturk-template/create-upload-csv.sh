@@ -109,7 +109,7 @@ touch "$ROOT_DIR/sets/sel-words.txt"
 touch "$ROOT_DIR/sets/sel-algorithms.txt"
 touch "$ROOT_DIR/sets/sel-files.txt"
 
-# Create 60 HITs
+# Create 60 HITs with 8 audio files per HIT
 for i in {1..60}
 do
   text-selection-cli subsets sort-by-line-nr \

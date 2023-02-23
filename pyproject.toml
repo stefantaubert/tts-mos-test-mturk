@@ -1,7 +1,7 @@
 [project]
 name = "tts-mos-test-mturk"
 version = "0.0.1"
-description = "CLI to evaluate MOS results from MTurk and approve/reject workers."
+description = "Command-line interface and Python library to evaluate text-to-speech mean opinion score studies done on Amazon Mechanical Turk."
 readme = "README.md"
 requires-python = ">=3.8, <3.12"
 license = {text = "MIT"}
@@ -99,6 +99,9 @@ known_first_party = [
   "tts_mos_test_mturk",
   "tts_mos_test_mturk_cli",
   "tts_mos_test_mturk_tests",
+  "mturk_template",
+  "mturk_template_cli",
+  "mturk_template_tests",
 ]
 
 [tool.tox]

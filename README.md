@@ -329,33 +329,32 @@ mos-cli mturk reject \
 {
   "files": [
     "file1",
-    "file2",
-    ...more files
+    "file2"
   ],
   "algorithms": [
     "alg1",
-    "alg2",
-    ...more algorithms
+    "alg2"
   ],
   "workers": {
     "Worker1": {
       "Assignment1": {
         "device": "in-ear",
-        "state": "Accepted",
+        "state": "Approved",
         "worktime": 30,
-        "comments": "",
         "ratings": [
           {
             "rating": 5,
             "algorithm": "alg1",
             "file": "file1"
           },
-          ...more ratings
+          {
+            "rating": 3,
+            "algorithm": "alg2",
+            "file": "file1"
+          }
         ]
-      },
-      ...more assignments
-    },
-    ...more workers
+      }
+    }
   }
 }
 ```
