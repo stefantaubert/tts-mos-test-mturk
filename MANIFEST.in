@@ -1,0 +1,5 @@
+include src/tts_mos_test_mturk_tests/calculations/mos_variance_py/blizzard_crowdmos1_hp.json
+include src/tts_mos_test_mturk_tests/calculations/mos_variance_py/blizzard_crowdmos2_hp.json
+include src/tts_mos_test_mturk_tests/calculations/mos_variance_py/blizzard_crowdmos2_ls.json
+include src/tts_mos_test_mturk_tests/calculations/mos_variance_py/blizzard_online_volunteers.json
+include src/tts_mos_test_mturk_tests/calculations/mos_variance_py/blizzard_paid_participants.json
