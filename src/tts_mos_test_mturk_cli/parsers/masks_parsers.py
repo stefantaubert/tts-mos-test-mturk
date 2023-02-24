@@ -153,13 +153,15 @@ def init_mask_workers_by_correlation_percent_parser(parser: ArgumentParser):
   parser.add_argument("to_percent", type=parse_positive_float, metavar="TO-PERCENT",
                       help="exclusive top boundary; in (0; 100]")
   add_mode_argument(parser)
+  parser.add_argument("--consider-masked-workers", action="store_true",
+                      help="consider masked workers in percent calculation")
   add_req_output_mask_argument(parser)
   add_opt_dry_argument(parser)
 
   def main(ns: Namespace) -> None:
     ensure_masks_exist(ns.project, ns.masks)
     mask_workers_by_correlation_percent(ns.project, ns.masks, ns.from_percent / 100,
-                                        ns.to_percent / 100, ns.mode, ns.output_mask)
+                                        ns.to_percent / 100, ns.mode, ns.consider_masked_workers, ns.output_mask)
 
     if not ns.dry:
       save_project(ns.project)

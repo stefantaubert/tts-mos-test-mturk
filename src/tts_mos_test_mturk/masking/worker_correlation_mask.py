@@ -33,7 +33,7 @@ def mask_workers_by_correlation(data: EvaluationData, mask_names: Set[str], from
   res_wmask = factory.convert_ndarray_to_wmask(res_wmask_np)
 
   stats_df = get_stats_df(data.workers, ratings, res_wmask.masked_indices,
-                          wcorrelations, wmask.masked_indices, mode)
+                          wcorrelations, wmask.masked_indices, mode, False)
   log_full_df_info(stats_df, "Statistics:")
 
   data.add_or_update_mask(output_mask_name, res_wmask)
@@ -41,7 +41,7 @@ def mask_workers_by_correlation(data: EvaluationData, mask_names: Set[str], from
   print_stats_masks(data, masks, [res_wmask])
 
 
-def mask_workers_by_correlation_percent(data: EvaluationData, mask_names: Set[str], from_percent_incl: float, to_percent_excl: float, mode: Literal["sentence", "algorithm", "both"], output_mask_name: str):
+def mask_workers_by_correlation_percent(data: EvaluationData, mask_names: Set[str], from_percent_incl: float, to_percent_excl: float, mode: Literal["sentence", "algorithm", "both"], consider_masked_workers: bool, output_mask_name: str):
   masks = data.get_masks_from_names(mask_names)
   factory = MaskFactory(data)
 
@@ -51,11 +51,18 @@ def mask_workers_by_correlation_percent(data: EvaluationData, mask_names: Set[st
   ratings = get_ratings(data)
   rmask.apply_by_nan(ratings)
 
-  wcorrelations = get_mos_correlations(ratings, mode)
-  sub_wcorrelations = wmask.apply_by_del(wcorrelations)
-
   windices = np.arange(data.n_workers)
-  sub_windices = wmask.apply_by_del(windices)
+  wcorrelations = get_mos_correlations(ratings, mode)
+
+  sub_wcorrelations = wcorrelations
+  sub_windices = windices
+
+  if consider_masked_workers:
+    wmask.apply_by_nan(sub_wcorrelations)
+    sub_wcorrelations[np.isnan(sub_wcorrelations)] = -2.0
+  else:
+    sub_wcorrelations = wmask.apply_by_del(sub_wcorrelations)
+    sub_windices = wmask.apply_by_del(sub_windices)
 
   sub_sel_windices = get_indices(sub_windices, sub_wcorrelations,
                                  from_percent_incl, to_percent_excl)
@@ -64,7 +71,7 @@ def mask_workers_by_correlation_percent(data: EvaluationData, mask_names: Set[st
   res_wmask.mask_indices(sub_sel_windices)
 
   stats_df = get_stats_df(data.workers, ratings, res_wmask.masked_indices,
-                          wcorrelations, wmask.masked_indices, mode)
+                          wcorrelations, wmask.masked_indices, mode, consider_masked_workers)
   log_full_df_info(stats_df, "Statistics:")
 
   data.add_or_update_mask(output_mask_name, res_wmask)
@@ -72,15 +79,16 @@ def mask_workers_by_correlation_percent(data: EvaluationData, mask_names: Set[st
   print_stats_masks(data, masks, [res_wmask])
 
 
-def get_stats_df(workers: OrderedSet[str], ratings: np.ndarray, masked_indices: np.ndarray, used_correlations: np.ndarray, already_masked_worker_indices: np.ndarray, mode: Literal["sentence", "algorithm", "both"]) -> pd.DataFrame:
+def get_stats_df(workers: OrderedSet[str], ratings: np.ndarray, masked_indices: np.ndarray, used_correlations: np.ndarray, already_masked_worker_indices: np.ndarray, mode: Literal["sentence", "algorithm", "both"], print_masked_workers: bool) -> pd.DataFrame:
   col_worker = "Worker"
   col_ratings = "# Ratings"
   col_sent_corr = "Sentence correlation"
   col_alg_corr = "Algorithm correlation"
   col_both_corr = "Both correlation"
   col_percent = "Ranking %"
-  col_used = "Used (tmp)"
   col_masked = "Masked?"
+  col_used = "Used (tmp)"
+  col_w_i = "w_i (tmp)"
 
   if mode == "sentence":
     col_sent_corr = f"[{col_sent_corr}]"
@@ -96,7 +104,7 @@ def get_stats_df(workers: OrderedSet[str], ratings: np.ndarray, masked_indices: 
 
   lines = []
   for w_i, worker in enumerate(workers):
-    if w_i in already_masked_worker_indices:
+    if w_i in already_masked_worker_indices and not print_masked_workers:
       continue
     lines.append(OrderedDict((
       (col_worker, worker),
@@ -104,15 +112,18 @@ def get_stats_df(workers: OrderedSet[str], ratings: np.ndarray, masked_indices: 
       (col_sent_corr, w_sent_corr[w_i]),
       (col_alg_corr, w_algo_corr[w_i]),
       (col_both_corr, w_both_corr[w_i]),
-      (col_used, used_correlations[w_i]),
       (col_percent, 0),
       (col_masked, w_i in masked_indices),
+      (col_w_i, w_i),
+      (col_used, used_correlations[w_i]),
     )))
 
   result = pd.DataFrame.from_records(lines)
-  result.sort_values(by=[col_used, col_worker], inplace=True)
+  result.sort_values(by=[col_used, col_w_i], inplace=True)
   for nr, (i, row) in enumerate(result.iterrows(), start=1):
     result.at[i, col_percent] = nr / len(result.index) * 100
+
+  result.drop(columns=[col_w_i, col_used], inplace=True)
 
   row = {
     col_worker: "All",
@@ -120,12 +131,10 @@ def get_stats_df(workers: OrderedSet[str], ratings: np.ndarray, masked_indices: 
     col_sent_corr: result[col_sent_corr].mean(),
     col_alg_corr: result[col_alg_corr].mean(),
     col_both_corr: result[col_both_corr].mean(),
-    col_used: result[col_used].mean(),
     col_percent: np.nan,
     col_masked: result[col_masked].all(),
   }
   result = pd.concat([result, pd.DataFrame.from_records([row])], ignore_index=True)
-  result.drop(columns=[col_used], inplace=True)
   return result
 
 
