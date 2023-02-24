@@ -410,6 +410,8 @@ Taubert, S. (2023). tts-mos-test-mturk (Version 0.0.1) [Computer software]. http
     - `mask mask-workers-by-correlation-percent`: sorting was not always correct
   - Added:
     - `mask mask-workers-by-correlation-percent`: added option to include masked workers in percentage calculation
+    - `mturk prepare-bonus-payment`: added logging of fees for Mechanical Turk
+    - `mturk prepare-approval`: added logging of fees for Mechanical Turk
   - Changed:
     - updated template
 - v0.0.1 (2023-02-23)

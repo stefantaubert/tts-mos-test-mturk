@@ -11,7 +11,7 @@ from tts_mos_test_mturk.masking.worktime_mask import mask_assignments_by_worktim
 from tts_mos_test_mturk_cli.argparse_helper import (ConvertToSetAction,
                                                     parse_non_empty_or_whitespace,
                                                     parse_non_negative_float,
-                                                    parse_non_negative_integer,
+                                                    parse_non_negative_integer, parse_percent,
                                                     parse_positive_float, parse_positive_integer)
 from tts_mos_test_mturk_cli.default_args import (add_opt_dry_argument, add_opt_masks_argument,
                                                  add_req_output_mask_argument,
@@ -84,9 +84,9 @@ def init_workers_by_masked_ratings_count_parser(parser: ArgumentParser):
   add_opt_masks_argument(parser)
   parser.add_argument("ref_masks", type=parse_non_empty_or_whitespace, nargs="+",
                       metavar="REF-MASK", help="masks on which the masked ratings should be counted", action=ConvertToSetAction)
-  parser.add_argument("from_percent", type=parse_non_negative_float, metavar="FROM-PERCENT",
+  parser.add_argument("from_percent", type=parse_percent, metavar="FROM-PERCENT",
                       help="mask workers that have at least FROM-PERCENT of all masked ratings (inclusive); in [0, 100)")
-  parser.add_argument("--to-percent", type=parse_positive_float, metavar="TO-PERCENT",
+  parser.add_argument("--to-percent", type=parse_percent, metavar="TO-PERCENT",
                       help="mask workers that have at maximum TO-PERCENT of all masked ratings (exclusive); in (0, 100]", default=100)
   add_req_output_mask_argument(parser)
   add_opt_dry_argument(parser)
@@ -148,9 +148,9 @@ def init_mask_workers_by_correlation_percent_parser(parser: ArgumentParser):
   parser.description = "Mask workers based on their sentence or algorithm correlation compared to other workers (percentage-wise)."
   add_req_project_argument(parser)
   add_opt_masks_argument(parser)
-  parser.add_argument("--from-percent", type=parse_non_negative_float,
+  parser.add_argument("--from-percent", type=parse_percent,
                       metavar="FROM-PERCENT", help="inclusive lower boundary; in [0; 100)", default=0)
-  parser.add_argument("to_percent", type=parse_positive_float, metavar="TO-PERCENT",
+  parser.add_argument("to_percent", type=parse_percent, metavar="TO-PERCENT",
                       help="exclusive top boundary; in (0; 100]")
   add_mode_argument(parser)
   parser.add_argument("--consider-masked-workers", action="store_true",

@@ -131,6 +131,13 @@ def parse_float(value: str) -> float:
   return value
 
 
+def parse_percent(value: str) -> float:
+  value = parse_float(value)
+  if not (0 <= value <= 100):
+    raise ArgumentTypeError("Value needs to be in range [0, 100]!")
+  return value
+
+
 def parse_positive_float(value: str) -> float:
   value = parse_float(value)
   if not value > 0:
