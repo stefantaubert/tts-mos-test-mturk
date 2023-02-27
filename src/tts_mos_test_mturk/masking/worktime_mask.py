@@ -33,7 +33,7 @@ def mask_assignments_by_worktime(data: EvaluationData, mask_names: Set[str], fro
 
 
 def get_stats_df(assignments: OrderedSet[str], worktimes: np.ndarray, masked_indices: np.ndarray) -> pd.DataFrame:
-  col_assignment = "Assignment"
+  col_assignment = "AssignmentId"
   col_time = "Worktime (s)"
   col_masked = "Masked?"
   lines = []
