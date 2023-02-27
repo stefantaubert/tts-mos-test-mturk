@@ -24,7 +24,7 @@ def get_mask_assignments_by_device_parser(parser: ArgumentParser):
   parser.description = "Mask assignments by their listening devices."
   add_req_project_argument(parser)
   add_opt_masks_argument(parser)
-  parser.add_argument("devices", type=str, metavar="DEVICE", choices=["in-ear", "over-the-ear", "desktop", "laptop"], nargs="+",
+  parser.add_argument("devices", type=parse_non_empty_or_whitespace, metavar="DEVICE", nargs="+",
                       help="mask all assignments that were done on DEVICE", action=ConvertToSetAction)
   add_req_output_mask_argument(parser)
   add_opt_dry_argument(parser)
