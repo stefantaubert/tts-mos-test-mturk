@@ -12,35 +12,29 @@ Command-line interface (CLI) to evaluate text-to-speech (TTS) mean opinion score
 
 ## Features
 
-The tool is split into two command line interfaces named `mturk-template-cli` and `mos-cli` to be able to evaluate studies performed with a template other than the one proposed.
-
-- `mturk-template-cli`: CLI to prepare MOS evaluation with results from MTurk.
-  - `prepare-evaluation`: create evaluation .json-file
-  - `gen-example-input`: generate example input data
-- `mos-cli`: CLI to evaluate text-to-speech MOS studies done on MTurk.
-  - `init`: initialize project from .json-file
-  - `masks`
-    - `mask-workers-by-assignments-count`: mask workers by their count of assignments
-    - `mask-workers-by-masked-ratings-count`: mask workers by their count of masked ratings
-    - `mask-workers-by-correlation`: mask workers by their algorithm/sentence correlation
-    - `mask-workers-by-correlation-percent`: mask workers by their algorithm/sentence correlation (percentage-wise)
-    - `mask-assignments-by-device`: mask assignments by their listening device
-    - `mask-assignments-by-worktime`: mask assignments by their worktime
-    - `mask-rating-outliers`: mask outlying ratings
-  - `stats`
-    - `print-mos`: print MOS and CI95
-    - `print-masking-stats`: print masking statistics
-    - `print-worker-stats`: print worker statistics for each algorithm
-    - `print-assignment-stats`: print assignment statistics for each worker
-    - `print-sentence-stats`: print sentence statistics for each algorithm
-    - `print-data`: print all data points
-  - `mturk`
-    - `prepare-approval`: generate approval CSV-file
-    - `approve`: approve assignments from CSV-file
-    - `prepare-rejection`: generate rejection CSV-file
-    - `reject`: reject assignments from CSV-file
-    - `prepare-bonus-payment`: generate bonus payment CSV-file
-    - `pay-bonus`: pay bonus to assignments from CSV-file
+- `init`: initialize project from .json-file
+- `masks`
+  - `mask-workers-by-assignments-count`: mask workers by their count of assignments
+  - `mask-workers-by-masked-ratings-count`: mask workers by their count of masked ratings
+  - `mask-workers-by-correlation`: mask workers by their algorithm/sentence correlation
+  - `mask-workers-by-correlation-percent`: mask workers by their algorithm/sentence correlation (percentage-wise)
+  - `mask-assignments-by-device`: mask assignments by their listening device
+  - `mask-assignments-by-worktime`: mask assignments by their worktime
+  - `mask-rating-outliers`: mask outlying ratings
+- `stats`
+  - `print-mos`: print MOS and CI95
+  - `print-masking-stats`: print masking statistics
+  - `print-worker-stats`: print worker statistics for each algorithm
+  - `print-assignment-stats`: print assignment statistics for each worker
+  - `print-sentence-stats`: print sentence statistics for each algorithm
+  - `print-data`: print all data points
+- `mturk`
+  - `prepare-approval`: generate approval CSV-file
+  - `approve`: approve assignments from CSV-file
+  - `prepare-rejection`: generate rejection CSV-file
+  - `reject`: reject assignments from CSV-file
+  - `prepare-bonus-payment`: generate bonus payment CSV-file
+  - `pay-bonus`: pay bonus to assignments from CSV-file
 
 ## Installation
 
@@ -49,26 +43,6 @@ pip install tts-mos-test-mturk --user
 ```
 
 ## Usage
-
-### mturk-template-cli
-
-```txt
-usage: mturk-template-cli [-h] [-v] {prepare-evaluation,gen-example-input} ...
-
-CLI to evaluate MOS results from MTurk and approve/reject workers.
-
-positional arguments:
-  {prepare-evaluation,gen-example-input}
-                                        description
-    prepare-evaluation                  convert input data and results to .json-file
-    gen-example-input                   generate example input data
-
-options:
-  -h, --help                            show this help message and exit
-  -v, --version                         show program's version number and exit
-```
-
-### mos-cli
 
 ```txt
 usage: mos-cli [-h] [-v] {init,masks,stats,mturk} ...
@@ -92,50 +66,11 @@ options:
 
 Note: The creation of the template and survey is not fully described yet. The evaluation can be done using a .json-file which interacts as a interface between the template and the evaluation (see "Project JSON example"); start at step 4 in this case.
 
-### 1. Create MTurk Template
+### 1. Run survey on MTurk
 
-To create the MTurk Template the script at [mturk-template/create-template.sh](mturk-template/create-template.sh) can be used. To prepare the audio files for the template and to create the upload CSV for MTurk the script at [mturk-template/create-upload-csv.sh](mturk-template/create-upload-csv.sh) can be used.
+The survey needs to be started at MTurk and prepare the .json-file. The .json-file contains all relevant information for the evaluation.
 
-### 2. Run survey on MTurk
-
-The survey needs to be started at MTurk. Alternatively some example data can be generated with:
-
-```py
-mturk-template-cli gen-example-input \
-  "/tmp/algorithms-and-files.csv" \
-  "/tmp/Batch_374625_batch_results.csv" \
-  "/tmp/upload.csv" --seed 1234
-```
-
-### 3. Prepare evaluation
-
-To prepare the evaluation these two files are needed:
-
-- a file containing the algorithm and sentence for each url
-  - it needs to contain 3 columns `audio_url`, `algorithm` and `file`
-    - `audio_url`: the link to an audio file that was evaluated
-    - `algorithm`: the name of the algorithm for that file, e.g., `ground-truth`
-    - `file`: the name of the file on each algorithm, e.g., `1.wav`
-- the batch results file from MTurk
-  - Visit site [MTurk -> Manage](https://requester.mturk.com/manage)
-  - Then click on `Review Results` for the batch you want to evaluate
-  - Then click on `Download CSV`
-  - You get a file which is named something like `Batch_374625_batch_results.csv`
-
-Then create the .json-file for the evaluation with:
-
-```sh
-mturk-template-cli prepare-evaluation \
-  "/tmp/algorithms-and-files.csv" \
-  "/tmp/Batch_374625_batch_results.csv" \
-  "/tmp/project.json"
-```
-
-The .json-file contains all relevant information for the evaluation.
-
-Note: If *another template* is used then a .json-file needs to be created for the evaluation containing all required fields.
-
-### 4. Initialize project
+### 2. Initialize project
 
 From the previously created .json-file a new project can be initialized with:
 
@@ -145,7 +80,7 @@ mos-cli init \
   "/tmp/project.pkl"
 ```
 
-### 5. Mask workers/assignments/ratings
+### 3. Mask workers/assignments/ratings
 
 Workers/assignments/ratings can be masked in order to ignore them later in the MOS calculation. For these operations the command `mos-cli masks [operation]` is used. For example: Mask assignments that were done too fast  (e.g., less than 30 seconds):
 
@@ -199,7 +134,7 @@ Log: "/tmp/tts-mos-test-mturk.log"
 
 This operation masked 54 further assignments (incl. their 432 ratings) that were done without a headphone. All assignments that were done too fast were already masked.
 
-### 6. Calculate MOS and CI95
+### 4. Calculate MOS and CI95
 
 To calculate the MOS for all ratings while ignoring ratings that were done without a headphone or were taken too fast, the masks `too-fast` and `too-fast > no-headphone` need to be applied:
 
@@ -224,7 +159,7 @@ Count of ratings (unmasked/all): 3616/4320 -> on average 904/1080 per algorithm
 Log: "/tmp/tts-mos-test-mturk.log"
 ```
 
-### 7. Approve/reject assignments
+### 5. Approve/reject assignments
 
 To approve all assignments that weren't done too fast, a CSV can be generated using:
 
@@ -389,8 +324,6 @@ MIT License
 
 ## Acknowledgments
 
-Template is based on:
-
 - Ribeiro, F., Florêncio, D., Zhang, C., & Seltzer, M. (2011). CrowdMOS: An approach for crowdsourcing mean opinion score studies. 2011 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP), 2416–2419. [https://doi.org/10.1109/ICASSP.2011.5946971](https://doi.org/10.1109/ICASSP.2011.5946971)
 
 Funded by the Deutsche Forschungsgemeinschaft (DFG, German Research Foundation) – Project-ID 416228727 – CRC 1410
@@ -413,6 +346,6 @@ Taubert, S. (2023). tts-mos-test-mturk (Version 0.0.1) [Computer software]. http
     - `mturk prepare-bonus-payment`: added logging of fees for Mechanical Turk
     - `mturk prepare-approval`: added logging of fees for Mechanical Turk
   - Changed:
-    - updated template
+    - moved template creation and preparation to another repository
 - v0.0.1 (2023-02-23)
   - Initial release

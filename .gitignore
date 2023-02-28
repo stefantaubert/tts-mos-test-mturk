@@ -138,7 +138,5 @@ playground*
 # Own examples
 deploy-PyPI.sh
 TODO.txt
-mturk-template/template.html
 examples/
 *_debug/
-mturk-template/template copy.html
