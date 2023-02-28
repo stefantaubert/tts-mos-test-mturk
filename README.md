@@ -68,7 +68,7 @@ The evaluation can be done using a .json-file which interacts as a interface bet
 
 ### 1. Run survey on MTurk
 
-The survey needs to be started at MTurk and then the .json-file needs to be prepared which contains all relevant information for the evaluation. An example .json-file can be found at [examples/example.json](./examples/example.json)
+The survey needs to be started at MTurk and then the .json-file needs to be prepared which contains all relevant information for the evaluation. An example .json-file can be found at [examples/example.json](./examples/example.json).
 
 ### 2. Initialize project
 
