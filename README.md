@@ -217,10 +217,10 @@ Example output:
 Count of ratings (unmasked/all): 3616/4320 -> on average 904/1080 per algorithm
 
   Algorithm       MOS      CI95
-0      alg0  3.1551  0.1781
-1      alg1  2.9856  0.1618
-2      alg2  2.8686  0.1751
-3      alg3  2.8904  0.1831
+0      alg0    3.1551    0.1781
+1      alg1    2.9856    0.1618
+2      alg2    2.8686    0.1751
+3      alg3    2.8904    0.1831
 Log: "/tmp/tts-mos-test-mturk.log"
 ```
 
