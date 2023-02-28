@@ -64,11 +64,11 @@ options:
 
 ## Pipeline
 
-Note: The creation of the template and survey is not fully described yet. The evaluation can be done using a .json-file which interacts as a interface between the template and the evaluation (see "Project JSON example"); start at step 4 in this case.
+The evaluation can be done using a .json-file which interacts as a interface between the MTurk template and the evaluation (see "Project JSON example").
 
 ### 1. Run survey on MTurk
 
-The survey needs to be started at MTurk and prepare the .json-file. The .json-file contains all relevant information for the evaluation.
+The survey needs to be started at MTurk and then the .json-file needs to be prepared which contains all relevant information for the evaluation. An example .json-file can be found at [examples/example.json](./examples/example.json)
 
 ### 2. Initialize project
 
