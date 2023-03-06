@@ -20,7 +20,7 @@ Command-line interface (CLI) to evaluate text-to-speech (TTS) mean opinion score
   - `mask-workers-by-correlation-percent`: mask workers by their algorithm/sentence correlation (percentage-wise)
   - `mask-assignments-by-device`: mask assignments by their listening device
   - `mask-assignments-by-worktime`: mask assignments by their worktime
-  - `mask mask-assignments-by-time`: mask assignments by their submit time
+  - `mask-assignments-by-time`: mask assignments by their submit time
   - `mask-assignments-by-status`: mask assignments by their status
   - `mask-rating-outliers`: mask outlying ratings
 - `stats`
