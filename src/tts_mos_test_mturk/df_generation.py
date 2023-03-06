@@ -80,9 +80,11 @@ def generate_approve_csv(data: EvaluationData, mask_names: Set[str], reason: Opt
     assignment_id = data.assignments[assignment_index]
     worker_index = assignments_worker_matrix[assignment_index]
     worker_id = data.workers[worker_index]
+    hit_id = data.worker_data[worker_id].assignments[assignment_id].hit_id
     line = OrderedDict((
       ("AssignmentId", assignment_id),
       ("WorkerId", worker_id),
+      ("HITId", hit_id),
       ("Approve", reason),
       ("Reject", ""),
     ))
@@ -143,9 +145,11 @@ def generate_reject_csv(data: EvaluationData, mask_names: Set[str], reason: str)
     assignment_id = data.assignments[assignment_index]
     worker_index = assignments_worker_matrix[assignment_index]
     worker_id = data.workers[worker_index]
+    hit_id = data.worker_data[worker_id].assignments[assignment_id].hit_id
     line = OrderedDict((
       ("AssignmentId", assignment_id),
       ("WorkerId", worker_id),
+      ("HITId", hit_id),
       ("Approve", ""),
       ("Reject", reason),
     ))
@@ -190,9 +194,11 @@ def generate_bonus_csv(data: EvaluationData, mask_names: Set[str], bonus: float,
     assignment_id = data.assignments[assignment_index]
     worker_index = assignments_worker_matrix[assignment_index]
     worker_id = data.workers[worker_index]
+    hit_id = data.worker_data[worker_id].assignments[assignment_id].hit_id
     line = OrderedDict((
       ("AssignmentId", assignment_id),
       ("WorkerId", worker_id),
+      ("HITId", hit_id),
       ("BonusAmount", bonus),
       ("Reason", reason),
     ))
@@ -237,6 +243,7 @@ def generate_ground_truth_table(data: EvaluationData, mask_names: Set[str]) -> p
             ("Worktime (s)", assignment_data.worktime),
             ("Device", assignment_data.device),
             ("State", assignment_data.state),
+            ("HIT", assignment_data.hit_id),
             ("Assignment", assignment),
             ("Masked?", is_masked),
           ))

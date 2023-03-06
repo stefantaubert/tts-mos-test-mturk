@@ -235,6 +235,7 @@ mos-cli mturk reject \
         "device": "in-ear",
         "state": "Approved",
         "worktime": 30,
+        "hit": "Hit1",
         "ratings": [
           {
             "rating": 5,
@@ -345,6 +346,7 @@ Taubert, S. (2023). tts-mos-test-mturk (Version 0.0.1) [Computer software]. http
     - `mask mask-workers-by-correlation-percent`: added option to include masked workers in percentage calculation
     - `mturk prepare-bonus-payment`: added logging of fees for Mechanical Turk
     - `mturk prepare-approval`: added logging of fees for Mechanical Turk
+    - added parsing of `HITId`
   - Changed:
     - moved template creation and preparation to another repository
 - v0.0.1 (2023-02-23)

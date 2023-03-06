@@ -22,6 +22,8 @@ class Assignment:
   state: str
   # TODO make optional
   worktime: Union[int, float]
+  # TODO make optional
+  hit_id: str
   ratings: List[Rating] = field(default_factory=list)
 
 
@@ -59,11 +61,12 @@ def parse_result_from_json(data: Dict) -> Result:
     for assignment_id, assignment_data in assignments.items():
       device = str(assignment_data["device"])
       state = str(assignment_data["state"])
+      hit = str(assignment_data["hit"])
       worktime = parse_int_then_float(str(assignment_data["worktime"]))
       if assignment_id in assignment_ids:
         raise ValueError(f"Assignment \"{assignment_id}\" exist multiple times!")
       assignment_ids.add(assignment_id)
-      assignment = Assignment(device, state, worktime)
+      assignment = Assignment(device, state, worktime, hit)
       assert assignment_id not in worker.assignments
       worker.assignments[assignment_id] = assignment
       parsed_alg_file_combinations = set()
