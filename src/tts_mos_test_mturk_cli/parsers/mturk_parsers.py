@@ -53,7 +53,7 @@ def init_prepare_approval_parser(parser: ArgumentParser):
   parser.add_argument("--costs", type=get_optional(parse_non_negative_float),
                       metavar="DOLLAR", help="costs for one approval (in $)", default=None)
   parser.add_argument("--fee", type=get_optional(parse_percent),
-                      metavar="PERCENT", help="Mechanical Turk fee (in %)", default=DEFAULT_AMAZON_FEE)
+                      metavar="PERCENT", help="Mechanical Turk fee (in percent)", default=DEFAULT_AMAZON_FEE)
   parser.add_argument("--reason", type=get_optional(parse_non_empty_or_whitespace), metavar="REASON",
                       help="use custom reason instead of \"x\"", default=None)
 
@@ -133,7 +133,7 @@ def init_prepare_bonus_payment_parser(parser: ArgumentParser):
   parser.add_argument("reason", type=parse_non_empty_or_whitespace, metavar="REASON",
                       help="reason for paying the bonus")
   parser.add_argument("--fee", type=parse_percent,
-                      metavar="PERCENT", help="Mechanical Turk fee (in %)", default=DEFAULT_AMAZON_FEE)
+                      metavar="PERCENT", help="Mechanical Turk fee (in percent)", default=DEFAULT_AMAZON_FEE)
   parser.add_argument("output", type=parse_path,
                       help="write CSV to this path", metavar="OUTPUT-CSV")
 
