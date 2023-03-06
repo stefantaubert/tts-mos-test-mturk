@@ -1,3 +1,4 @@
+import datetime
 from collections import OrderedDict
 from dataclasses import dataclass, field
 from typing import Any, Dict, List
@@ -24,6 +25,7 @@ class Assignment:
   worktime: Union[int, float]
   # TODO make optional
   hit_id: str
+  time: datetime.datetime
   ratings: List[Rating] = field(default_factory=list)
 
 
@@ -47,6 +49,11 @@ def parse_int_then_float(val: str) -> Union[int, float]:
   return float(val)
 
 
+def parse_time(val: str) -> datetime.datetime:
+  dtime = datetime.datetime.strptime(val, "%a %b %d %H:%M:%S PST %Y")
+  return dtime
+
+
 def parse_result_from_json(data: Dict) -> Result:
   res_data: ODType[str, Worker] = OrderedDict()
   files = OrderedSet(str(x) for x in data["files"])
@@ -62,11 +69,13 @@ def parse_result_from_json(data: Dict) -> Result:
       device = str(assignment_data["device"])
       state = str(assignment_data["state"])
       hit = str(assignment_data["hit"])
+      time = parse_time(str(assignment_data["time"]))
+      # Mon Mar 06 08:59:21 PST 2023
       worktime = parse_int_then_float(str(assignment_data["worktime"]))
       if assignment_id in assignment_ids:
         raise ValueError(f"Assignment \"{assignment_id}\" exist multiple times!")
       assignment_ids.add(assignment_id)
-      assignment = Assignment(device, state, worktime, hit)
+      assignment = Assignment(device, state, worktime, hit, time)
       assert assignment_id not in worker.assignments
       worker.assignments[assignment_id] = assignment
       parsed_alg_file_combinations = set()

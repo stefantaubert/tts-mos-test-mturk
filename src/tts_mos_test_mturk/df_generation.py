@@ -251,6 +251,7 @@ def generate_ground_truth_table(data: EvaluationData, mask_names: Set[str]) -> p
             ("Algorithm", rating_data.algorithm),
             ("File", rating_data.file),
             ("Rating", rating_data.rating),
+            ("Time", assignment_data.time),
             ("Worktime (s)", assignment_data.worktime),
             ("Device", assignment_data.device),
             ("State", assignment_data.state),

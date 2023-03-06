@@ -2,6 +2,7 @@ import argparse
 import codecs
 import json
 from argparse import ArgumentTypeError
+from datetime import datetime
 from functools import partial
 from pathlib import Path
 from typing import Callable, Dict, List, Optional, TypeVar
@@ -185,4 +186,9 @@ def parse_non_negative_integer(value: str) -> int:
   value = parse_integer(value)
   if not value >= 0:
     raise ArgumentTypeError("Value needs to be greater than or equal to zero!")
+  return value
+
+
+def parse_datetime(value: str) -> datetime:
+  value = datetime.strptime(value, "%Y-%m-%d %H:%M:%S")
   return value

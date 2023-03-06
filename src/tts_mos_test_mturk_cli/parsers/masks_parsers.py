@@ -1,15 +1,17 @@
 import math
 from argparse import ArgumentParser, Namespace
+from datetime import datetime
 
 from tts_mos_test_mturk.masking.assignment_count_mask import mask_workers_by_assignment_count
 from tts_mos_test_mturk.masking.listening_device_mask import mask_assignments_by_listening_device
 from tts_mos_test_mturk.masking.masked_count_mask import mask_ratings_by_masked_count
 from tts_mos_test_mturk.masking.outlier_mask import mask_outlying_ratings
 from tts_mos_test_mturk.masking.state_mask import mask_assignments_by_state
+from tts_mos_test_mturk.masking.time_mask import mask_assignments_by_time
 from tts_mos_test_mturk.masking.worker_correlation_mask import (mask_workers_by_correlation,
                                                                 mask_workers_by_correlation_percent)
 from tts_mos_test_mturk.masking.worktime_mask import mask_assignments_by_worktime
-from tts_mos_test_mturk_cli.argparse_helper import (ConvertToSetAction,
+from tts_mos_test_mturk_cli.argparse_helper import (ConvertToSetAction, parse_datetime,
                                                     parse_non_empty_or_whitespace,
                                                     parse_non_negative_float,
                                                     parse_non_negative_integer, parse_percent,
@@ -71,6 +73,26 @@ def init_mask_assignments_by_worktime_parser(parser: ArgumentParser):
   def main(ns: Namespace) -> None:
     ensure_masks_exist(ns.project, ns.masks)
     mask_assignments_by_worktime(ns.project, ns.masks, ns.from_time, ns.to_time, ns.output_mask)
+
+    if not ns.dry:
+      save_project(ns.project)
+  return main
+
+
+def init_mask_assignments_by_time_parser(parser: ArgumentParser):
+  parser.description = "Mask assignments by their submit time."
+  add_req_project_argument(parser)
+  add_opt_masks_argument(parser)
+  parser.add_argument("--from-time", type=parse_datetime, metavar="FROM-TIME",
+                      help="mask all assignments, which have a submit time after than or equal to FROM-TIME (inclusive); format: 1970-12-31 23:59:59", default=datetime(1970, 1, 1, 12, 0, 0, 0, None))
+  parser.add_argument("to_time", type=parse_datetime, metavar="TO-TIME",
+                      help="mask all assignments, which have a submit time prior to TO-TIME (exclusive); format: 1970-12-31 23:59:59")
+  add_req_output_mask_argument(parser)
+  add_opt_dry_argument(parser)
+
+  def main(ns: Namespace) -> None:
+    ensure_masks_exist(ns.project, ns.masks)
+    mask_assignments_by_time(ns.project, ns.masks, ns.from_time, ns.to_time, ns.output_mask)
 
     if not ns.dry:
       save_project(ns.project)

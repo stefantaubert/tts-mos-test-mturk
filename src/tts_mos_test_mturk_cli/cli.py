@@ -46,6 +46,7 @@ def get_masks_parsers() -> Parsers:
   yield "mask-assignments-by-device", "mask assignments by their listening device", get_mask_assignments_by_device_parser
   yield "mask-assignments-by-status", "mask assignments by their status", get_mask_assignments_by_status_parser
   yield "mask-assignments-by-worktime", "mask assignments by their worktime", init_mask_assignments_by_worktime_parser
+  yield "mask-assignments-by-time", "mask assignments by their submit time", init_mask_assignments_by_time_parser
   yield "mask-rating-outliers", "mask outlying ratings", init_mask_rating_outliers_parser
 
 

@@ -20,6 +20,7 @@ Command-line interface (CLI) to evaluate text-to-speech (TTS) mean opinion score
   - `mask-workers-by-correlation-percent`: mask workers by their algorithm/sentence correlation (percentage-wise)
   - `mask-assignments-by-device`: mask assignments by their listening device
   - `mask-assignments-by-worktime`: mask assignments by their worktime
+  - `mask mask-assignments-by-time`: mask assignments by their submit time
   - `mask-assignments-by-status`: mask assignments by their status
   - `mask-rating-outliers`: mask outlying ratings
 - `stats`
@@ -346,7 +347,8 @@ Taubert, S. (2023). tts-mos-test-mturk (Version 0.0.1) [Computer software]. http
     - `mask mask-workers-by-correlation-percent`: added option to include masked workers in percentage calculation
     - `mturk prepare-bonus-payment`: added logging of fees for Mechanical Turk
     - `mturk prepare-approval`: added logging of fees for Mechanical Turk
-    - added `mturk mask-assignments-by-status`
+    - added `mask mask-assignments-by-status`
+    - added `mask mask-assignments-by-time`
     - added parsing of `HITId`
     - added option to mask assignments before preparing rejection CSV
   - Changed:
