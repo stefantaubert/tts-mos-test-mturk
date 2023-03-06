@@ -44,7 +44,7 @@ def get_masks_parsers() -> Parsers:
   yield "mask-workers-by-correlation", "mask workers by their algorithm/sentence correlation", init_mask_workers_by_correlation_parser
   yield "mask-workers-by-correlation-percent", "mask workers by their algorithm/sentence correlation (percentage-wise)", init_mask_workers_by_correlation_percent_parser
   yield "mask-assignments-by-device", "mask assignments by their listening device", get_mask_assignments_by_device_parser
-  yield "mask-assignments-by-state", "mask assignments by their state", get_mask_assignments_by_state_parser
+  yield "mask-assignments-by-status", "mask assignments by their status", get_mask_assignments_by_status_parser
   yield "mask-assignments-by-worktime", "mask assignments by their worktime", init_mask_assignments_by_worktime_parser
   yield "mask-rating-outliers", "mask outlying ratings", init_mask_rating_outliers_parser
 

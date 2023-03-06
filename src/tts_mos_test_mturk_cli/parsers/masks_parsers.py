@@ -39,12 +39,12 @@ def get_mask_assignments_by_device_parser(parser: ArgumentParser):
   return main
 
 
-def get_mask_assignments_by_state_parser(parser: ArgumentParser):
-  parser.description = "Mask assignments by their states."
+def get_mask_assignments_by_status_parser(parser: ArgumentParser):
+  parser.description = "Mask assignments by their statuses."
   add_req_project_argument(parser)
   add_opt_masks_argument(parser)
-  parser.add_argument("states", type=parse_non_empty_or_whitespace, metavar="STATE", nargs="+",
-                      help="mask all assignments that have state STATE; most probably one of: Submitted, Approved, Rejected", action=ConvertToSetAction)
+  parser.add_argument("states", type=parse_non_empty_or_whitespace, metavar="STATUS", nargs="+", choices=["Submitted", "Approved", "Rejected"],
+                      help="mask all assignments that have status STATUS", action=ConvertToSetAction)
   add_req_output_mask_argument(parser)
   add_opt_dry_argument(parser)
 
