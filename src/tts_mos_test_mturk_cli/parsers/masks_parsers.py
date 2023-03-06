@@ -5,6 +5,7 @@ from tts_mos_test_mturk.masking.assignment_count_mask import mask_workers_by_ass
 from tts_mos_test_mturk.masking.listening_device_mask import mask_assignments_by_listening_device
 from tts_mos_test_mturk.masking.masked_count_mask import mask_ratings_by_masked_count
 from tts_mos_test_mturk.masking.outlier_mask import mask_outlying_ratings
+from tts_mos_test_mturk.masking.state_mask import mask_assignments_by_state
 from tts_mos_test_mturk.masking.worker_correlation_mask import (mask_workers_by_correlation,
                                                                 mask_workers_by_correlation_percent)
 from tts_mos_test_mturk.masking.worktime_mask import mask_assignments_by_worktime
@@ -32,6 +33,24 @@ def get_mask_assignments_by_device_parser(parser: ArgumentParser):
   def main(ns: Namespace) -> None:
     ensure_masks_exist(ns.project, ns.masks)
     mask_assignments_by_listening_device(ns.project, ns.masks, ns.devices, ns.output_mask)
+
+    if not ns.dry:
+      save_project(ns.project)
+  return main
+
+
+def get_mask_assignments_by_state_parser(parser: ArgumentParser):
+  parser.description = "Mask assignments by their states."
+  add_req_project_argument(parser)
+  add_opt_masks_argument(parser)
+  parser.add_argument("states", type=parse_non_empty_or_whitespace, metavar="STATE", nargs="+",
+                      help="mask all assignments that have state STATE; most probably one of: Submitted, Approved, Rejected", action=ConvertToSetAction)
+  add_req_output_mask_argument(parser)
+  add_opt_dry_argument(parser)
+
+  def main(ns: Namespace) -> None:
+    ensure_masks_exist(ns.project, ns.masks)
+    mask_assignments_by_state(ns.project, ns.masks, ns.states, ns.output_mask)
 
     if not ns.dry:
       save_project(ns.project)
