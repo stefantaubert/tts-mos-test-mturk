@@ -33,7 +33,7 @@ def log_full_df(df: pd.DataFrame) -> None:
     'display.max_columns', None,
     "display.width", None,
     "display.precision", DISPLAY_PRECISION):
-    logger.info(f"\n{df}")
+    logger.info(f"\n{df.to_string(index=False)}")
 
 
 def save_csv(path: Path, df: pd.DataFrame, output_name: str = "output") -> None:

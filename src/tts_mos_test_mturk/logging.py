@@ -38,4 +38,4 @@ def log_full_df_info(df: pd.DataFrame, title: str = "") -> None:
     'display.max_columns', None,
     "display.width", None,
     "display.precision", 4):
-    logger.info(f"{title}\n{df}")
+    logger.info(f"{title}\n{df.to_string(index=False)}")
