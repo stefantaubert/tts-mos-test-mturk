@@ -348,6 +348,7 @@ Taubert, S. (2023). tts-mos-test-mturk (Version 0.0.1) [Computer software]. http
     - `mturk prepare-approval`: added logging of fees for Mechanical Turk
     - added `mturk mask-assignments-by-status`
     - added parsing of `HITId`
+    - added option to mask assignments before preparing rejection CSV
   - Changed:
     - moved template creation and preparation to another repository
 - v0.0.1 (2023-02-23)

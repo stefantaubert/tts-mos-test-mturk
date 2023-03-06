@@ -6,8 +6,8 @@ from mypy_boto3_mturk import MTurkClient
 from tts_mos_test_mturk.api import approve_from_df, grant_bonuses_from_df, reject_from_df
 from tts_mos_test_mturk.df_generation import (generate_approve_csv, generate_bonus_csv,
                                               generate_reject_csv)
-from tts_mos_test_mturk_cli.argparse_helper import (get_optional, parse_data_frame,
-                                                    parse_non_empty_or_whitespace,
+from tts_mos_test_mturk_cli.argparse_helper import (ConvertToSetAction, get_optional,
+                                                    parse_data_frame, parse_non_empty_or_whitespace,
                                                     parse_non_negative_float, parse_path,
                                                     parse_percent)
 from tts_mos_test_mturk_cli.default_args import add_opt_masks_argument, add_req_project_argument
@@ -90,6 +90,8 @@ def init_prepare_rejection_parser(parser: ArgumentParser):
   parser.description = "Generate a CSV-file in which all masked assignments will be listed for them to be rejected via API or the MTurk website."
   add_req_project_argument(parser)
   add_opt_masks_argument(parser)
+  parser.add_argument("reject_masks", type=parse_non_empty_or_whitespace,
+                      nargs="+", metavar="REJECT-MASK", help="reject masked assignments from REJECT-MASK", action=ConvertToSetAction, default=set())
   parser.add_argument("reason", type=parse_non_empty_or_whitespace, metavar="REASON",
                       help="use this reason")
   parser.add_argument("output", type=parse_path,
@@ -97,7 +99,7 @@ def init_prepare_rejection_parser(parser: ArgumentParser):
 
   def main(ns: Namespace) -> None:
     ensure_masks_exist(ns.project, ns.masks)
-    result_df = generate_reject_csv(ns.project, ns.masks, ns.reason)
+    result_df = generate_reject_csv(ns.project, ns.masks, ns.reject_masks, ns.reason)
     save_csv(ns.output, result_df)
   return main
 

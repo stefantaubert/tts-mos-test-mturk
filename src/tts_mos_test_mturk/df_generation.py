@@ -53,7 +53,7 @@ def generate_approve_csv(data: EvaluationData, mask_names: Set[str], reason: Opt
 
   unmasked_workers = data.workers[wmask.unmasked_indices]
   if len(unmasked_workers) > 0:
-    dlogger.info("Unmasked workers (will be approved):")
+    dlogger.info("Unmasked workers:")
     for nr, w in enumerate(sorted(unmasked_workers), start=1):
       dlogger.info(f"{nr}. \"{w}\"")
   else:
@@ -61,7 +61,7 @@ def generate_approve_csv(data: EvaluationData, mask_names: Set[str], reason: Opt
 
   masked_workers = data.workers[wmask.masked_indices]
   if len(masked_workers) > 0:
-    dlogger.info("Masked workers (will not be approved):")
+    dlogger.info("Masked workers (none assignment will be approved):")
     for nr, w in enumerate(sorted(masked_workers), start=1):
       dlogger.info(f"{nr}. \"{w}\"")
   else:
@@ -109,19 +109,30 @@ def generate_approve_csv(data: EvaluationData, mask_names: Set[str], reason: Opt
   return result
 
 
-def generate_reject_csv(data: EvaluationData, mask_names: Set[str], reason: str) -> pd.DataFrame:
+def generate_reject_csv(data: EvaluationData, mask_names: Set[str], reject_mask_names: Set[str], reason: str) -> pd.DataFrame:
   logger = get_logger()
   dlogger = get_detail_logger()
 
-  masks = data.get_masks_from_names(mask_names)
   factory = MaskFactory(data)
+  masks = data.get_masks_from_names(mask_names)
+  reject_masks = data.get_masks_from_names(reject_mask_names)
 
   amask = factory.merge_masks_into_amask(masks)
   wmask = factory.merge_masks_into_wmask(masks)
 
+  reject_amask = factory.merge_masks_into_amask(reject_masks)
+  reject_wmask = factory.merge_masks_into_wmask(reject_masks)
+
+  # unmasked no-reject -> False
+  # unmasked reject -> True
+  # masked no-reject -> False
+  # masked reject -> False
+  amask.mask = ~amask.mask & reject_amask.mask
+  wmask.mask = ~wmask.mask & reject_wmask.mask
+
   masked_workers = data.workers[wmask.masked_indices]
   if len(masked_workers) > 0:
-    dlogger.info("Masked workers (will be rejected):")
+    dlogger.info("Masked workers (all assignments will be rejected):")
     for nr, w in enumerate(sorted(masked_workers), start=1):
       dlogger.info(f"{nr}. \"{w}\"")
   else:
@@ -129,7 +140,7 @@ def generate_reject_csv(data: EvaluationData, mask_names: Set[str], reason: str)
 
   unmasked_workers = data.workers[wmask.unmasked_indices]
   if len(unmasked_workers) > 0:
-    dlogger.info("Unmasked workers (will not be rejected):")
+    dlogger.info("Unmasked workers:")
     for nr, w in enumerate(sorted(unmasked_workers), start=1):
       dlogger.info(f"{nr}. \"{w}\"")
   else:
@@ -170,7 +181,7 @@ def generate_bonus_csv(data: EvaluationData, mask_names: Set[str], bonus: float,
 
   unmasked_workers = data.workers[wmask.unmasked_indices]
   if len(unmasked_workers) > 0:
-    dlogger.info("Unmasked workers (will be paid a bonus):")
+    dlogger.info("Unmasked workers:")
     for nr, w in enumerate(sorted(unmasked_workers), start=1):
       dlogger.info(f"{nr}. \"{w}\"")
   else:
@@ -178,7 +189,7 @@ def generate_bonus_csv(data: EvaluationData, mask_names: Set[str], bonus: float,
 
   masked_workers = data.workers[wmask.masked_indices]
   if len(masked_workers) > 0:
-    dlogger.info("Masked workers (will not be paid a bonus):")
+    dlogger.info("Masked workers (none assignment will be paid a bonus):")
     for nr, w in enumerate(sorted(masked_workers), start=1):
       dlogger.info(f"{nr}. \"{w}\"")
   else:
