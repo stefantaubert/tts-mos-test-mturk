@@ -51,8 +51,6 @@ class WorkerEntry:
       return np.nan
     return np.std(self.ratings)
 
-from tts_mos_test_mturk.common import get_ratings
-
 
 def get_worker_stats(data: EvaluationData, masks: List[MaskBase]):
   factory = MaskFactory(data)
@@ -79,6 +77,7 @@ def get_worker_stats(data: EvaluationData, masks: List[MaskBase]):
           continue
 
         entry.devices.append(assignment_data.device)
+        raise NotImplementedError()
         entry.ratings.append(rating_data.rating)
 
   return stats

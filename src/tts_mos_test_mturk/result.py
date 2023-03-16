@@ -10,9 +10,9 @@ from ordered_set import OrderedSet
 
 @dataclass()
 class Rating:
-  rating: Union[int, float]
   algorithm: str
   file: str
+  ratings: ODType[str, Union[int, float]] = field(default_factory=OrderedDict)
 
 
 @dataclass()
@@ -81,7 +81,6 @@ def parse_result_from_json(data: Dict) -> Result:
       parsed_alg_file_combinations = set()
       ratings = cast(List[Dict[str, Any]], assignment_data["ratings"])
       for rating_data in ratings:
-        rating = parse_int_then_float(str(rating_data["rating"]))
         algorithm = str(rating_data["algorithm"])
         file = str(rating_data["file"])
         if algorithm not in algorithms:
@@ -92,8 +91,13 @@ def parse_result_from_json(data: Dict) -> Result:
         alg_file_comb = (algorithm, file)
         if alg_file_comb in parsed_alg_file_combinations:
           raise ValueError("Rating for algorithm and file combination exist multiple times!")
+        rating_names = rating_data.keys() - {"algorithm", "file"}
         parsed_alg_file_combinations.add(alg_file_comb)
-        r = Rating(rating, algorithm, file)
+        if len(rating_names) == 0:
+          raise ValueError("No rating for algorithm and file combination was given!")
+        r = Rating(algorithm, file)
         assignment.ratings.append(r)
-
+        for rating_name in rating_names:
+          rating = parse_int_then_float(str(rating_data[rating_name]))
+          r.ratings[rating_name] = rating
   return result

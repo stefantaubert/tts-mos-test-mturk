@@ -1,9 +1,12 @@
 from collections import OrderedDict
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional
+from typing import OrderedDict as ODType
+from typing import Set
 
 import numpy as np
 import pandas as pd
 from mean_opinion_score import get_ci95, get_mos
+from ordered_set import OrderedSet
 
 from tts_mos_test_mturk.common import get_ratings
 from tts_mos_test_mturk.evaluation_data import EvaluationData
@@ -12,34 +15,67 @@ from tts_mos_test_mturk.masking.mask_factory import MaskFactory
 
 
 def get_mos_df(data: EvaluationData, mask_names: Set[str]) -> pd.DataFrame:
-  logger = get_logger()
   masks = data.get_masks_from_names(mask_names)
   factory = MaskFactory(data)
-
-  ratings = get_ratings(data)
-  all_ratings_count = np.sum(~np.isnan(ratings))
-
   rmask = factory.merge_masks_into_rmask(masks)
-  rmask.apply_by_nan(ratings)
 
-  ratings_count = np.sum(~np.isnan(ratings))
+  algo_stats: ODType[str, ODType] = OrderedDict()
+  rating_names = data.rating_names.copy()
+  if len(rating_names) > 1:
+    rating_names = OrderedSet([None] + rating_names)
 
-  logger.info(
-    f"Count of ratings (unmasked/all): {ratings_count}/{all_ratings_count} -> on average {round(ratings_count/data.n_algorithms)}/{round(all_ratings_count/data.n_algorithms)} per algorithm")
+  for rating_name in data.rating_names:
+    disp_name = f"({rating_name})" if rating_name is not None else ""
+    current_ratings = get_ratings(data, rating_name)
+    adj_ratings = current_ratings.copy()
+    rmask.apply_by_nan(adj_ratings)
 
-  scores: List[Dict] = []
-  for algo_i, alg_name in enumerate(data.algorithms):
-    alg_ratings = ratings[algo_i]
-    mos = get_mos(alg_ratings)
-    ci = get_ci95(alg_ratings)
-    row = OrderedDict((
-      ("Algorithm", alg_name),
-      ("MOS", mos),
-      ("CI95", ci),
-    ))
-    scores.append(row)
-  result = pd.DataFrame.from_records(scores)
-  return result
+    for algo_i, alg_name in enumerate(data.algorithms):
+      algo_ratings = current_ratings[algo_i]
+      algo_ratings_adj = adj_ratings[algo_i]
+
+      all_ratings_count = np.sum(~np.isnan(algo_ratings))
+      ratings_count = np.sum(~np.isnan(algo_ratings_adj))
+      if alg_name not in algo_stats:
+        algo_stats[alg_name] = OrderedDict()
+      algo_stat = algo_stats[alg_name]
+      algo_stat[f"MOS{disp_name}"] = get_mos(algo_ratings_adj)
+      algo_stat[f"CI95{disp_name}"] = get_ci95(algo_ratings_adj)
+      algo_stat[f"#Unmasked{disp_name}"] = ratings_count
+      algo_stat[f"#All{disp_name}"] = all_ratings_count
+      algo_stat[f"Percent{disp_name}"] = ratings_count / all_ratings_count * 100
+
+  lines: List[Dict] = []
+  for alg_name, alg_stats in algo_stats.items():
+    line = OrderedDict()
+    line["Algorithm"] = alg_name
+    line.update(alg_stats)
+    lines.append(line)
+  df = pd.DataFrame.from_records(lines)
+
+  all_row = OrderedDict()
+  all_row["Algorithm"] = "ALL"
+  col: str
+  for col in df.columns:
+    if col.startswith("MOS"):
+      assert col not in all_row
+      all_row[col] = df[col].mean()
+    if col.startswith("CI95"):
+      assert col not in all_row
+      all_row[col] = df[col].mean()
+    if col.startswith("#Unmasked"):
+      assert col not in all_row
+      all_row[col] = df[col].sum()
+    if col.startswith("#All"):
+      assert col not in all_row
+      all_row[col] = df[col].sum()
+    if col.startswith("Percent"):
+      assert col not in all_row
+      # TODO
+      all_row[col] = np.nan
+  df = pd.concat([df, pd.DataFrame.from_records([all_row])], ignore_index=True)
+
+  return df
 
 
 def generate_approve_csv(data: EvaluationData, mask_names: Set[str], reason: Optional[str], approval_cost: Optional[float], amazon_fee: Optional[float]) -> pd.DataFrame:
@@ -246,19 +282,20 @@ def generate_ground_truth_table(data: EvaluationData, mask_names: Set[str]) -> p
         alg_i = data.algorithms.get_loc(rating_data.algorithm)
         file_i = data.files.get_loc(rating_data.file)
         is_masked = rmask.mask[alg_i, w_i, file_i]
-        line = OrderedDict((
-            ("Worker", worker),
-            ("Algorithm", rating_data.algorithm),
-            ("File", rating_data.file),
-            ("Rating", rating_data.rating),
-            ("Time", assignment_data.time),
-            ("Worktime (s)", assignment_data.worktime),
-            ("Device", assignment_data.device),
-            ("State", assignment_data.state),
-            ("HIT", assignment_data.hit_id),
-            ("Assignment", assignment),
-            ("Masked?", is_masked),
-          ))
+        line = OrderedDict()
+        line["Worker"] = worker
+        line["Algorithm"] = rating_data.algorithm
+        line["File"] = rating_data.file
+        for rating_name, rating in rating_data.ratings.items():
+          line[f"Rating \"{rating_name}\""] = rating
+        line["Time"] = assignment_data.time
+        line["Worktime (s)"] = assignment_data.worktime
+        line["Device"] = assignment_data.device
+        line["State"] = assignment_data.state
+        line["HIT"] = assignment_data.hit_id
+        line["Assignment"] = assignment
+        line["Masked?"] = is_masked
+
     results.append(line)
   result = pd.DataFrame.from_records(results)
   return result

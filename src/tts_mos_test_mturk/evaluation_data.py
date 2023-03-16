@@ -26,6 +26,13 @@ class EvaluationData():
       for assignment in worker.assignments.values()
       for _ in assignment.ratings
     )
+    self.rating_names = OrderedSet(
+      rating_name
+      for worker in result.workers.values()
+      for assignment in worker.assignments.values()
+      for rating in assignment.ratings
+      for rating_name in rating.ratings.keys()
+    )
 
     self.masks: ODType[str, MaskBase] = OrderedDict()
     self.file_path: Optional[Path] = None
