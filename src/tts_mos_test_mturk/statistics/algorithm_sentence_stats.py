@@ -57,10 +57,6 @@ def get_worker_stats(data: EvaluationData, masks: List[MaskBase]):
   factory = MaskFactory(data)
 
   rmask = factory.merge_masks_into_rmask(masks)
-
-  ratings = get_ratings(data)
-  rmask.apply_by_nan(ratings)
-
   stats: Dict[str, Dict[str, FileEntry]] = {}
 
   for algorithm in data.algorithms:
