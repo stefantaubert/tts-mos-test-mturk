@@ -11,12 +11,13 @@ from tts_mos_test_mturk.masking.time_mask import mask_assignments_by_time
 from tts_mos_test_mturk.masking.worker_correlation_mask import (mask_workers_by_correlation,
                                                                 mask_workers_by_correlation_percent)
 from tts_mos_test_mturk.masking.worktime_mask import mask_assignments_by_worktime
-from tts_mos_test_mturk_cli.argparse_helper import (ConvertToSetAction, parse_datetime,
-                                                    parse_non_empty_or_whitespace,
+from tts_mos_test_mturk_cli.argparse_helper import (ConvertToSetAction, get_optional,
+                                                    parse_datetime, parse_non_empty_or_whitespace,
                                                     parse_non_negative_float,
                                                     parse_non_negative_integer, parse_percent,
                                                     parse_positive_float, parse_positive_integer)
 from tts_mos_test_mturk_cli.default_args import (add_opt_dry_argument, add_opt_masks_argument,
+                                                 add_opt_ratings_argument,
                                                  add_req_output_mask_argument,
                                                  add_req_project_argument)
 from tts_mos_test_mturk_cli.helper import save_project
@@ -107,12 +108,14 @@ def init_mask_rating_outliers_parser(parser: ArgumentParser):
                       help="mask outlying ratings that lie at least FROM-N-STD standard deviations away from the mean of the respective algorithm; in [0, inf)")
   parser.add_argument("--to-threshold", type=parse_positive_float, metavar="TO-N-STD",
                       help="mask outlying ratings that lie below TO-N-STD standard deviations away from the mean of the respective algorithm (exclusive); in (0, inf)", default=math.inf)
+  add_opt_ratings_argument(parser)
   add_req_output_mask_argument(parser)
   add_opt_dry_argument(parser)
 
   def main(ns: Namespace) -> None:
     ensure_masks_exist(ns.project, ns.masks)
-    mask_outlying_ratings(ns.project, ns.masks, ns.from_threshold, ns.to_threshold, ns.output_mask)
+    mask_outlying_ratings(ns.project, ns.masks, ns.from_threshold,
+                          ns.to_threshold, ns.output_mask, ns.ratings)
 
     if not ns.dry:
       save_project(ns.project)
@@ -129,13 +132,14 @@ def init_workers_by_masked_ratings_count_parser(parser: ArgumentParser):
                       help="mask workers that have at least FROM-PERCENT of all masked ratings (inclusive); in [0, 100)")
   parser.add_argument("--to-percent", type=parse_percent, metavar="TO-PERCENT",
                       help="mask workers that have at maximum TO-PERCENT of all masked ratings (exclusive); in (0, 100]", default=100)
+  add_opt_ratings_argument(parser)
   add_req_output_mask_argument(parser)
   add_opt_dry_argument(parser)
 
   def main(ns: Namespace) -> None:
     ensure_masks_exist(ns.project, ns.masks)
     mask_ratings_by_masked_count(ns.project, ns.masks, ns.ref_masks,
-                                 ns.from_percent / 100, ns.to_percent / 100, ns.output_mask)
+                                 ns.from_percent / 100, ns.to_percent / 100, ns.output_mask, ns.ratings)
 
     if not ns.dry:
       save_project(ns.project)
@@ -172,13 +176,14 @@ def init_mask_workers_by_correlation_parser(parser: ArgumentParser):
   parser.add_argument("to_threshold", type=float, metavar="TO-THRESHOLD",
                       help="mask workers that have a correlation smaller than TO-THRESHOLD (exclusive); in (-1; 1]")
   add_mode_argument(parser)
+  add_opt_ratings_argument(parser)
   add_req_output_mask_argument(parser)
   add_opt_dry_argument(parser)
 
   def main(ns: Namespace) -> None:
     ensure_masks_exist(ns.project, ns.masks)
     mask_workers_by_correlation(ns.project, ns.masks, ns.from_threshold,
-                                ns.to_threshold, ns.mode, ns.output_mask)
+                                ns.to_threshold, ns.mode, ns.output_mask, ns.ratings)
 
     if not ns.dry:
       save_project(ns.project)
@@ -196,13 +201,14 @@ def init_mask_workers_by_correlation_percent_parser(parser: ArgumentParser):
   add_mode_argument(parser)
   parser.add_argument("--consider-masked-workers", action="store_true",
                       help="consider masked workers in percent calculation")
+  add_opt_ratings_argument(parser)
   add_req_output_mask_argument(parser)
   add_opt_dry_argument(parser)
 
   def main(ns: Namespace) -> None:
     ensure_masks_exist(ns.project, ns.masks)
     mask_workers_by_correlation_percent(ns.project, ns.masks, ns.from_percent / 100,
-                                        ns.to_percent / 100, ns.mode, ns.consider_masked_workers, ns.output_mask)
+                                        ns.to_percent / 100, ns.mode, ns.consider_masked_workers, ns.output_mask, ns.ratings)
 
     if not ns.dry:
       save_project(ns.project)

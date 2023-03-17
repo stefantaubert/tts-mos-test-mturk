@@ -52,7 +52,7 @@ def get_stats_df(workers: OrderedSet[str], windices: np.ndarray, a_counts: np.nd
 
   result = pd.DataFrame.from_records(lines)
   row = {
-    col_worker: "All",
+    col_worker: "ALL",
     col_count: result[col_count].sum(),
     col_masked: result[col_masked].all(),
   }

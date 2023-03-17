@@ -48,7 +48,7 @@ def get_stats_df(assignments: OrderedSet[str], worktimes: np.ndarray, masked_ind
 
   result = pd.DataFrame.from_records(lines)
   row = {
-    col_assignment: "All",
+    col_assignment: "ALL",
     col_time: round(result[col_time].median()),
     col_masked: result[col_masked].all(),
   }

@@ -1,7 +1,12 @@
 from argparse import ArgumentParser
 
-from tts_mos_test_mturk_cli.argparse_helper import (ConvertToSetAction,
+from tts_mos_test_mturk_cli.argparse_helper import (ConvertToSetAction, get_optional,
                                                     parse_non_empty_or_whitespace, parse_project)
+
+
+def add_opt_ratings_argument(parser: ArgumentParser) -> None:
+  parser.add_argument("--ratings", type=get_optional(parse_non_empty_or_whitespace), metavar="RATINGS",
+                      help="name of ratings to use if not the average of all ratings", default=None)
 
 
 def add_req_project_argument(parser: ArgumentParser) -> None:

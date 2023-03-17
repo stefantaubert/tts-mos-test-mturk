@@ -1,6 +1,6 @@
 import math
 from collections import OrderedDict
-from typing import Literal, Set, Tuple
+from typing import Literal, Optional, Set, Tuple
 
 import numpy as np
 import pandas as pd
@@ -17,14 +17,14 @@ from tts_mos_test_mturk.masking.mask_factory import MaskFactory
 from tts_mos_test_mturk.statistics.update_stats import print_stats_masks
 
 
-def mask_workers_by_correlation(data: EvaluationData, mask_names: Set[str], from_threshold_incl: float, to_threshold_excl: float, mode: Literal["sentence", "algorithm", "both"], output_mask_name: str):
+def mask_workers_by_correlation(data: EvaluationData, mask_names: Set[str], from_threshold_incl: float, to_threshold_excl: float, mode: Literal["sentence", "algorithm", "both"], output_mask_name: str, ratings_name: Optional[str]):
   masks = data.get_masks_from_names(mask_names)
   factory = MaskFactory(data)
 
   rmask = factory.merge_masks_into_rmask(masks)
   wmask = factory.merge_masks_into_wmask(masks)
 
-  ratings = get_ratings(data)
+  ratings = get_ratings(data, ratings_name)
   rmask.apply_by_nan(ratings)
 
   wcorrelations = get_mos_correlations(ratings, mode)
@@ -41,14 +41,14 @@ def mask_workers_by_correlation(data: EvaluationData, mask_names: Set[str], from
   print_stats_masks(data, masks, [res_wmask])
 
 
-def mask_workers_by_correlation_percent(data: EvaluationData, mask_names: Set[str], from_percent_incl: float, to_percent_excl: float, mode: Literal["sentence", "algorithm", "both"], consider_masked_workers: bool, output_mask_name: str):
+def mask_workers_by_correlation_percent(data: EvaluationData, mask_names: Set[str], from_percent_incl: float, to_percent_excl: float, mode: Literal["sentence", "algorithm", "both"], consider_masked_workers: bool, output_mask_name: str, ratings_name: Optional[str]):
   masks = data.get_masks_from_names(mask_names)
   factory = MaskFactory(data)
 
   rmask = factory.merge_masks_into_rmask(masks)
   wmask = factory.merge_masks_into_wmask(masks)
 
-  ratings = get_ratings(data)
+  ratings = get_ratings(data, ratings_name)
   rmask.apply_by_nan(ratings)
 
   windices = np.arange(data.n_workers)
@@ -126,7 +126,7 @@ def get_stats_df(workers: OrderedSet[str], ratings: np.ndarray, masked_indices: 
   result.drop(columns=[col_w_i, col_used], inplace=True)
 
   row = {
-    col_worker: "All",
+    col_worker: "ALL",
     col_ratings: result[col_ratings].sum(),
     col_sent_corr: result[col_sent_corr].mean(),
     col_alg_corr: result[col_alg_corr].mean(),
