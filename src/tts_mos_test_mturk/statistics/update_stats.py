@@ -1,4 +1,4 @@
-from typing import Generator, Iterator, List, Set
+from typing import Generator, Iterator, List, Optional, Set
 
 import numpy as np
 
@@ -9,30 +9,34 @@ from tts_mos_test_mturk.masking.mask_factory import MaskFactory
 from tts_mos_test_mturk.masking.masks import AssignmentsMask, MaskBase, WorkersMask
 
 
-def print_stats(data: EvaluationData, mask_names: Set[str], added_mask_names: Set[str]) -> None:
+def print_stats(data: EvaluationData, mask_names: Set[str], added_mask_names: Set[str], ratings_name: Optional[str]) -> None:
   logger = get_logger()
   logger.info("--- Stats ---")
   masks = data.get_masks_from_names(mask_names)
   added_masks = data.get_masks_from_names(added_mask_names)
-  print_stats_masks(data, masks, added_masks)
+  print_stats_masks(data, masks, added_masks, ratings_name)
   logger.info("-------------")
 
 
-def print_stats_masks(data: EvaluationData, masks: List[MaskBase], added_masks: List[MaskBase]) -> None:
+def print_stats_masks(data: EvaluationData, masks: List[MaskBase], added_masks: List[MaskBase], ratings_name: Optional[str]) -> None:
   if len(added_masks) == 0 or any(isinstance(m, WorkersMask) for m in added_masks):
     print_worker_stats(data, masks, added_masks)
 
   if len(added_masks) == 0 or any(isinstance(m, (WorkersMask, AssignmentsMask)) for m in added_masks):
     print_assignment_stats(data, masks, added_masks)
 
-  print_rating_stats(data, masks, added_masks)
+  if ratings_name is None:
+    ratings = list(data.rating_names)
+  else:
+    ratings = [ratings_name]
+  print_rating_stats(data, masks, added_masks, ratings)
 
 
-def print_rating_stats(data: EvaluationData, masks: List[MaskBase], added_masks: List[MaskBase]) -> None:
+def print_rating_stats(data: EvaluationData, masks: List[MaskBase], added_masks: List[MaskBase], ratings_name: Optional[str]) -> None:
   logger = get_logger()
   factory = MaskFactory(data)
 
-  ratings = get_ratings(data)
+  ratings = get_ratings(data, ratings_name)
 
   ratings_mask_before = factory.merge_masks_into_rmask(masks)
   ratings_mask_before.apply_by_nan(ratings)
@@ -43,9 +47,10 @@ def print_rating_stats(data: EvaluationData, masks: List[MaskBase], added_masks:
   new_count = np.sum(~np.isnan(ratings))
 
   n_already_ignored = ratings_mask_before.n_masked
+  rating_name_str = f" ({ratings_name})" if ratings_name is not None else ""
 
   if data.n_ratings > 0:
-    logger.info("--- Ratings Statistics ---")
+    logger.info(f"--- Ratings Statistics ({rating_name_str}) ---")
   if data.n_ratings > 0:
     logger.info(
         f"{n_already_ignored} out of all {data.n_ratings} ratings ({n_already_ignored/data.n_ratings*100:.2f}%) were already masked (i.e., {data.n_ratings - n_already_ignored} unmasked).")

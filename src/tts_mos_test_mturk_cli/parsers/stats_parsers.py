@@ -11,7 +11,7 @@ from tts_mos_test_mturk_cli.helper import log_full_df, save_csv
 from tts_mos_test_mturk_cli.validation import ensure_masks_exist
 
 
-def add_optional_output_argument(parser: ArgumentParser) -> None:
+def add_opt_output_argument(parser: ArgumentParser) -> None:
   parser.add_argument("--output", type=get_optional(parse_path),
                       help="save results to this CSV-file", metavar="OUTPUT-CSV", default=None)
 
@@ -25,7 +25,7 @@ def init_print_assignment_stats_parser(parser: ArgumentParser):
   parser.description = "Print assignment statistics for each worker."
   add_req_project_argument(parser)
   add_opt_masks_argument(parser)
-  add_optional_output_argument(parser)
+  add_opt_output_argument(parser)
   add_silent_argument(parser)
 
   def main(ns: Namespace) -> None:
@@ -47,7 +47,7 @@ def init_print_masking_stats_parser(parser: ArgumentParser):
 
   def main(ns: Namespace) -> None:
     ensure_masks_exist(ns.project, ns.masks)
-    print_stats(ns.project, set(), ns.masks)
+    print_stats(ns.project, set(), ns.masks, None)
   return main
 
 
@@ -55,7 +55,7 @@ def init_print_mos_parser(parser: ArgumentParser):
   parser.description = "Print MOS and CI95 statistics for each algorithm."
   add_req_project_argument(parser)
   add_opt_masks_argument(parser)
-  add_optional_output_argument(parser)
+  add_opt_output_argument(parser)
   add_silent_argument(parser)
 
   def main(ns: Namespace) -> None:
@@ -74,7 +74,7 @@ def init_print_sentence_stats_parser(parser: ArgumentParser):
   parser.description = "Print sentence statistics for each algorithm."
   add_req_project_argument(parser)
   add_opt_masks_argument(parser)
-  add_optional_output_argument(parser)
+  add_opt_output_argument(parser)
   add_silent_argument(parser)
 
   def main(ns: Namespace) -> None:
@@ -93,7 +93,7 @@ def init_print_worker_stats_parser(parser: ArgumentParser):
   parser.description = "Print worker statistics for each algorithm."
   add_req_project_argument(parser)
   add_opt_masks_argument(parser)
-  add_optional_output_argument(parser)
+  add_opt_output_argument(parser)
   add_silent_argument(parser)
 
   def main(ns: Namespace) -> None:
@@ -112,7 +112,7 @@ def init_print_data_parser(parser: ArgumentParser):
   parser.description = "Print all ratings including all metadata."
   add_req_project_argument(parser)
   add_opt_masks_argument(parser)
-  add_optional_output_argument(parser)
+  add_opt_output_argument(parser)
   add_silent_argument(parser)
 
   def main(ns: Namespace) -> None:

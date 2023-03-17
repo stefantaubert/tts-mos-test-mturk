@@ -21,7 +21,7 @@ from tts_mos_test_mturk_cli.default_args import (add_opt_dry_argument, add_opt_m
                                                  add_req_output_mask_argument,
                                                  add_req_project_argument)
 from tts_mos_test_mturk_cli.helper import save_project
-from tts_mos_test_mturk_cli.validation import ensure_masks_exist
+from tts_mos_test_mturk_cli.validation import ensure_masks_exist, ensure_ratings_exist
 
 
 def get_mask_assignments_by_device_parser(parser: ArgumentParser):
@@ -114,6 +114,7 @@ def init_mask_rating_outliers_parser(parser: ArgumentParser):
 
   def main(ns: Namespace) -> None:
     ensure_masks_exist(ns.project, ns.masks)
+    ensure_ratings_exist(ns.project, ns.ratings)
     mask_outlying_ratings(ns.project, ns.masks, ns.from_threshold,
                           ns.to_threshold, ns.output_mask, ns.ratings)
 
@@ -138,6 +139,7 @@ def init_workers_by_masked_ratings_count_parser(parser: ArgumentParser):
 
   def main(ns: Namespace) -> None:
     ensure_masks_exist(ns.project, ns.masks)
+    ensure_ratings_exist(ns.project, ns.ratings)
     mask_ratings_by_masked_count(ns.project, ns.masks, ns.ref_masks,
                                  ns.from_percent / 100, ns.to_percent / 100, ns.output_mask, ns.ratings)
 
@@ -182,6 +184,7 @@ def init_mask_workers_by_correlation_parser(parser: ArgumentParser):
 
   def main(ns: Namespace) -> None:
     ensure_masks_exist(ns.project, ns.masks)
+    ensure_ratings_exist(ns.project, ns.ratings)
     mask_workers_by_correlation(ns.project, ns.masks, ns.from_threshold,
                                 ns.to_threshold, ns.mode, ns.output_mask, ns.ratings)
 
@@ -207,6 +210,7 @@ def init_mask_workers_by_correlation_percent_parser(parser: ArgumentParser):
 
   def main(ns: Namespace) -> None:
     ensure_masks_exist(ns.project, ns.masks)
+    ensure_ratings_exist(ns.project, ns.ratings)
     mask_workers_by_correlation_percent(ns.project, ns.masks, ns.from_percent / 100,
                                         ns.to_percent / 100, ns.mode, ns.consider_masked_workers, ns.output_mask, ns.ratings)
 
