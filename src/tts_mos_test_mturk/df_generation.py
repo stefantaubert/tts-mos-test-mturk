@@ -294,7 +294,8 @@ def generate_ground_truth_table(data: EvaluationData, mask_names: Set[str]) -> p
         line["HIT"] = assignment_data.hit_id
         line["Assignment"] = assignment
         line["Masked?"] = is_masked
+        results.append(line)
 
-    results.append(line)
   result = pd.DataFrame.from_records(results)
+  result.sort_values(["Worker", "Algorithm", "File"], inplace=True)
   return result

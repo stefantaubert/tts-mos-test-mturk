@@ -19,7 +19,7 @@ def init_init_project_parser(parser: ArgumentParser):
     data = EvaluationData(result)
     data.file_path = ns.output
     logger = get_cli_logger()
-    logger.info(f"Parsed {data.n_workers} workers, {data.n_assignments} assignments and {data.n_ratings} ratings for {data.n_algorithms} algorithms and {data.n_files} files.")
-    
+    logger.info(f"Parsed {data.n_workers} workers, {data.n_assignments} assignments and {len(data.rating_names)} x {data.n_ratings} ratings for {data.n_algorithms} algorithms and {data.n_files} files.")
+
     save_project(data)
   return main
