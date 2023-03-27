@@ -30,7 +30,7 @@ def mask_outlying_ratings(data: EvaluationData, mask_names: Set[str], min_std_de
   outlier_rmask = factory.convert_ndarray_to_rmask(outlier_np_mask)
   data.add_or_update_mask(output_mask_name, outlier_rmask)
 
-  print_stats_masks(data, masks, [outlier_rmask])
+  print_stats_masks(data, masks, [outlier_rmask], ratings_name)
 
 
 def mask_outliers_alg_stats_df(ratings: np.ndarray, min_std_dev_diff: float, max_std_dev_diff: float, algorithms: OrderedSet[str]) -> np.ndarray:

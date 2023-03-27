@@ -25,7 +25,7 @@ def mask_assignments_by_listening_device(data: EvaluationData, mask_names: Set[s
 
   data.add_or_update_mask(output_mask_name, res_amask)
 
-  print_stats_masks(data, masks, [res_amask])
+  print_stats_masks(data, masks, [res_amask], rating_name=None)
 
 
 def get_stats_df(lts: np.ndarray, mask_devices: Set[str]) -> pd.DataFrame:

@@ -1,9 +1,10 @@
 from collections import Counter, OrderedDict
 from dataclasses import dataclass, field
-from typing import Dict, List, Set, Union
+from typing import Dict, List, Optional, Set, Union
 
 import numpy as np
 import pandas as pd
+from ordered_set import OrderedSet
 
 from tts_mos_test_mturk.common import get_ratings
 from tts_mos_test_mturk.correlations import (get_algorithm_mos_correlation,
@@ -33,22 +34,24 @@ class WorkerEntry:
   statuses: List[str] = field(default_factory=list)
   worktimes: List[Union[int, float]] = field(default_factory=list)
   devices: List[str] = field(default_factory=list)
-  sentence_corr: float = None
-  algorithm_corr: float = None
+  sentence_correlations: Dict[str, float] = field(default_factory=dict)
+  algorithm_correlations: Dict[str, float] = field(default_factory=dict)
 
   @property
   def total_assignments(self) -> int:
     return len(self.statuses)
 
-  @property
-  def correlation_mean(self) -> float:
-    if self.sentence_corr is None:
-      if self.algorithm_corr is None:
-        return None
-      return self.algorithm_corr
-    if self.algorithm_corr is None:
-      return self.sentence_corr
-    return np.mean([self.sentence_corr, self.algorithm_corr])
+  def correlations_mean(self, rating_name: str) -> float:
+    assert rating_name in self.algorithm_correlations
+    assert rating_name in self.sentence_correlations
+
+    if np.isnan(self.sentence_correlations[rating_name]):
+      if np.isnan(self.algorithm_correlations[rating_name]):
+        return np.nan
+      return self.algorithm_correlations[rating_name]
+    if np.isnan(self.algorithm_correlations[rating_name]):
+      return self.sentence_correlations[rating_name]
+    return np.mean([self.algorithm_correlations[rating_name], self.sentence_correlations[rating_name]])
 
 
 def get_data(data: EvaluationData, masks: List[MaskBase]):
@@ -58,8 +61,15 @@ def get_data(data: EvaluationData, masks: List[MaskBase]):
   amask = factory.merge_masks_into_amask(masks)
   rmask = factory.merge_masks_into_rmask(masks)
 
-  ratings = get_ratings(data)
-  rmask.apply_by_nan(ratings)
+  all_rating_names = data.rating_names.copy()
+  if len(data.rating_names) > 1:
+    all_rating_names.add(None)
+
+  all_ratings = {}
+  for r in all_rating_names:
+    ratings = get_ratings(data, r)
+    rmask.apply_by_nan(ratings)
+    all_ratings[r] = ratings
 
   stats: Dict[str, WorkerEntry] = {}
 
@@ -88,11 +98,9 @@ def get_data(data: EvaluationData, masks: List[MaskBase]):
       entry.devices.append(assignment_data.device)
       entry.statuses.append(assignment_data.state)
       entry.worktimes.append(assignment_data.worktime)
-
-      if entry.algorithm_corr is None:
-        entry.algorithm_corr = get_algorithm_mos_correlation(w_i, ratings)
-      if entry.sentence_corr is None:
-        entry.sentence_corr = get_sentence_mos_correlation_3dim(w_i, ratings)
+      for rating_name, ratings in all_ratings.items():
+        entry.algorithm_correlations[rating_name] = get_algorithm_mos_correlation(w_i, ratings)
+        entry.sentence_correlations[rating_name] = get_sentence_mos_correlation_3dim(w_i, ratings)
 
   return stats
 
@@ -100,16 +108,22 @@ def get_data(data: EvaluationData, masks: List[MaskBase]):
 def stats_to_df(stats: Dict[str, WorkerEntry]) -> pd.DataFrame:
   csv_data = []
   unique_statuses = sorted({
-    s
-    for x in stats.values()
-    for s in x.statuses
+    status
+    for worker_entry in stats.values()
+    for status in worker_entry.statuses
   })
 
   unique_devices = sorted({
-    d
-    for x in stats.values()
-    for d in x.devices
+    device
+    for worker_entry in stats.values()
+    for device in worker_entry.devices
   })
+
+  all_rating_names = OrderedSet((
+    rating_name
+    for worker_entry in stats.values()
+    for rating_name in worker_entry.algorithm_correlations.keys()
+  ))
 
   for worker, entry in stats.items():
     data_entry = OrderedDict()
@@ -131,9 +145,11 @@ def stats_to_df(stats: Dict[str, WorkerEntry]) -> pd.DataFrame:
       assert key not in data_entry
       data_entry[key] = device_counts.get(device, 0)
 
-    data_entry[COL_SENT_CORR] = entry.sentence_corr
-    data_entry[COL_ALGO_CORR] = entry.algorithm_corr
-    data_entry[COL_BOTH_CORR] = entry.correlation_mean
+    for rating_name in all_rating_names:
+      col_append_str = "ALL" if rating_name is None else rating_name
+      data_entry[f"{COL_SENT_CORR} ({col_append_str})"] = entry.sentence_correlations[rating_name]
+      data_entry[f"{COL_ALGO_CORR} ({col_append_str})"] = entry.algorithm_correlations[rating_name]
+      data_entry[f"{COL_BOTH_CORR} ({col_append_str})"] = entry.correlations_mean(rating_name)
     data_entry[COL_MASKED_ASSIGNMENTS] = entry.masked_assignments
     data_entry[COL_MASKED] = entry.masked
     csv_data.append(data_entry)
@@ -145,6 +161,7 @@ def add_all_row(df: pd.DataFrame) -> pd.DataFrame:
   row = OrderedDict()
   row[COL_WORKER] = COL_ALL
 
+  col: str
   for col in df.columns:
     if col.startswith(COL_STATE):
       assert col not in row
@@ -158,10 +175,15 @@ def add_all_row(df: pd.DataFrame) -> pd.DataFrame:
     if col.startswith(COL_DEVICE):
       assert col not in row
       row[col] = df[col].sum()
-
-  row[COL_SENT_CORR] = df[COL_SENT_CORR].mean()
-  row[COL_ALGO_CORR] = df[COL_ALGO_CORR].mean()
-  row[COL_BOTH_CORR] = df[COL_BOTH_CORR].mean()
+    if col.startswith(COL_SENT_CORR):
+      assert col not in row
+      row[col] = df[col].mean()
+    if col.startswith(COL_ALGO_CORR):
+      assert col not in row
+      row[col] = df[col].mean()
+    if col.startswith(COL_BOTH_CORR):
+      assert col not in row
+      row[col] = df[col].mean()
   row[COL_MASKED_ASSIGNMENTS] = df[COL_MASKED_ASSIGNMENTS].sum()
   row[COL_MASKED] = df[COL_MASKED].all()
   df = pd.concat([df, pd.DataFrame.from_records([row])], ignore_index=True)

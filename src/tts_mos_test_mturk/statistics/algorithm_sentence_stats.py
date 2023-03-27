@@ -30,22 +30,22 @@ class FileEntry:
   masked: int = 0
 
   def min_ratings(self, rating_name: str) -> Union[int, float]:
-    if len(self.ratings[rating_name]) == 0:
+    if rating_name not in self.ratings or len(self.ratings[rating_name]) == 0:
       return np.nan
     return np.min(self.ratings[rating_name])
 
   def max_ratings(self, rating_name: str) -> Union[int, float]:
-    if len(self.ratings[rating_name]) == 0:
+    if rating_name not in self.ratings or len(self.ratings[rating_name]) == 0:
       return np.nan
     return np.max(self.ratings[rating_name])
 
   def mean_ratings(self, rating_name: str) -> float:
-    if len(self.ratings[rating_name]) == 0:
+    if rating_name not in self.ratings or len(self.ratings[rating_name]) == 0:
       return np.nan
     return np.mean(self.ratings[rating_name])
 
   def std_ratings(self, rating_name: str) -> float:
-    if len(self.ratings[rating_name]) == 0:
+    if rating_name not in self.ratings or len(self.ratings[rating_name]) == 0:
       return np.nan
     return np.std(self.ratings[rating_name])
 
@@ -85,7 +85,6 @@ def get_worker_stats(data: EvaluationData, masks: List[MaskBase]):
 
 def stats_to_df(stats: Dict[str, Dict[str, FileEntry]]) -> pd.DataFrame:
   csv_data = []
-  unique_ratings = OrderedDict()
   rating_names = sorted({
     k
     for x in stats.values()
@@ -93,13 +92,13 @@ def stats_to_df(stats: Dict[str, Dict[str, FileEntry]]) -> pd.DataFrame:
     for k in y.ratings.keys()
   })
 
+  unique_ratings = OrderedDict()
   for rating_name in rating_names:
     tmp = sorted({
       rating
-      for x in stats.values()
-      for y in x.values()
-      for r in y.ratings.get(rating_name, [])
-      for rating in r
+      for file_entries in stats.values()
+      for file_entry in file_entries.values()
+      for rating in file_entry.ratings.get(rating_name, [])
     })
     unique_ratings[rating_name] = tmp
 
@@ -113,10 +112,10 @@ def stats_to_df(stats: Dict[str, Dict[str, FileEntry]]) -> pd.DataFrame:
   for algorithm, xx in stats.items():
     for file, entry in xx.items():
       device_counts = Counter(entry.devices)
-      data_entry = OrderedDict((
-        (COL_ALG, algorithm),
-        (COL_SENT, file),
-      ))
+      data_entry = OrderedDict()
+      data_entry[COL_ALG] = algorithm
+      data_entry[COL_SENT] = file
+
       for device in unique_devices:
         key = f"{COL_DEVICE}{device}"
         assert key not in data_entry
@@ -127,7 +126,10 @@ def stats_to_df(stats: Dict[str, Dict[str, FileEntry]]) -> pd.DataFrame:
         data_entry[f"{COL_MAX}({rating_name})"] = entry.max_ratings(rating_name)
         data_entry[f"{COL_MOS}({rating_name})"] = entry.mean_ratings(rating_name)
         data_entry[f"{COL_STD}({rating_name})"] = entry.std_ratings(rating_name)
-        rating_counts = Counter(entry.ratings[rating_name])
+        if rating_name in entry.ratings:
+          rating_counts = Counter(entry.ratings[rating_name])
+        else:
+          rating_counts = Counter()
         for unique_val in unique_vals:
           key = f"{COL_RATING}({rating_name})={unique_val}"
           assert key not in data_entry
@@ -141,10 +143,9 @@ def stats_to_df(stats: Dict[str, Dict[str, FileEntry]]) -> pd.DataFrame:
 def add_all_to_df(df: pd.DataFrame) -> pd.DataFrame:
   algorithms = df[COL_ALG].unique()
 
-  row = {
-    COL_ALG: COL_ALL,
-    COL_SENT: COL_ALL,
-  }
+  row = {}
+  row[COL_ALG] = COL_ALL
+  row[COL_SENT] = COL_ALL
 
   col: str
   for col in df.columns:

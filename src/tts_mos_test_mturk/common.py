@@ -24,5 +24,5 @@ def get_ratings(data: EvaluationData, rating_name: Optional[str]) -> np.ndarray:
 
 def get_rating(ratings: Dict[str, Union[float, int]], rating_name: Optional[str]) -> Union[float, int]:
   if rating_name is None:
-    return np.mean(ratings.values())
+    return np.mean(list(ratings.values()))
   return ratings[rating_name]

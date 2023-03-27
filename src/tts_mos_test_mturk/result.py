@@ -50,8 +50,12 @@ def parse_int_then_float(val: str) -> Union[int, float]:
 
 
 def parse_time(val: str) -> datetime.datetime:
-  dtime = datetime.datetime.strptime(val, "%a %b %d %H:%M:%S PST %Y")
-  return dtime
+  # Pacific Standard Time
+  val = val.replace(" PST", "")
+  # Pacific Daylight Time
+  val = val.replace(" PDT", "")
+  result = datetime.datetime.strptime(val, "%a %b %d %H:%M:%S %Y")
+  return result
 
 
 def parse_result_from_json(data: Dict) -> Result:

@@ -6,7 +6,6 @@ from typing import Set
 import numpy as np
 import pandas as pd
 from mean_opinion_score import get_ci95, get_mos
-from ordered_set import OrderedSet
 
 from tts_mos_test_mturk.common import get_ratings
 from tts_mos_test_mturk.evaluation_data import EvaluationData
@@ -22,9 +21,9 @@ def get_mos_df(data: EvaluationData, mask_names: Set[str]) -> pd.DataFrame:
   algo_stats: ODType[str, ODType] = OrderedDict()
   rating_names = data.rating_names.copy()
   if len(rating_names) > 1:
-    rating_names = OrderedSet([None] + rating_names)
+    rating_names.add(None)
 
-  for rating_name in data.rating_names:
+  for rating_name in rating_names:
     disp_name = f"({rating_name})" if rating_name is not None else ""
     current_ratings = get_ratings(data, rating_name)
     adj_ratings = current_ratings.copy()

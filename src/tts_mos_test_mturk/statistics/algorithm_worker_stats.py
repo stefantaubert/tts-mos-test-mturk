@@ -1,6 +1,8 @@
 from collections import Counter, OrderedDict
 from dataclasses import dataclass, field
-from typing import Dict, List, Set, Union
+from typing import Dict, List
+from typing import OrderedDict as ODType
+from typing import Set, Union
 
 import numpy as np
 import pandas as pd
@@ -23,33 +25,29 @@ COL_ALL = "ALL"
 
 @dataclass
 class WorkerEntry:
-  ratings: List[Union[int, float]] = field(default_factory=list)
+  ratings: ODType[str, List[Union[int, float]]] = field(default_factory=OrderedDict)
   devices: List[str] = field(default_factory=list)
   masked: int = 0
 
-  @property
-  def min_ratings(self) -> Union[int, float]:
-    if len(self.ratings) == 0:
+  def min_ratings(self, rating_name: str) -> Union[int, float]:
+    if rating_name not in self.ratings or len(self.ratings[rating_name]) == 0:
       return np.nan
-    return np.min(self.ratings)
+    return np.min(self.ratings[rating_name])
 
-  @property
-  def max_ratings(self) -> Union[int, float]:
-    if len(self.ratings) == 0:
+  def max_ratings(self, rating_name: str) -> Union[int, float]:
+    if rating_name not in self.ratings or len(self.ratings[rating_name]) == 0:
       return np.nan
-    return np.max(self.ratings)
+    return np.max(self.ratings[rating_name])
 
-  @property
-  def mean_ratings(self) -> float:
-    if len(self.ratings) == 0:
+  def mean_ratings(self, rating_name: str) -> float:
+    if rating_name not in self.ratings or len(self.ratings[rating_name]) == 0:
       return np.nan
-    return np.mean(self.ratings)
+    return np.mean(self.ratings[rating_name])
 
-  @property
-  def std_ratings(self) -> float:
-    if len(self.ratings) == 0:
+  def std_ratings(self, rating_name: str) -> float:
+    if rating_name not in self.ratings or len(self.ratings[rating_name]) == 0:
       return np.nan
-    return np.std(self.ratings)
+    return np.std(self.ratings[rating_name])
 
 
 def get_worker_stats(data: EvaluationData, masks: List[MaskBase]):
@@ -77,20 +75,32 @@ def get_worker_stats(data: EvaluationData, masks: List[MaskBase]):
           continue
 
         entry.devices.append(assignment_data.device)
-        raise NotImplementedError()
-        entry.ratings.append(rating_data.rating)
+        for rating_name, rating in rating_data.ratings.items():
+          if rating_name not in entry.ratings:
+            entry.ratings[rating_name] = []
+          entry.ratings[rating_name].append(rating)
 
   return stats
 
 
 def stats_to_df(stats: Dict[str, Dict[str, WorkerEntry]]) -> pd.DataFrame:
   csv_data = []
-  unique_ratings = sorted({
-    r
+  rating_names = sorted({
+    k
     for x in stats.values()
     for y in x.values()
-    for r in y.ratings
+    for k in y.ratings.keys()
   })
+
+  unique_ratings = OrderedDict()
+  for rating_name in rating_names:
+    tmp = sorted({
+      rating
+      for worker_entries in stats.values()
+      for worker_entry in worker_entries.values()
+      for rating in worker_entry.ratings.get(rating_name, [])
+    })
+    unique_ratings[rating_name] = tmp
 
   unique_devices = sorted({
     d
@@ -101,24 +111,29 @@ def stats_to_df(stats: Dict[str, Dict[str, WorkerEntry]]) -> pd.DataFrame:
 
   for algorithm, xx in stats.items():
     for worker, entry in xx.items():
-      rating_counts = Counter(entry.ratings)
       device_counts = Counter(entry.devices)
-      data_entry = OrderedDict((
-        (COL_ALG, algorithm),
-        (COL_WORKER, worker),
-        (COL_MIN, entry.min_ratings),
-        (COL_MAX, entry.max_ratings),
-        (COL_MOS, entry.mean_ratings),
-        (COL_STD, entry.std_ratings),
-      ))
+      data_entry = OrderedDict()
+      data_entry[COL_ALG] = algorithm
+      data_entry[COL_WORKER] = worker
+
       for device in unique_devices:
         key = f"{COL_DEVICE}{device}"
         assert key not in data_entry
         data_entry[key] = device_counts.get(device, 0)
-      for rating in unique_ratings:
-        key = f"{COL_RATING}{rating}"
-        assert key not in data_entry
-        data_entry[key] = rating_counts.get(rating, 0)
+
+      for rating_name, unique_vals in unique_ratings.items():
+        data_entry[f"{COL_MIN}({rating_name})"] = entry.min_ratings(rating_name)
+        data_entry[f"{COL_MAX}({rating_name})"] = entry.max_ratings(rating_name)
+        data_entry[f"{COL_MOS}({rating_name})"] = entry.mean_ratings(rating_name)
+        data_entry[f"{COL_STD}({rating_name})"] = entry.std_ratings(rating_name)
+        if rating_name in entry.ratings:
+          rating_counts = Counter(entry.ratings[rating_name])
+        else:
+          rating_counts = Counter()
+        for unique_val in unique_vals:
+          key = f"{COL_RATING}({rating_name})={unique_val}"
+          assert key not in data_entry
+          data_entry[key] = rating_counts.get(unique_val, 0)
       data_entry[COL_MASKED] = entry.masked
       csv_data.append(data_entry)
   result = pd.DataFrame.from_records(csv_data)
@@ -128,19 +143,29 @@ def stats_to_df(stats: Dict[str, Dict[str, WorkerEntry]]) -> pd.DataFrame:
 def add_all_to_df(df: pd.DataFrame) -> pd.DataFrame:
   algorithms = df[COL_ALG].unique()
 
-  row = {
-    COL_ALG: COL_ALL,
-    COL_WORKER: COL_ALL,
-    COL_MIN: df[COL_MIN].min(),
-    COL_MAX: df[COL_MAX].max(),
-    COL_MOS: df[COL_MOS].mean(),
-    COL_STD: df[COL_STD].mean(),
-  }
+  row = {}
+  row[COL_ALG] = COL_ALL
+  row[COL_WORKER] = COL_ALL
 
+  col: str
   for col in df.columns:
     if col.startswith(COL_DEVICE):
       assert col not in row
       row[col] = df[col].sum()
+
+  for col in df.columns:
+    if col.startswith(COL_MIN):
+      assert col not in row
+      row[col] = df[col].min()
+    if col.startswith(COL_MAX):
+      assert col not in row
+      row[col] = df[col].max()
+    if col.startswith(COL_MOS):
+      assert col not in row
+      row[col] = df[col].mean()
+    if col.startswith(COL_STD):
+      assert col not in row
+      row[col] = df[col].mean()
     if col.startswith(COL_RATING):
       assert col not in row
       row[col] = df[col].sum()
@@ -153,16 +178,27 @@ def add_all_to_df(df: pd.DataFrame) -> pd.DataFrame:
     row = {
       COL_ALG: algorithm,
       COL_WORKER: COL_ALL,
-      COL_MIN: subset[COL_MIN].min(),
-      COL_MAX: subset[COL_MAX].max(),
-      COL_MOS: subset[COL_MOS].mean(),
-      COL_STD: subset[COL_STD].mean(),
     }
 
     for col in subset.columns:
       if col.startswith(COL_DEVICE):
         row[col] = subset[col].sum()
+
+    for col in subset.columns:
+      if col.startswith(COL_MIN):
+        assert col not in row
+        row[col] = subset[col].min()
+      if col.startswith(COL_MAX):
+        assert col not in row
+        row[col] = subset[col].max()
+      if col.startswith(COL_MOS):
+        assert col not in row
+        row[col] = subset[col].mean()
+      if col.startswith(COL_STD):
+        assert col not in row
+        row[col] = subset[col].mean()
       if col.startswith(COL_RATING):
+        assert col not in row
         row[col] = subset[col].sum()
 
     row[COL_MASKED] = subset[COL_MASKED].sum()

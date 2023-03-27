@@ -33,7 +33,7 @@ def mask_ratings_by_masked_count(data: EvaluationData, mask_names: Set[str], ref
   log_full_df_info(stats_df, "Statistics:")
 
   data.add_or_update_mask(output_mask_name, outlier_wmask)
-  print_stats_masks(data, masks, [outlier_wmask])
+  print_stats_masks(data, masks, [outlier_wmask], rating_name=None)
 
 
 def get_stats_df(ref_rmask: RatingsMask, workers: OrderedSet[str], outlier_indices: np.ndarray, ratings: np.ndarray) -> pd.DataFrame:

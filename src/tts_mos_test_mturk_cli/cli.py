@@ -217,16 +217,24 @@ def parse_args(args: List[str]) -> None:
   attach_urllib3_to_detail_logger()
 
   success = True
-  try:
-    invoke_handler(ns)
-  except CLIError as error:
-    cmd_logger.error(error.args[0])
-    cmd_flogger.debug(error, exc_info=True)
-    success = False
-  except Exception as exception:
-    cmd_logger.error("Unexpected error occurred!")
-    cmd_flogger.debug(exception, exc_info=True)
-    success = False
+  if local_debugging:
+    try:
+      invoke_handler(ns)
+    except CLIError as error:
+      cmd_logger.error(error.args[0])
+      cmd_flogger.debug(error, exc_info=True)
+      success = False
+  else:
+    try:
+      invoke_handler(ns)
+    except CLIError as error:
+      cmd_logger.error(error.args[0])
+      cmd_flogger.debug(error, exc_info=True)
+      success = False
+    except Exception as exception:
+      cmd_logger.error("Unexpected error occurred!")
+      cmd_flogger.debug(exception, exc_info=True)
+      success = False
 
   exit_code = 0
   if success:
