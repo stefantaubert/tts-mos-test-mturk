@@ -29,7 +29,7 @@ def mask_assignments_by_worktime(data: EvaluationData, mask_names: Set[str], fro
 
   data.add_or_update_mask(output_mask_name, too_fast_amask)
 
-  print_stats_masks(data, masks, [too_fast_amask], rating_name=None)
+  print_stats_masks(data, masks, [too_fast_amask])
 
 
 def get_stats_df(assignments: OrderedSet[str], worktimes: np.ndarray, masked_indices: np.ndarray) -> pd.DataFrame:

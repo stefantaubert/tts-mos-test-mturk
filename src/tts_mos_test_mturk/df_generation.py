@@ -13,36 +13,31 @@ from tts_mos_test_mturk.logging import get_detail_logger, get_logger
 from tts_mos_test_mturk.masking.mask_factory import MaskFactory
 
 
-def get_mos_df(data: EvaluationData, mask_names: Set[str]) -> pd.DataFrame:
+def get_mos_df(data: EvaluationData, mask_names: Set[str], rating_names: Set[str]) -> pd.DataFrame:
   masks = data.get_masks_from_names(mask_names)
   factory = MaskFactory(data)
   rmask = factory.merge_masks_into_rmask(masks)
 
   algo_stats: ODType[str, ODType] = OrderedDict()
-  rating_names = data.rating_names.copy()
-  if len(rating_names) > 1:
-    rating_names.add(None)
 
-  for rating_name in rating_names:
-    disp_name = f"({rating_name})" if rating_name is not None else ""
-    current_ratings = get_ratings(data, rating_name)
-    adj_ratings = current_ratings.copy()
-    rmask.apply_by_nan(adj_ratings)
+  current_ratings = get_ratings(data, rating_names)
+  adj_ratings = current_ratings.copy()
+  rmask.apply_by_nan(adj_ratings)
 
-    for algo_i, alg_name in enumerate(data.algorithms):
-      algo_ratings = current_ratings[algo_i]
-      algo_ratings_adj = adj_ratings[algo_i]
+  for algo_i, alg_name in enumerate(data.algorithms):
+    algo_ratings = current_ratings[algo_i]
+    algo_ratings_adj = adj_ratings[algo_i]
 
-      all_ratings_count = np.sum(~np.isnan(algo_ratings))
-      ratings_count = np.sum(~np.isnan(algo_ratings_adj))
-      if alg_name not in algo_stats:
-        algo_stats[alg_name] = OrderedDict()
-      algo_stat = algo_stats[alg_name]
-      algo_stat[f"MOS{disp_name}"] = get_mos(algo_ratings_adj)
-      algo_stat[f"CI95{disp_name}"] = get_ci95(algo_ratings_adj)
-      algo_stat[f"#Unmasked{disp_name}"] = ratings_count
-      algo_stat[f"#All{disp_name}"] = all_ratings_count
-      algo_stat[f"Percent{disp_name}"] = ratings_count / all_ratings_count * 100
+    all_ratings_count = np.sum(~np.isnan(algo_ratings))
+    ratings_count = np.sum(~np.isnan(algo_ratings_adj))
+    if alg_name not in algo_stats:
+      algo_stats[alg_name] = OrderedDict()
+    algo_stat = algo_stats[alg_name]
+    algo_stat["MOS"] = get_mos(algo_ratings_adj)
+    algo_stat["CI95"] = get_ci95(algo_ratings_adj)
+    algo_stat["#Unmasked"] = ratings_count
+    algo_stat["#All"] = all_ratings_count
+    algo_stat["Percent"] = ratings_count / all_ratings_count * 100
 
   lines: List[Dict] = []
   for alg_name, alg_stats in algo_stats.items():
@@ -282,7 +277,7 @@ def generate_ground_truth_table(data: EvaluationData, mask_names: Set[str]) -> p
         file_i = data.files.get_loc(rating_data.file)
         is_masked = rmask.mask[alg_i, w_i, file_i]
         line = OrderedDict()
-        line["Worker"] = worker
+        line["WorkerId"] = worker
         line["Algorithm"] = rating_data.algorithm
         line["File"] = rating_data.file
         for rating_name, rating in rating_data.ratings.items():
@@ -291,11 +286,11 @@ def generate_ground_truth_table(data: EvaluationData, mask_names: Set[str]) -> p
         line["Worktime (s)"] = assignment_data.worktime
         line["Device"] = assignment_data.device
         line["State"] = assignment_data.state
-        line["HIT"] = assignment_data.hit_id
-        line["Assignment"] = assignment
+        line["HITId"] = assignment_data.hit_id
+        line["AssignmentId"] = assignment
         line["Masked?"] = is_masked
         results.append(line)
 
   result = pd.DataFrame.from_records(results)
-  result.sort_values(["Worker", "Algorithm", "File"], inplace=True)
+  result.sort_values(["WorkerId", "Algorithm", "File"], inplace=True)
   return result

@@ -13,13 +13,13 @@ from tts_mos_test_mturk.masking.mask_factory import MaskFactory
 from tts_mos_test_mturk.statistics.update_stats import print_stats_masks
 
 
-def mask_outlying_ratings(data: EvaluationData, mask_names: Set[str], min_std_dev_diff: float, max_std_dev_diff: float, output_mask_name: str, ratings_name: Optional[str]):
+def mask_outlying_ratings(data: EvaluationData, mask_names: Set[str], min_std_dev_diff: float, max_std_dev_diff: float, output_mask_name: str, rating_names: Set[str]):
   masks = data.get_masks_from_names(mask_names)
   factory = MaskFactory(data)
 
   rmask = factory.merge_masks_into_rmask(masks)
 
-  ratings = get_ratings(data, ratings_name)
+  ratings = get_ratings(data, rating_names)
   rmask.apply_by_nan(ratings)
 
   stats_df = mask_outliers_alg_stats_df(
@@ -30,7 +30,7 @@ def mask_outlying_ratings(data: EvaluationData, mask_names: Set[str], min_std_de
   outlier_rmask = factory.convert_ndarray_to_rmask(outlier_np_mask)
   data.add_or_update_mask(output_mask_name, outlier_rmask)
 
-  print_stats_masks(data, masks, [outlier_rmask], ratings_name)
+  print_stats_masks(data, masks, [outlier_rmask])
 
 
 def mask_outliers_alg_stats_df(ratings: np.ndarray, min_std_dev_diff: float, max_std_dev_diff: float, algorithms: OrderedSet[str]) -> np.ndarray:

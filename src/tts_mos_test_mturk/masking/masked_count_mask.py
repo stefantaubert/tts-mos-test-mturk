@@ -14,14 +14,15 @@ from tts_mos_test_mturk.masking.masks import RatingsMask
 from tts_mos_test_mturk.statistics.update_stats import print_stats_masks
 
 
-def mask_ratings_by_masked_count(data: EvaluationData, mask_names: Set[str], ref_masks: Set[str], from_percent_incl: float, to_percent_excl: float, output_mask_name: str, ratings_name: Optional[str]):
+def mask_ratings_by_masked_count(data: EvaluationData, mask_names: Set[str], ref_masks: Set[str], from_percent_incl: float, to_percent_excl: float, output_mask_name: str):
   factory = MaskFactory(data)
   masks = data.get_masks_from_names(mask_names)
   ref_masks = data.get_masks_from_names(ref_masks)
   ref_rmask = factory.merge_masks_into_rmask(ref_masks)
   rmask = factory.merge_masks_into_rmask(masks)
 
-  ratings = get_ratings(data, ratings_name)
+  # it doesn't matter which ratings are taken
+  ratings = get_ratings(data, data.rating_names)
   rmask.apply_by_false(ref_rmask.mask)
   rmask.apply_by_nan(ratings)
 
@@ -33,7 +34,7 @@ def mask_ratings_by_masked_count(data: EvaluationData, mask_names: Set[str], ref
   log_full_df_info(stats_df, "Statistics:")
 
   data.add_or_update_mask(output_mask_name, outlier_wmask)
-  print_stats_masks(data, masks, [outlier_wmask], rating_name=None)
+  print_stats_masks(data, masks, [outlier_wmask])
 
 
 def get_stats_df(ref_rmask: RatingsMask, workers: OrderedSet[str], outlier_indices: np.ndarray, ratings: np.ndarray) -> pd.DataFrame:

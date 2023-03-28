@@ -61,15 +61,11 @@ def get_data(data: EvaluationData, masks: List[MaskBase]):
   amask = factory.merge_masks_into_amask(masks)
   rmask = factory.merge_masks_into_rmask(masks)
 
-  all_rating_names = data.rating_names.copy()
-  if len(data.rating_names) > 1:
-    all_rating_names.add(None)
-
   all_ratings = {}
-  for r in all_rating_names:
-    ratings = get_ratings(data, r)
+  for rating_name in data.rating_names:
+    ratings = get_ratings(data, {rating_name})
     rmask.apply_by_nan(ratings)
-    all_ratings[r] = ratings
+    all_ratings[rating_name] = ratings
 
   stats: Dict[str, WorkerEntry] = {}
 

@@ -7,7 +7,7 @@ def test_get_first_rating():
     "a": 5,
     "b": 6,
   }
-  result = get_rating(d, "a")
+  result = get_rating(d, {"a"})
   assert result == 5
 
 
@@ -16,7 +16,7 @@ def test_get_last_rating():
     "a": 5,
     "b": 6,
   }
-  result = get_rating(d, "b")
+  result = get_rating(d, {"b"})
   assert result == 6
 
 
@@ -25,5 +25,5 @@ def test_mean_rating():
     "a": 5,
     "b": 6,
   }
-  result = get_rating(d, rating_name=None)
+  result = get_rating(d, {"a", "b"})
   assert result == 5.5

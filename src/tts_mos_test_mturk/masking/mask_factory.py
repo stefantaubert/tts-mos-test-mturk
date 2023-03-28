@@ -149,8 +149,3 @@ class MaskFactory():
         continue
       result.combine_mask(mask)
     return result
-
-
-# def get_mask_factory(data: EvaluationData) -> MaskFactory:
-#   result = MaskFactory(data)
-#   return result

@@ -35,7 +35,7 @@ def mask_assignments_by_time(data: EvaluationData, mask_names: Set[str], from_th
 
   data.add_or_update_mask(output_mask_name, too_fast_amask)
 
-  print_stats_masks(data, masks, [too_fast_amask], rating_name=None)
+  print_stats_masks(data, masks, [too_fast_amask])
 
 
 def get_stats_df(assignments: OrderedSet[str], times: List[Optional[datetime]], masked_indices: np.ndarray) -> pd.DataFrame:

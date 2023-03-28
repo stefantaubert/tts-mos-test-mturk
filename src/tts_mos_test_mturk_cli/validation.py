@@ -1,4 +1,3 @@
-
 from typing import Optional, Set
 
 from tts_mos_test_mturk.evaluation_data import EvaluationData
@@ -15,8 +14,11 @@ def ensure_masks_exist(data: EvaluationData, masks: Set[str]) -> None:
     ensure_mask_exists(data, mask)
 
 
-def ensure_ratings_exist(data: EvaluationData, ratings_name: Optional[str]) -> None:
-  if ratings_name is None:
-    return
-  if ratings_name not in data.rating_names:
-    raise CLIError(f"Rating \"{ratings_name}\" doesn't exist!")
+def ensure_ratings_exist(data: EvaluationData, rating_names: Set[str]) -> None:
+  for rating_name in rating_names:
+    ensure_rating_exists(data, rating_name)
+
+
+def ensure_rating_exists(data: EvaluationData, rating_name: str) -> None:
+  if rating_name not in data.rating_names:
+    raise CLIError(f"Rating \"{rating_name}\" doesn't exist!")

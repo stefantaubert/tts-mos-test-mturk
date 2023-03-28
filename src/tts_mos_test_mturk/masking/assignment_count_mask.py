@@ -35,7 +35,7 @@ def mask_workers_by_assignment_count(data: EvaluationData, mask_names: Set[str],
 
   data.add_or_update_mask(output_mask_name, wmask)
 
-  print_stats_masks(data, masks, [wmask], rating_name=None)
+  print_stats_masks(data, masks, [wmask])
 
 
 def get_stats_df(workers: OrderedSet[str], windices: np.ndarray, a_counts: np.ndarray, matching_w: np.ndarray) -> pd.DataFrame:

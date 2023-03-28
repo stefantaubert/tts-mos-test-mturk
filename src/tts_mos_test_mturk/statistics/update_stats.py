@@ -9,16 +9,16 @@ from tts_mos_test_mturk.masking.mask_factory import MaskFactory
 from tts_mos_test_mturk.masking.masks import AssignmentsMask, MaskBase, WorkersMask
 
 
-def print_stats(data: EvaluationData, mask_names: Set[str], added_mask_names: Set[str], rating_name: Optional[str]) -> None:
+def print_stats(data: EvaluationData, mask_names: Set[str], added_mask_names: Set[str]) -> None:
   logger = get_logger()
   logger.info("--- Stats ---")
   masks = data.get_masks_from_names(mask_names)
   added_masks = data.get_masks_from_names(added_mask_names)
-  print_stats_masks(data, masks, added_masks, rating_name)
+  print_stats_masks(data, masks, added_masks)
   logger.info("-------------")
 
 
-def print_stats_masks(data: EvaluationData, masks: List[MaskBase], added_masks: List[MaskBase], rating_name: Optional[str]) -> None:
+def print_stats_masks(data: EvaluationData, masks: List[MaskBase], added_masks: List[MaskBase]) -> None:
   if len(added_masks) == 0 or any(isinstance(m, WorkersMask) for m in added_masks):
     print_worker_stats(data, masks, added_masks)
 
@@ -32,7 +32,7 @@ def print_rating_stats(data: EvaluationData, masks: List[MaskBase], added_masks:
   logger = get_logger()
   factory = MaskFactory(data)
 
-  ratings = get_ratings(data, rating_name=None)
+  ratings = get_ratings(data, data.rating_names)
 
   ratings_mask_before = factory.merge_masks_into_rmask(masks)
   ratings_mask_before.apply_by_nan(ratings)
