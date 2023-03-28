@@ -199,8 +199,8 @@ def generate_reject_csv(data: EvaluationData, mask_names: Set[str], reject_mask_
   return result
 
 
-def generate_bonus_csv(data: EvaluationData, mask_names: Set[str], bonus: float, reason: str, amazon_fee: float) -> pd.DataFrame:
-  assert amazon_fee >= 0
+def generate_bonus_csv(data: EvaluationData, mask_names: Set[str], bonus: float, reason: str, amazon_fee_percent: float) -> pd.DataFrame:
+  assert 0 <= amazon_fee_percent <= 1
   logger = get_logger()
   dlogger = get_detail_logger()
   masks = data.get_masks_from_names(mask_names)
@@ -241,13 +241,14 @@ def generate_bonus_csv(data: EvaluationData, mask_names: Set[str], bonus: float,
       ("WorkerId", worker_id),
       ("HITId", hit_id),
       ("BonusAmount", bonus),
+      ("BonusAmountWithFee", bonus + (bonus * amazon_fee_percent)),
       ("Reason", reason),
     ))
     results.append(line)
   result = pd.DataFrame.from_records(results)
   logger = get_logger()
   costs = len(assignment_indices) * bonus
-  fees = costs * amazon_fee
+  fees = costs * amazon_fee_percent
   # Ex.:
   # Estimated Total Bonus: 480 assignments x $0.15 = $30
   # Estimated Fees to Mechanical Turk: 20.00% of $30 = $2
@@ -255,7 +256,7 @@ def generate_bonus_csv(data: EvaluationData, mask_names: Set[str], bonus: float,
   logger.info(
     f"Estimated Total Bonus: {len(assignment_indices)} assignments x ${bonus:.2f} = ${costs:.2f}")
   logger.info(
-    f"Estimated Fees to Mechanical Turk: {amazon_fee*100:.2f}% of ${costs:.2f} = ${fees:.2f}")
+    f"Estimated Fees to Mechanical Turk: {amazon_fee_percent*100:.2f}% of ${costs:.2f} = ${fees:.2f}")
   logger.info(
     f"Estimated Cost: Total Reward + Fees = ${costs + fees:.2f}")
   return result

@@ -6,27 +6,6 @@ from tqdm import tqdm
 from tts_mos_test_mturk.logging import get_detail_logger
 
 
-def grant_bonuses_from_df(df: pd.DataFrame, mturk: MTurkClient) -> bool:
-  dlogger = get_detail_logger()
-  all_successful = True
-  for i, row in tqdm(list(df.iterrows()), desc="Sending bonuses", unit=" assignment(s)"):
-    dlogger.info(
-      f"Sending a {row['BonusAmount']:.2f}$ bonus to worker \"{row['WorkerId']}\" for assignment \"{row['AssignmentId']}\" with reason \"{row['Reason']}\".")
-    try:
-      mturk.send_bonus(
-        WorkerId=row["WorkerId"],
-        BonusAmount=str(row["BonusAmount"]),
-        Reason=row["Reason"],
-        AssignmentId=row["AssignmentId"],
-      )
-    except Exception as ex:
-      dlogger.error(f"Bonus couldn't be send!")
-      dlogger.debug(ex, exc_info=True)
-      all_successful = False
-      continue
-  return all_successful
-
-
 def approve_from_df(df: pd.DataFrame, mturk: MTurkClient) -> bool:
   dlogger = get_detail_logger()
   all_successful = True
@@ -63,3 +42,24 @@ def reject_from_df(df: pd.DataFrame, mturk: MTurkClient) -> bool:
       all_successful = False
       continue
   return all_successful
+
+def grant_bonuses_from_df(df: pd.DataFrame, mturk: MTurkClient) -> bool:
+  dlogger = get_detail_logger()
+  all_successful = True
+  for i, row in tqdm(list(df.iterrows()), desc="Sending bonuses", unit=" assignment(s)"):
+    dlogger.info(
+      f"Sending a {row['BonusAmount']:.2f}$ bonus to worker \"{row['WorkerId']}\" for assignment \"{row['AssignmentId']}\" with reason \"{row['Reason']}\".")
+    try:
+      mturk.send_bonus(
+        WorkerId=row["WorkerId"],
+        BonusAmount=str(row["BonusAmount"]),
+        Reason=row["Reason"],
+        AssignmentId=row["AssignmentId"],
+      )
+    except Exception as ex:
+      dlogger.error(f"Bonus couldn't be send!")
+      dlogger.debug(ex, exc_info=True)
+      all_successful = False
+      continue
+  return all_successful
+
