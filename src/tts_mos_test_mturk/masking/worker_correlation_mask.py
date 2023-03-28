@@ -17,7 +17,7 @@ from tts_mos_test_mturk.masking.mask_factory import MaskFactory
 from tts_mos_test_mturk.statistics.update_stats import print_stats_masks
 
 
-def mask_workers_by_correlation(data: EvaluationData, mask_names: Set[str], from_threshold_incl: float, to_threshold_excl: float, mode: Literal["sentence", "algorithm", "both"], output_mask_name: str, rating_names: Set[str]):
+def mask_workers_by_correlation(data: EvaluationData, mask_names: Set[str], from_threshold_incl: float, to_threshold_excl: float, mode: Literal["sentence", "algorithm", "both"], output_mask_name: str, rating_names: Set[str], mask_nan: bool):
   masks = data.get_masks_from_names(mask_names)
   factory = MaskFactory(data)
 
@@ -30,6 +30,9 @@ def mask_workers_by_correlation(data: EvaluationData, mask_names: Set[str], from
   wcorrelations = get_mos_correlations(ratings, mode)
   res_wmask_np = mask_values_in_boundary(
     wcorrelations, from_threshold_incl, to_threshold_excl)
+  if mask_nan:
+    unmasked_nan_correlation = np.logical_xor(wmask.mask, np.isnan(wcorrelations))
+    res_wmask_np = (res_wmask_np | unmasked_nan_correlation)
   res_wmask = factory.convert_ndarray_to_wmask(res_wmask_np)
 
   stats_df = get_stats_df(data.workers, ratings, res_wmask.masked_indices,

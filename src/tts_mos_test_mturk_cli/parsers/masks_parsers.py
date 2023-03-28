@@ -176,6 +176,8 @@ def init_mask_workers_by_correlation_parser(parser: ArgumentParser):
   parser.add_argument("to_threshold", type=float, metavar="TO-THRESHOLD",
                       help="mask workers that have a correlation smaller than TO-THRESHOLD (exclusive); in (-1; 1]")
   add_mode_argument(parser)
+  parser.add_argument("--nan", action="store_true",
+                      help="mask workers that have a correlation of NaN")
   add_req_output_mask_argument(parser)
   add_opt_dry_argument(parser)
 
@@ -183,7 +185,7 @@ def init_mask_workers_by_correlation_parser(parser: ArgumentParser):
     ensure_masks_exist(ns.project, ns.masks)
     ensure_ratings_exist(ns.project, ns.ratings)
     mask_workers_by_correlation(ns.project, ns.masks, ns.from_threshold,
-                                ns.to_threshold, ns.mode, ns.output_mask, ns.ratings)
+                                ns.to_threshold, ns.mode, ns.output_mask, ns.ratings, ns.nan)
 
     if not ns.dry:
       save_project(ns.project)
