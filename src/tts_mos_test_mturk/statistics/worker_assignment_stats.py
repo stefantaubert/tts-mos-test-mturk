@@ -1,7 +1,7 @@
 import datetime
 from collections import Counter, OrderedDict
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Set, Union
+from typing import Dict, List, Set, Union
 
 import numpy as np
 import pandas as pd
@@ -105,6 +105,10 @@ def get_data(data: EvaluationData, masks: List[MaskBase]):
         entry.masked_assignments += 1
         skip = True
 
+      for rating_name, ratings in all_ratings.items():
+        entry.algorithm_correlations[rating_name] = np.nan
+        entry.sentence_correlations[rating_name] = np.nan
+
       if skip:
         continue
 
@@ -151,32 +155,48 @@ def stats_to_df(stats: Dict[str, WorkerEntry]) -> pd.DataFrame:
       data_entry[key] = status_counts.get(status, 0)
     data_entry[COL_TOT_ASSIGNMENTS] = entry.total_assignments
 
-    tmp = zip(entry.accept_times, entry.worktimes, entry.devices)
-    tmp_sorted = sorted(tmp, key=lambda x: x[0])
-    first_accept_time, first_worktime, first_device = tmp_sorted[0]
-    last_accept_time, last_worktime, last_device = tmp_sorted[-1]
-    assert first_accept_time == min(entry.accept_times)
-    assert last_accept_time == max(entry.accept_times)
+    if len(entry.accept_times) == 0:
+      data_entry[COL_FIRST_HIT_ACC_TIME] = np.nan
+      data_entry[COL_FIRST_WORKTIME] = np.nan
+      data_entry[COL_FIRST_HIT_FIN_TIME] = np.nan
+      data_entry[COL_FIRST_DEVICE] = np.nan
+      data_entry[COL_LAST_HIT_ACC_TIME] = np.nan
+      data_entry[COL_LAST_WORKTIME] = np.nan
+      data_entry[COL_LAST_HIT_FIN_TIME] = np.nan
+      data_entry[COL_LAST_DEVICE] = np.nan
+      data_entry[COL_DIFF_WORKTIME_TIME] = np.nan
+      data_entry[COL_MIN_WORKTIME] = np.nan
+      data_entry[COL_AVG_WORKTIME] = np.nan
+      data_entry[COL_MAX_WORKTIME] = np.nan
+      data_entry[COL_TOT_WORKTIME] = np.nan
+    else:
+      tmp = zip(entry.accept_times, entry.worktimes, entry.devices)
+      tmp_sorted = sorted(tmp, key=lambda x: x[0])
+      first_accept_time, first_worktime, first_device = tmp_sorted[0]
+      last_accept_time, last_worktime, last_device = tmp_sorted[-1]
+      assert first_accept_time == min(entry.accept_times)
+      assert last_accept_time == max(entry.accept_times)
 
-    data_entry[COL_FIRST_HIT_ACC_TIME] = first_accept_time.strftime(DATE_FMT)
-    data_entry[COL_FIRST_WORKTIME] = str(datetime.timedelta(seconds=first_worktime))
-    data_entry[COL_FIRST_HIT_FIN_TIME] = (
-      first_accept_time + datetime.timedelta(seconds=first_worktime)).strftime(DATE_FMT)
-    data_entry[COL_FIRST_DEVICE] = first_device
-    data_entry[COL_LAST_HIT_ACC_TIME] = max(entry.accept_times).strftime(DATE_FMT)
-    data_entry[COL_LAST_WORKTIME] = str(datetime.timedelta(seconds=last_worktime))
-    data_entry[COL_LAST_HIT_FIN_TIME] = (
-      last_accept_time + datetime.timedelta(seconds=last_worktime)).strftime(DATE_FMT)
-    data_entry[COL_LAST_DEVICE] = last_device
-    prepend_minus = "-" if first_worktime > last_worktime else "+"
-    if first_worktime == last_worktime:
-      prepend_minus = "±"
-    data_entry[COL_DIFF_WORKTIME_TIME] = prepend_minus + str(
-      datetime.timedelta(seconds=abs(last_worktime - first_worktime)))
-    data_entry[COL_MIN_WORKTIME] = str(datetime.timedelta(seconds=min(entry.worktimes)))
-    data_entry[COL_AVG_WORKTIME] = str(datetime.timedelta(seconds=float(np.mean(entry.worktimes))))
-    data_entry[COL_MAX_WORKTIME] = str(datetime.timedelta(seconds=max(entry.worktimes)))
-    data_entry[COL_TOT_WORKTIME] = str(datetime.timedelta(seconds=sum(entry.worktimes)))
+      data_entry[COL_FIRST_HIT_ACC_TIME] = first_accept_time.strftime(DATE_FMT)
+      data_entry[COL_FIRST_WORKTIME] = str(datetime.timedelta(seconds=first_worktime))
+      data_entry[COL_FIRST_HIT_FIN_TIME] = (
+        first_accept_time + datetime.timedelta(seconds=first_worktime)).strftime(DATE_FMT)
+      data_entry[COL_FIRST_DEVICE] = first_device
+      data_entry[COL_LAST_HIT_ACC_TIME] = max(entry.accept_times).strftime(DATE_FMT)
+      data_entry[COL_LAST_WORKTIME] = str(datetime.timedelta(seconds=last_worktime))
+      data_entry[COL_LAST_HIT_FIN_TIME] = (
+        last_accept_time + datetime.timedelta(seconds=last_worktime)).strftime(DATE_FMT)
+      data_entry[COL_LAST_DEVICE] = last_device
+      prepend_minus = "-" if first_worktime > last_worktime else "+"
+      if first_worktime == last_worktime:
+        prepend_minus = "±"
+      data_entry[COL_DIFF_WORKTIME_TIME] = prepend_minus + str(
+        datetime.timedelta(seconds=abs(last_worktime - first_worktime)))
+      data_entry[COL_MIN_WORKTIME] = str(datetime.timedelta(seconds=min(entry.worktimes)))
+      data_entry[COL_AVG_WORKTIME] = str(
+        datetime.timedelta(seconds=float(np.mean(entry.worktimes))))
+      data_entry[COL_MAX_WORKTIME] = str(datetime.timedelta(seconds=max(entry.worktimes)))
+      data_entry[COL_TOT_WORKTIME] = str(datetime.timedelta(seconds=sum(entry.worktimes)))
 
     device_counts = Counter(entry.devices)
     for device in unique_devices:

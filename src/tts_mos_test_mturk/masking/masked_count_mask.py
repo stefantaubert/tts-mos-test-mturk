@@ -1,5 +1,5 @@
 from collections import OrderedDict
-from typing import Optional, Set
+from typing import Set
 
 import numpy as np
 import pandas as pd

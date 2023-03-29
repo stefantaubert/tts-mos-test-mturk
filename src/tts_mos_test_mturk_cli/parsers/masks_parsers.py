@@ -10,6 +10,7 @@ from tts_mos_test_mturk.masking.state_mask import mask_assignments_by_state
 from tts_mos_test_mturk.masking.time_mask import mask_assignments_by_time
 from tts_mos_test_mturk.masking.worker_correlation_mask import (mask_workers_by_correlation,
                                                                 mask_workers_by_correlation_percent)
+from tts_mos_test_mturk.masking.worker_id_mask import mask_workers_by_id
 from tts_mos_test_mturk.masking.worktime_mask import mask_assignments_by_worktime
 from tts_mos_test_mturk_cli.argparse_helper import (ConvertToSetAction, parse_datetime,
                                                     parse_non_empty_or_whitespace,
@@ -20,7 +21,8 @@ from tts_mos_test_mturk_cli.default_args import (add_opt_dry_argument, add_opt_m
                                                  add_req_output_mask_argument,
                                                  add_req_project_argument, add_req_ratings_argument)
 from tts_mos_test_mturk_cli.helper import save_project
-from tts_mos_test_mturk_cli.validation import ensure_masks_exist, ensure_ratings_exist
+from tts_mos_test_mturk_cli.validation import (ensure_masks_exist, ensure_ratings_exist,
+                                               ensure_workers_exist)
 
 
 def get_mask_assignments_by_device_parser(parser: ArgumentParser):
@@ -160,6 +162,26 @@ def init_mask_workers_by_assignments_count_parser(parser: ArgumentParser):
     ensure_masks_exist(ns.project, ns.masks)
     mask_workers_by_assignment_count(
       ns.project, ns.masks, ns.from_count, ns.to_count, ns.output_mask)
+
+    if not ns.dry:
+      save_project(ns.project)
+  return main
+
+
+def init_mask_workers_by_id_parser(parser: ArgumentParser):
+  parser.description = "Mask workers based on their WorkerId."
+  add_req_project_argument(parser)
+  add_opt_masks_argument(parser)
+  parser.add_argument("worker_ids", type=parse_non_empty_or_whitespace,
+                      metavar="WORKER-ID", nargs="+", help="mask workers with these WorkerId's", action=ConvertToSetAction)
+  add_req_output_mask_argument(parser)
+  add_opt_dry_argument(parser)
+
+  def main(ns: Namespace) -> None:
+    ensure_masks_exist(ns.project, ns.masks)
+    ensure_workers_exist(ns.project, ns.worker_ids)
+    mask_workers_by_id(
+      ns.project, ns.masks, ns.worker_ids, ns.output_mask)
 
     if not ns.dry:
       save_project(ns.project)

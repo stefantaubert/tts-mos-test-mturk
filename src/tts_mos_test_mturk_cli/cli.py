@@ -39,6 +39,7 @@ def formatter(prog):
 
 
 def get_masks_parsers() -> Parsers:
+  yield "mask-workers-by-id", "mask workers by their WorkerId", init_mask_workers_by_id_parser
   yield "mask-workers-by-assignments-count", "mask workers by their count of assignments", init_mask_workers_by_assignments_count_parser
   yield "mask-workers-by-masked-ratings-count", "mask workers by their count of masked ratings", init_workers_by_masked_ratings_count_parser
   yield "mask-workers-by-correlation", "mask workers by their algorithm/sentence correlation", init_mask_workers_by_correlation_parser

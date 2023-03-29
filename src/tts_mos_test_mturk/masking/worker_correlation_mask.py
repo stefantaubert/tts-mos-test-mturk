@@ -1,6 +1,6 @@
 import math
 from collections import OrderedDict
-from typing import Literal, Optional, Set, Tuple
+from typing import Literal, Set, Tuple
 
 import numpy as np
 import pandas as pd

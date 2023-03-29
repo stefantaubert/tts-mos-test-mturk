@@ -1,6 +1,6 @@
 from argparse import ArgumentParser
 
-from tts_mos_test_mturk_cli.argparse_helper import (ConvertToSetAction, get_optional,
+from tts_mos_test_mturk_cli.argparse_helper import (ConvertToSetAction,
                                                     parse_non_empty_or_whitespace, parse_project)
 
 
