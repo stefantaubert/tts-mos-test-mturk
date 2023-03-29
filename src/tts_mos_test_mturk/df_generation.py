@@ -48,7 +48,7 @@ def get_mos_df(data: EvaluationData, mask_names: Set[str], rating_names: Set[str
   df = pd.DataFrame.from_records(lines)
 
   all_row = OrderedDict()
-  all_row["Algorithm"] = "ALL"
+  all_row["Algorithm"] = "-ALL-"
   col: str
   for col in df.columns:
     if col.startswith("MOS"):

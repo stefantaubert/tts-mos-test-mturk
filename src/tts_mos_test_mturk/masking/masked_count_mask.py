@@ -62,7 +62,7 @@ def get_stats_df(ref_rmask: RatingsMask, workers: OrderedSet[str], outlier_indic
 
   result = pd.DataFrame.from_records(lines)
   row = {
-    col_worker: "ALL",
+    col_worker: "-ALL-",
     col_outliers: result[col_outliers].sum(),
     col_ratings: result[col_ratings].sum(),
     col_percent: result[col_percent].mean(),

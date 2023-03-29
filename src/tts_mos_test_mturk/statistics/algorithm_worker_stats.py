@@ -20,7 +20,7 @@ COL_STD = "Std"
 COL_DEVICE = "#D="
 COL_RATING = "#R="
 COL_MASKED = "#Masked"
-COL_ALL = "ALL"
+COL_ALL = "-ALL-"
 
 
 @dataclass

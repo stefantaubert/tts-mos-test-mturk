@@ -54,7 +54,7 @@ def get_stats_df(assignments: OrderedSet[str], times: List[Optional[datetime]], 
 
   result = pd.DataFrame.from_records(lines)
   row = {
-    col_assignment: "ALL",
+    col_assignment: "-ALL-",
     col_time: "-",
     col_masked: result[col_masked].all(),
   }

@@ -47,7 +47,7 @@ def get_stats_df(lts: np.ndarray, mask_devices: Set[str]) -> pd.DataFrame:
   result = pd.DataFrame.from_records(lines)
   result.sort_values(by=[col_device], inplace=True)
   row = {
-    col_device: "ALL",
+    col_device: "-ALL-",
     col_count: result[col_count].sum(),
     col_masked: result[col_masked].all(),
   }

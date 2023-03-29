@@ -61,7 +61,7 @@ def mask_outliers_alg_stats_df(ratings: np.ndarray, min_std_dev_diff: float, max
     )))
   result = DataFrame.from_records(lines)
   row = {
-    col_alg: "ALL",
+    col_alg: "-ALL-",
     col_min: result[col_min].min(),
     col_mean: result[col_mean].mean(),
     col_median: result[col_median].median(),

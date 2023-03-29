@@ -129,7 +129,7 @@ def get_stats_df(workers: OrderedSet[str], ratings: np.ndarray, masked_indices: 
   result.drop(columns=[col_w_i, col_used], inplace=True)
 
   row = {
-    col_worker: "ALL",
+    col_worker: "-ALL-",
     col_ratings: result[col_ratings].sum(),
     col_sent_corr: result[col_sent_corr].mean(),
     col_alg_corr: result[col_alg_corr].mean(),
