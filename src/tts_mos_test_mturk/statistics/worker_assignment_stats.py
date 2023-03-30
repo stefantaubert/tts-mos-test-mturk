@@ -1,7 +1,9 @@
 import datetime
 from collections import Counter, OrderedDict
 from dataclasses import dataclass, field
-from typing import Dict, List, Set, Union
+from itertools import combinations, permutations
+from statistics import mean
+from typing import Dict, Generator, List, Set, Tuple, Union
 
 import numpy as np
 import pandas as pd
@@ -25,6 +27,11 @@ COL_LAST_DEVICE = "Last device"
 COL_SENT_CORR = "Sent. corr."
 COL_ALGO_CORR = "Alg. corr."
 COL_BOTH_CORR = "Corr."
+COL_OVERLAPPING_HITS = "#HIT Overlaps"
+COL_MIN_OVERLAP_DUR = "Min. overlap"
+COL_AVG_OVERLAP_DUR = "Avg. overlap"
+COL_MAX_OVERLAP_DUR = "Max. overlap"
+COL_TOT_OVERLAP_DUR = "Tot. overlap"
 COL_FIRST_HIT_ACC_TIME = "First HIT acc."
 COL_FIRST_WORKTIME = "First worktime"
 COL_FIRST_HIT_FIN_TIME = "First HIT fin."
@@ -68,7 +75,7 @@ class WorkerEntry:
       return self.algorithm_correlations[rating_name]
     if np.isnan(self.algorithm_correlations[rating_name]):
       return self.sentence_correlations[rating_name]
-    return np.mean([self.algorithm_correlations[rating_name], self.sentence_correlations[rating_name]])
+    return mean([self.algorithm_correlations[rating_name], self.sentence_correlations[rating_name]])
 
 
 def get_data(data: EvaluationData, masks: List[MaskBase]):
@@ -125,6 +132,37 @@ def get_data(data: EvaluationData, masks: List[MaskBase]):
   return stats
 
 
+def get_overlap_time(time1: Tuple[datetime.datetime, datetime.datetime], time_overlapping: Tuple[datetime.datetime, datetime.datetime]) -> datetime.timedelta:
+  a1, b1 = time1
+  a2, b2 = time_overlapping
+  if a1 < a2 < b1 and a1 < b2 < b1:
+    return b2 - a2
+  if a1 < a2 < b1:
+    return b1 - a2
+  if a1 < b2 < b1:
+    return b2 - a1
+  return datetime.timedelta(seconds=0)
+
+
+def get_overlaps(timings: Set[Tuple[datetime.datetime, datetime.datetime]]) -> Generator[Tuple[Tuple[datetime.datetime, datetime.datetime], Tuple[datetime.datetime, datetime.datetime]], None, None]:
+  all_combinations = list(combinations(sorted(timings), 2))
+  for permutation in all_combinations:
+    (a1, b1), (a2, b2) = permutation
+    if a1 < a2 < b1 or a1 < b2 < b1:
+      yield (a1, b1), (a2, b2)
+    elif a2 < a1 < b2 or a2 < b1 < b2:
+      yield (a2, b2), (a1, b1)
+
+def get_entry_overlap_times(entry: WorkerEntry) -> Generator[datetime.timedelta, None, None]:
+  timings = {
+    (accept_time, accept_time + datetime.timedelta(seconds=worktime))
+    for accept_time, worktime in zip(entry.accept_times, entry.worktimes)
+  }
+  for overlap in get_overlaps(timings):
+    time1, time2 = overlap
+    yield get_overlap_time(time1, time2)
+
+
 def stats_to_df(stats: Dict[str, WorkerEntry]) -> pd.DataFrame:
   csv_data = []
   unique_statuses = sorted({
@@ -155,6 +193,19 @@ def stats_to_df(stats: Dict[str, WorkerEntry]) -> pd.DataFrame:
       data_entry[key] = status_counts.get(status, 0)
     data_entry[COL_TOT_ASSIGNMENTS] = entry.total_assignments
 
+    overlap_times = list(get_entry_overlap_times(entry))
+    data_entry[COL_OVERLAPPING_HITS] = len(overlap_times)
+    if len(overlap_times) > 0:
+      data_entry[COL_MIN_OVERLAP_DUR] = str(min(overlap_times))
+      data_entry[COL_AVG_OVERLAP_DUR] = str(datetime.timedelta(
+          seconds=mean(x.total_seconds() for x in overlap_times)))
+      data_entry[COL_MAX_OVERLAP_DUR] = str(max(overlap_times))
+    else:
+      data_entry[COL_MIN_OVERLAP_DUR] = np.nan
+      data_entry[COL_AVG_OVERLAP_DUR] = np.nan
+      data_entry[COL_MAX_OVERLAP_DUR] = np.nan
+    data_entry[COL_TOT_OVERLAP_DUR] = str(datetime.timedelta(
+      seconds=sum(x.total_seconds() for x in overlap_times)))
     if len(entry.accept_times) == 0:
       data_entry[COL_FIRST_HIT_ACC_TIME] = np.nan
       data_entry[COL_FIRST_WORKTIME] = np.nan
@@ -194,7 +245,7 @@ def stats_to_df(stats: Dict[str, WorkerEntry]) -> pd.DataFrame:
         datetime.timedelta(seconds=abs(last_worktime - first_worktime)))
       data_entry[COL_MIN_WORKTIME] = str(datetime.timedelta(seconds=min(entry.worktimes)))
       data_entry[COL_AVG_WORKTIME] = str(
-        datetime.timedelta(seconds=float(np.mean(entry.worktimes))))
+        datetime.timedelta(seconds=mean(entry.worktimes)))
       data_entry[COL_MAX_WORKTIME] = str(datetime.timedelta(seconds=max(entry.worktimes)))
       data_entry[COL_TOT_WORKTIME] = str(datetime.timedelta(seconds=sum(entry.worktimes)))
 
@@ -252,6 +303,11 @@ def add_all_row(df: pd.DataFrame, stats: Dict[str, WorkerEntry]) -> pd.DataFrame
     for time in entry.worktimes
   ]
 
+  row[COL_OVERLAPPING_HITS] = df[COL_OVERLAPPING_HITS].sum()
+  row[COL_MIN_OVERLAP_DUR] = np.nan  # TODO
+  row[COL_AVG_OVERLAP_DUR] = np.nan  # TODO
+  row[COL_MAX_OVERLAP_DUR] = np.nan  # TODO
+  row[COL_TOT_OVERLAP_DUR] = np.nan  # TODO
   row[COL_FIRST_HIT_ACC_TIME] = min(all_accept_times).strftime(DATE_FMT)
   row[COL_FIRST_WORKTIME] = np.nan
   row[COL_FIRST_HIT_FIN_TIME] = np.nan
@@ -259,7 +315,7 @@ def add_all_row(df: pd.DataFrame, stats: Dict[str, WorkerEntry]) -> pd.DataFrame
   row[COL_LAST_WORKTIME] = np.nan
   row[COL_LAST_HIT_FIN_TIME] = np.nan
   row[COL_MIN_WORKTIME] = str(datetime.timedelta(seconds=min(all_worktimes)))
-  row[COL_AVG_WORKTIME] = str(datetime.timedelta(seconds=float(np.mean(all_worktimes))))
+  row[COL_AVG_WORKTIME] = str(datetime.timedelta(seconds=mean(all_worktimes)))
   row[COL_MAX_WORKTIME] = str(datetime.timedelta(seconds=max(all_worktimes)))
   row[COL_TOT_WORKTIME] = str(datetime.timedelta(seconds=sum(all_worktimes)))
   row[COL_DIFF_WORKTIME_TIME] = np.nan

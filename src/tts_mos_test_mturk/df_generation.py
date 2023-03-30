@@ -1,3 +1,4 @@
+import datetime
 from collections import OrderedDict
 from typing import Any, Dict, List, Optional
 from typing import OrderedDict as ODType
@@ -283,13 +284,17 @@ def generate_ground_truth_table(data: EvaluationData, mask_names: Set[str]) -> p
         line["File"] = rating_data.file
         for rating_name, rating in rating_data.ratings.items():
           line[f"Rating \"{rating_name}\""] = rating
-        line["Time"] = assignment_data.time
+        line["AcceptTime"] = assignment_data.time
+        line["FinishTime"] = assignment_data.time + \
+            datetime.timedelta(seconds=assignment_data.worktime)
+        line["Worktime"] = str(datetime.timedelta(seconds=assignment_data.worktime))
         line["Worktime (s)"] = assignment_data.worktime
         line["Device"] = assignment_data.device
         line["State"] = assignment_data.state
         line["HITId"] = assignment_data.hit_id
         line["AssignmentId"] = assignment
         line["Masked?"] = is_masked
+        line["Comments"] = assignment_data.comments
         results.append(line)
 
   result = pd.DataFrame.from_records(results)
