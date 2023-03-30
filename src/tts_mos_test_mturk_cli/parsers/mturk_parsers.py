@@ -99,6 +99,7 @@ def init_prepare_rejection_parser(parser: ArgumentParser):
 
   def main(ns: Namespace) -> None:
     ensure_masks_exist(ns.project, ns.masks)
+    ensure_masks_exist(ns.project, ns.reject_masks)
     result_df = generate_reject_csv(ns.project, ns.masks, ns.reject_masks, ns.reason)
     save_csv(ns.output, result_df)
   return main
