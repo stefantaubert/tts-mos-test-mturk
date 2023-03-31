@@ -67,3 +67,26 @@ def test_one_overlap():
         datetime(2023, 3, 28, 8, 14, 42)
     )
   )]
+
+
+def test_one_overlap_2():
+  fmt = "%Y-%m-%d %H:%M:%S"
+  times = [
+    ("2023-03-28 08:00:39", "2023-03-28 08:02:26"),
+    ("2023-03-28 08:01:32", "2023-03-28 08:04:11"),
+    ("2023-03-28 08:30:50", "2023-03-28 08:32:06"),
+  ]
+  times = [(datetime.strptime(x, fmt), datetime.strptime(y, fmt)) for x, y in times]
+
+  result = list(get_overlaps(set(times)))
+  print(result)
+  assert result == [(
+    (
+        datetime(2023, 3, 28, 8, 0, 39),
+        datetime(2023, 3, 28, 8, 2, 26),
+    ),
+    (
+        datetime(2023, 3, 28, 8, 1, 32),
+        datetime(2023, 3, 28, 8, 4, 11),
+    )
+  )]
