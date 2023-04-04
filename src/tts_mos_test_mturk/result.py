@@ -1,7 +1,7 @@
 import datetime
 from collections import OrderedDict
 from dataclasses import dataclass, field
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 from typing import OrderedDict as ODType
 from typing import Set, Union, cast
 
@@ -12,6 +12,7 @@ from ordered_set import OrderedSet
 class Rating:
   algorithm: str
   file: str
+  file_duration: float
   ratings: ODType[str, Union[int, float]] = field(default_factory=OrderedDict)
 
 
@@ -29,6 +30,8 @@ class Assignment:
   comments: str
   time: datetime.datetime
   ratings: List[Rating] = field(default_factory=list)
+  # Trap differences
+  traps: ODType[str, Union[int, float]] = field(default_factory=OrderedDict)
 
 
 @dataclass()
@@ -98,13 +101,17 @@ def parse_result_from_json(data: Dict) -> Result:
         alg_file_comb = (algorithm, file)
         if alg_file_comb in parsed_alg_file_combinations:
           raise ValueError("Rating for algorithm and file combination exist multiple times!")
-        rating_names = rating_data.keys() - {"algorithm", "file"}
         parsed_alg_file_combinations.add(alg_file_comb)
-        if len(rating_names) == 0:
-          raise ValueError("No rating for algorithm and file combination was given!")
-        r = Rating(algorithm, file)
+        duration = float(rating_data["duration"])
+        votes: Dict[str, Union[int, float]] = rating_data["votes"]
+        r = Rating(algorithm, file, duration)
+        for vote_name, vote in votes.items():
+          assert isinstance(vote, (int, float))
+          r.ratings[vote_name] = vote
         assignment.ratings.append(r)
-        for rating_name in rating_names:
-          rating = parse_int_then_float(str(rating_data[rating_name]))
-          r.ratings[rating_name] = rating
+      traps = cast(Dict[str, Union[int, float]], assignment_data["traps"])
+      for rating_name, trap_difference in traps.items():
+        assert isinstance(trap_difference, (int, float))
+        assignment.traps[rating_name] = trap_difference
+
   return result
