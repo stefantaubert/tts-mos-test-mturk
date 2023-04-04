@@ -27,6 +27,7 @@ COL_LAST_DEVICE = "Last device"
 COL_SENT_CORR = "Sent. corr."
 COL_ALGO_CORR = "Alg. corr."
 COL_BOTH_CORR = "Corr."
+COL_FALLEN_TRAPS = "#Fallen Traps"
 COL_OVERLAPPING_HITS = "#HIT Overlaps"
 COL_MIN_OVERLAP_DUR = "Min. overlap"
 COL_AVG_OVERLAP_DUR = "Avg. overlap"
@@ -53,6 +54,8 @@ COL_ALL = "-ALL-"
 class WorkerEntry:
   masked: bool = False
   masked_assignments: int = 0
+  # Count of assignment traps which the worker fell into
+  fallen_traps: int = 0
   statuses: List[str] = field(default_factory=list)
   worktimes: List[Union[int, float]] = field(default_factory=list)
   accept_times: List[datetime.datetime] = field(default_factory=list)
@@ -119,6 +122,14 @@ def get_data(data: EvaluationData, masks: List[MaskBase]):
       if skip:
         continue
 
+      fell_in_trap = any(
+        x != 0
+        for x in assignment_data.traps.values()
+      )
+
+      if fell_in_trap:
+        entry.fallen_traps += 1
+
       entry.devices.append(assignment_data.device)
       entry.statuses.append(assignment_data.state)
       entry.worktimes.append(assignment_data.worktime)
@@ -152,6 +163,7 @@ def get_overlaps(timings: Set[Tuple[datetime.datetime, datetime.datetime]]) -> G
       yield (a1, b1), (a2, b2)
     elif a2 < a1 < b2 or a2 < b1 < b2:
       yield (a2, b2), (a1, b1)
+
 
 def get_entry_overlap_times(entry: WorkerEntry) -> Generator[datetime.timedelta, None, None]:
   timings = {
@@ -192,6 +204,7 @@ def stats_to_df(stats: Dict[str, WorkerEntry]) -> pd.DataFrame:
       assert key not in data_entry
       data_entry[key] = status_counts.get(status, 0)
     data_entry[COL_TOT_ASSIGNMENTS] = entry.total_assignments
+    data_entry[COL_FALLEN_TRAPS] = entry.fallen_traps
 
     overlap_times = list(get_entry_overlap_times(entry))
     data_entry[COL_OVERLAPPING_HITS] = len(overlap_times)
@@ -290,6 +303,7 @@ def add_all_row(df: pd.DataFrame, stats: Dict[str, WorkerEntry]) -> pd.DataFrame
       assert col not in row
       row[col] = df[col].sum()
   row[COL_TOT_ASSIGNMENTS] = df[COL_TOT_ASSIGNMENTS].sum()
+  row[COL_FALLEN_TRAPS] = df[COL_FALLEN_TRAPS].sum()
 
   all_accept_times = [
     time
