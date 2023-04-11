@@ -62,11 +62,8 @@ def get_stats_parsers() -> Parsers:
 
 def get_mturk_parsers() -> Parsers:
   yield "prepare-approval", "generate approval CSV-file", init_prepare_approval_parser
-  yield "approve", "approve assignments from CSV-file", init_approve_parser
   yield "prepare-rejection", "generate rejection CSV-file", init_prepare_rejection_parser
-  yield "reject", "reject assignments from CSV-file", init_reject_parser
   yield "prepare-bonus-payment", "generate bonus payment CSV-file", init_prepare_bonus_payment_parser
-  yield "pay-bonus", "pay bonus to assignments from CSV-file", init_pay_bonus_parser
 
 
 def get_parsers():

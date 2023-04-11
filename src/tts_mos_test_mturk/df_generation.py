@@ -121,7 +121,8 @@ def generate_approve_csv(data: EvaluationData, mask_names: Set[str], reason: Opt
     ))
     results.append(line)
   result = pd.DataFrame.from_records(results)
-  result.sort_values(["WorkerId", "AssignmentId"], inplace=True)
+  if len(result.index) > 0:
+    result.sort_values(["WorkerId", "AssignmentId"], inplace=True)
   if approval_cost is not None:
     if amazon_fee is None:
       amazon_fee = 0.0
@@ -198,7 +199,8 @@ def generate_reject_csv(data: EvaluationData, mask_names: Set[str], reject_mask_
     ))
     results.append(line)
   result = pd.DataFrame.from_records(results)
-  result.sort_values(["WorkerId", "AssignmentId"], inplace=True)
+  if len(result.index) > 0:
+    result.sort_values(["WorkerId", "AssignmentId"], inplace=True)
   return result
 
 
@@ -249,7 +251,8 @@ def generate_bonus_csv(data: EvaluationData, mask_names: Set[str], bonus: float,
     ))
     results.append(line)
   result = pd.DataFrame.from_records(results)
-  result.sort_values(["WorkerId", "AssignmentId"], inplace=True)
+  if len(result.index) > 0:
+    result.sort_values(["WorkerId", "AssignmentId"], inplace=True)
   logger = get_logger()
   costs = len(assignment_indices) * bonus
   fees = costs * amazon_fee_percent
@@ -301,5 +304,6 @@ def generate_ground_truth_table(data: EvaluationData, mask_names: Set[str]) -> p
         results.append(line)
 
   result = pd.DataFrame.from_records(results)
-  result.sort_values(["WorkerId", "Algorithm", "File"], inplace=True)
+  if len(result.index) > 0:
+    result.sort_values(["WorkerId", "Algorithm", "File"], inplace=True)
   return result
