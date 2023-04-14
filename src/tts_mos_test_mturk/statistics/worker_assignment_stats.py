@@ -19,6 +19,8 @@ from tts_mos_test_mturk.masking.masks import MaskBase
 DATE_FMT = "%Y-%m-%d %H:%M:%S"
 
 COL_WORKER = "WorkerId"
+COL_GENDER = "Gender"
+COL_AGE_GROUP = "Age group"
 COL_TOT_ASSIGNMENTS = "#Assignments"
 COL_STATE = "#State"
 COL_DEVICE = "#Device"
@@ -52,6 +54,8 @@ COL_ALL = "-ALL-"
 
 @dataclass
 class WorkerEntry:
+  age_group: str
+  gender: str
   masked: bool = False
   masked_assignments: int = 0
   # Count of assignment traps which the worker fell into
@@ -96,28 +100,28 @@ def get_data(data: EvaluationData, masks: List[MaskBase]):
 
   stats: Dict[str, WorkerEntry] = {}
 
-  for worker in data.workers:
-    stats[worker] = WorkerEntry()
+  for worker, worker_data in data.worker_data.items():
+    stats[worker] = WorkerEntry(worker_data.age_group, worker_data.gender)
 
   for worker, worker_data in data.worker_data.items():
     w_i = data.workers.get_loc(worker)
     for assignment, assignment_data in worker_data.assignments.items():
-      entry = stats[worker]
+      worker_entry = stats[worker]
 
       skip = False
       w_is_masked = wmask.mask[w_i]
       if w_is_masked:
-        entry.masked = True
+        worker_entry.masked = True
         skip = True
       a_i = data.assignments.get_loc(assignment)
       a_is_masked = amask.mask[a_i]
       if a_is_masked:
-        entry.masked_assignments += 1
+        worker_entry.masked_assignments += 1
         skip = True
 
       for rating_name, ratings in all_ratings.items():
-        entry.algorithm_correlations[rating_name] = np.nan
-        entry.sentence_correlations[rating_name] = np.nan
+        worker_entry.algorithm_correlations[rating_name] = np.nan
+        worker_entry.sentence_correlations[rating_name] = np.nan
 
       if skip:
         continue
@@ -128,17 +132,19 @@ def get_data(data: EvaluationData, masks: List[MaskBase]):
       )
 
       if fell_in_trap:
-        entry.fallen_traps += 1
+        worker_entry.fallen_traps += 1
 
-      entry.devices.append(assignment_data.device)
-      entry.statuses.append(assignment_data.state)
-      entry.worktimes.append(assignment_data.worktime)
-      entry.accept_times.append(assignment_data.time)
-      entry.comments.append(assignment_data.comments)
+      worker_entry.devices.append(assignment_data.device)
+      worker_entry.statuses.append(assignment_data.state)
+      worker_entry.worktimes.append(assignment_data.worktime)
+      worker_entry.accept_times.append(assignment_data.time)
+      worker_entry.comments.append(assignment_data.comments)
 
       for rating_name, ratings in all_ratings.items():
-        entry.algorithm_correlations[rating_name] = get_algorithm_mos_correlation(w_i, ratings)
-        entry.sentence_correlations[rating_name] = get_sentence_mos_correlation_3dim(w_i, ratings)
+        worker_entry.algorithm_correlations[rating_name] = get_algorithm_mos_correlation(
+          w_i, ratings)
+        worker_entry.sentence_correlations[rating_name] = get_sentence_mos_correlation_3dim(
+          w_i, ratings)
 
   return stats
 
@@ -197,6 +203,8 @@ def stats_to_df(stats: Dict[str, WorkerEntry]) -> pd.DataFrame:
   for worker, entry in stats.items():
     data_entry = OrderedDict()
     data_entry[COL_WORKER] = worker
+    data_entry[COL_AGE_GROUP] = entry.age_group
+    data_entry[COL_GENDER] = entry.gender
 
     status_counts = Counter(entry.statuses)
     for status in unique_statuses:
@@ -296,6 +304,8 @@ def stats_to_df(stats: Dict[str, WorkerEntry]) -> pd.DataFrame:
 def add_all_row(df: pd.DataFrame, stats: Dict[str, WorkerEntry]) -> pd.DataFrame:
   row = OrderedDict()
   row[COL_WORKER] = COL_ALL
+  row[COL_GENDER] = ""
+  row[COL_AGE_GROUP] = ""
 
   col: str
   for col in df.columns:

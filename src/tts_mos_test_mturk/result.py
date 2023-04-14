@@ -36,6 +36,8 @@ class Assignment:
 
 @dataclass()
 class Worker():
+  age_group: str
+  gender: str
   assignments: ODType[str, Assignment] = field(default_factory=OrderedDict)
 
 
@@ -69,12 +71,14 @@ def parse_result_from_json(data: Dict) -> Result:
   algorithms = OrderedSet(str(x) for x in data["algorithms"])
   result = Result(algorithms, files, res_data)
   assignment_ids: Set[str] = set()
-  worker_data = cast(Dict[str, Dict[str, Dict[str, Any]]], data["workers"])
-  for worker_id, assignments in worker_data.items():
+  workers_data = cast(Dict[str, Dict[str, Dict[str, Any]]], data["workers"])
+  for worker_id, worker_data in workers_data.items():
+    age_group = str(worker_data["age_group"])
+    gender = str(worker_data["gender"])
+    worker = Worker(age_group, gender)
     assert worker_id not in res_data
-    worker = Worker()
     res_data[worker_id] = worker
-    for assignment_id, assignment_data in assignments.items():
+    for assignment_id, assignment_data in worker_data["assignments"].items():
       device = str(assignment_data["device"])
       state = str(assignment_data["state"])
       hit = str(assignment_data["hit"])
