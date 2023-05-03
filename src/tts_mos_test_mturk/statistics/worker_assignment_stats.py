@@ -3,7 +3,9 @@ from collections import Counter, OrderedDict
 from dataclasses import dataclass, field
 from itertools import combinations, permutations
 from statistics import mean
-from typing import Dict, Generator, List, Set, Tuple, Union
+from typing import Dict, Generator, List
+from typing import OrderedDict as ODType
+from typing import Set, Tuple, Union
 
 import numpy as np
 import pandas as pd
@@ -15,12 +17,15 @@ from tts_mos_test_mturk.correlations import (get_algorithm_mos_correlation,
 from tts_mos_test_mturk.evaluation_data import EvaluationData
 from tts_mos_test_mturk.masking.mask_factory import MaskFactory
 from tts_mos_test_mturk.masking.masks import MaskBase
+from tts_mos_test_mturk.typing import AlgorithmName, FileName, RatingName, RatingValue
 
 DATE_FMT = "%Y-%m-%d %H:%M:%S"
 
 COL_WORKER = "WorkerId"
 COL_GENDER = "Gender"
 COL_AGE_GROUP = "Age group"
+COL_COUNT_DUP_RATINGS = "#Duplicate ratings"
+COL_AVG_DEV_DUP_RATINGS = "#Avg. dev. dupl."
 COL_TOT_ASSIGNMENTS = "#Assignments"
 COL_STATE = "#State"
 COL_DEVICE = "#Device"
@@ -67,6 +72,9 @@ class WorkerEntry:
   sentence_correlations: Dict[str, float] = field(default_factory=dict)
   algorithm_correlations: Dict[str, float] = field(default_factory=dict)
   comments: List[str] = field(default_factory=list)
+  ratings: Dict[Tuple[AlgorithmName, FileName, RatingName],
+                List[RatingValue]] = field(default_factory=dict)
+  # difference_ratings: ODType[RatingName, List[float]] = field(default_factory=OrderedDict)
 
   @property
   def total_assignments(self) -> int:
@@ -131,6 +139,13 @@ def get_data(data: EvaluationData, masks: List[MaskBase]):
         for x in assignment_data.traps.values()
       )
 
+      for (alg_name, file_name), ass_ratings in assignment_data.ratings.items():
+        for rating_name, rating_val in ass_ratings.items():
+          key = (alg_name, file_name, rating_name)
+          if key not in worker_entry.ratings:
+            worker_entry.ratings[key] = []
+          worker_entry.ratings[key].append(rating_val)
+
       if fell_in_trap:
         worker_entry.fallen_traps += 1
 
@@ -171,6 +186,17 @@ def get_overlaps(timings: Set[Tuple[datetime.datetime, datetime.datetime]]) -> G
       yield (a2, b2), (a1, b1)
 
 
+def get_max_deviation(values: List[RatingValue]) -> float:
+  for v in values:
+    assert v >= 0
+
+  result = max(
+    abs(a - b)
+    for a, b in combinations(values, 2)
+  )
+  return result
+
+
 def get_entry_overlap_times(entry: WorkerEntry) -> Generator[datetime.timedelta, None, None]:
   timings = {
     (accept_time, accept_time + datetime.timedelta(seconds=worktime))
@@ -206,6 +232,12 @@ def stats_to_df(stats: Dict[str, WorkerEntry]) -> pd.DataFrame:
     data_entry[COL_AGE_GROUP] = entry.age_group
     data_entry[COL_GENDER] = entry.gender
 
+    duplicate_ratings_count = sum(
+      len(rating_values_unique_file) - 1
+      for rating_values_unique_file in entry.ratings.values()
+      if len(rating_values_unique_file) > 1
+    )
+
     status_counts = Counter(entry.statuses)
     for status in unique_statuses:
       key = f"{COL_STATE} \"{status}\""
@@ -213,6 +245,17 @@ def stats_to_df(stats: Dict[str, WorkerEntry]) -> pd.DataFrame:
       data_entry[key] = status_counts.get(status, 0)
     data_entry[COL_TOT_ASSIGNMENTS] = entry.total_assignments
     data_entry[COL_FALLEN_TRAPS] = entry.fallen_traps
+
+    max_deviations = [
+      get_max_deviation(rating_values_unique_file)
+      for rating_values_unique_file in entry.ratings.values()
+      if len(rating_values_unique_file) > 1
+    ]
+
+    average_max_deviation = mean(max_deviations) if len(max_deviations) > 0 else np.nan
+
+    data_entry[COL_COUNT_DUP_RATINGS] = duplicate_ratings_count
+    data_entry[COL_AVG_DEV_DUP_RATINGS] = average_max_deviation
 
     overlap_times = list(get_entry_overlap_times(entry))
     data_entry[COL_OVERLAPPING_HITS] = len(overlap_times)

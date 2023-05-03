@@ -64,10 +64,10 @@ def get_worker_stats(data: EvaluationData, masks: List[MaskBase]):
   for worker, worker_data in data.worker_data.items():
     w_i = data.workers.get_loc(worker)
     for assignment_data in worker_data.assignments.values():
-      for rating_data in assignment_data.ratings:
-        alg_i = data.algorithms.get_loc(rating_data.algorithm)
-        file_i = data.files.get_loc(rating_data.file)
-        entry = stats[rating_data.algorithm][rating_data.file]
+      for (alg_name, file_name), ass_ratings in assignment_data.ratings.items():
+        alg_i = data.algorithms.get_loc(alg_name)
+        file_i = data.files.get_loc(file_name)
+        entry = stats[alg_name][file_name]
 
         o_is_masked = rmask.mask[alg_i, w_i, file_i]
         if o_is_masked:
@@ -75,10 +75,10 @@ def get_worker_stats(data: EvaluationData, masks: List[MaskBase]):
           continue
 
         entry.devices.append(assignment_data.device)
-        for rating_name, rating in rating_data.ratings.items():
+        for rating_name, rating_val in ass_ratings.items():
           if rating_name not in entry.ratings:
             entry.ratings[rating_name] = []
-          entry.ratings[rating_name].append(rating)
+          entry.ratings[rating_name].append(rating_val)
 
   return stats
 

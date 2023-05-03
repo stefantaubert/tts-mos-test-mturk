@@ -1,28 +1,52 @@
-from typing import Dict, Set, Union
+import math
+from statistics import mean
+from typing import Dict, List, Set, Union
 
 import numpy as np
 
 from tts_mos_test_mturk.evaluation_data import EvaluationData
+from tts_mos_test_mturk.typing import AlgorithmName, FileName, RatingName, Ratings, RatingValue
 
 
 def get_ratings(data: EvaluationData, rating_names: Set[str]) -> np.ndarray:
-  ratings = np.full(
+  ratings: List[List[List[List[RatingValue]]]] = [
+    [
+      [
+        []
+        for _ in range(data.n_files)
+      ]
+      for _ in range(data.n_workers)
+    ]
+    for _ in range(data.n_algorithms)
+  ]
+
+  for worker, worker_data in data.worker_data.items():
+    worker_i = data.workers.get_loc(worker)
+    for assignment_data in worker_data.assignments.values():
+      for (alg_name, file_name), ass_ratings in assignment_data.ratings.items():
+        alg_i = data.algorithms.get_loc(alg_name)
+        file_i = data.files.get_loc(file_name)
+        rating = get_rating(ass_ratings, rating_names)
+        ratings[alg_i][worker_i][file_i].append(rating)
+
+  final_ratings = np.full(
     (data.n_algorithms, data.n_workers, data.n_files),
     fill_value=np.nan,
     dtype=np.float32
   )
 
-  for worker, worker_data in data.worker_data.items():
-    worker_i = data.workers.get_loc(worker)
-    for assignment_data in worker_data.assignments.values():
-      for rating_data in assignment_data.ratings:
-        alg_i = data.algorithms.get_loc(rating_data.algorithm)
-        file_i = data.files.get_loc(rating_data.file)
-        ratings[alg_i, worker_i, file_i] = get_rating(rating_data.ratings, rating_names)
-  return ratings
+  for k in range(data.n_algorithms):
+    for j in range(data.n_workers):
+      for i in range(data.n_files):
+        rs = ratings[k][j][i]
+        if len(rs) > 0:
+          # Note: theoretically the mean for each rating-name separately and then the mean of both but in case the amount per rating is equal it makes no difference
+          avg_rating = mean(rs)
+          final_ratings[k, j, i] = avg_rating
+  return final_ratings
 
 
-def get_rating(ratings: Dict[str, Union[float, int]], rating_names: Set[str]) -> Union[float, int]:
+def get_rating(ratings: Ratings, rating_names: Set[RatingName]) -> RatingValue:
   selected_ratings = [
     ratings[rating_name]
     for rating_name in rating_names

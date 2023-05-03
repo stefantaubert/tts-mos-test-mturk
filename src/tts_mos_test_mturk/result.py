@@ -3,17 +3,19 @@ from collections import OrderedDict
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 from typing import OrderedDict as ODType
-from typing import Set, Union, cast
+from typing import Set, Tuple, Union, cast
 
 from ordered_set import OrderedSet
 
+from tts_mos_test_mturk.typing import (AlgorithmName, AssignmentId, FileName, RatingName, Ratings,
+                                       RatingValue, WorkerName)
 
-@dataclass()
-class Rating:
-  algorithm: str
-  file: str
-  file_duration: float
-  ratings: ODType[str, Union[int, float]] = field(default_factory=OrderedDict)
+# @dataclass()
+# class Rating:
+#   algorithm: str
+#   file: str
+#   # file_duration: float
+#   ratings: ODType[str, List[Union[int, float]]] = field(default_factory=OrderedDict)
 
 
 @dataclass()
@@ -29,25 +31,26 @@ class Assignment:
   # TODO make optional
   comments: str
   time: datetime.datetime
-  ratings: List[Rating] = field(default_factory=list)
+  # ratings: List[Rating] = field(default_factory=list)
+  ratings: ODType[Tuple[AlgorithmName, FileName], Ratings] = field(default_factory=OrderedDict)
   # Trap differences
-  traps: ODType[str, Union[int, float]] = field(default_factory=OrderedDict)
+  traps: ODType[RatingName, Union[int, float]] = field(default_factory=OrderedDict)
 
 
 @dataclass()
 class Worker():
   age_group: str
   gender: str
-  assignments: ODType[str, Assignment] = field(default_factory=OrderedDict)
+  assignments: ODType[AssignmentId, Assignment] = field(default_factory=OrderedDict)
 
 
 @dataclass()
 class Result():
   # TODO make optional
-  algorithms: OrderedSet[str] = field(default_factory=OrderedSet)
+  algorithms: OrderedSet[AlgorithmName] = field(default_factory=OrderedSet)
   # TODO make optional
-  files: OrderedSet[str] = field(default_factory=OrderedSet)
-  workers: ODType[str, Worker] = field(default_factory=OrderedDict)
+  files: OrderedSet[FileName] = field(default_factory=OrderedSet)
+  workers: ODType[WorkerName, Worker] = field(default_factory=OrderedDict)
 
 
 def parse_int_then_float(val: str) -> Union[int, float]:
@@ -71,6 +74,7 @@ def parse_result_from_json(data: Dict) -> Result:
   algorithms = OrderedSet(str(x) for x in data["algorithms"])
   result = Result(algorithms, files, res_data)
   assignment_ids: Set[str] = set()
+
   workers_data = cast(Dict[str, Dict[str, Dict[str, Any]]], data["workers"])
   for worker_id, worker_data in workers_data.items():
     age_group = str(worker_data["age_group"])
@@ -92,7 +96,6 @@ def parse_result_from_json(data: Dict) -> Result:
       assignment = Assignment(device, state, worktime, hit, comments, time)
       assert assignment_id not in worker.assignments
       worker.assignments[assignment_id] = assignment
-      parsed_alg_file_combinations = set()
       ratings = cast(List[Dict[str, Any]], assignment_data["ratings"])
       for rating_data in ratings:
         algorithm = str(rating_data["algorithm"])
@@ -100,19 +103,23 @@ def parse_result_from_json(data: Dict) -> Result:
         if algorithm not in algorithms:
           raise ValueError(
             f"Referenced algorithm \"{algorithm}\" was not defined in \"algorithms\"!")
+
         if file not in files:
           raise ValueError(f"Referenced file \"{algorithm}\" was not defined in \"files\"!")
+
         alg_file_comb = (algorithm, file)
-        if alg_file_comb in parsed_alg_file_combinations:
+        if alg_file_comb in assignment.ratings:
           raise ValueError("Rating for algorithm and file combination exist multiple times!")
-        parsed_alg_file_combinations.add(alg_file_comb)
+
+        assignment.ratings[alg_file_comb] = OrderedDict()
+
         duration = float(rating_data["duration"])
         votes: Dict[str, Union[int, float]] = rating_data["votes"]
-        r = Rating(algorithm, file, duration)
+
         for vote_name, vote in votes.items():
           assert isinstance(vote, (int, float))
-          r.ratings[vote_name] = vote
-        assignment.ratings.append(r)
+          assignment.ratings[alg_file_comb][vote_name] = vote
+
       traps = cast(Dict[str, Union[int, float]], assignment_data["traps"])
       for rating_name, trap_difference in traps.items():
         assert isinstance(trap_difference, (int, float))

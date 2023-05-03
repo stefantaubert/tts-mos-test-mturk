@@ -81,9 +81,9 @@ class MaskFactory():
       worker_i = self.__data.workers.get_loc(worker)
       for assignment, assignment_data in worker_data.assignments.items():
         ass_i = self.__data.assignments.get_loc(assignment)
-        for rating_data in assignment_data.ratings:
-          alg_i = self.__data.algorithms.get_loc(rating_data.algorithm)
-          file_i = self.__data.files.get_loc(rating_data.file)
+        for (alg_name, file_name), _ in assignment_data.ratings.items():
+          alg_i = self.__data.algorithms.get_loc(alg_name)
+          file_i = self.__data.files.get_loc(file_name)
           res[alg_i, worker_i, file_i] = ass_i
     return res
 

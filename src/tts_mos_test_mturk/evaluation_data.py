@@ -24,14 +24,14 @@ class EvaluationData():
       1
       for worker in result.workers.values()
       for assignment in worker.assignments.values()
-      for _ in assignment.ratings
+      for _ in assignment.ratings.keys()
     )
     self.rating_names = OrderedSet(
       rating_name
       for worker in result.workers.values()
       for assignment in worker.assignments.values()
-      for rating in assignment.ratings
-      for rating_name in rating.ratings.keys()
+      for rating_names in assignment.ratings.values()
+      for rating_name in rating_names.keys()
     )
 
     self.masks: ODType[str, MaskBase] = OrderedDict()

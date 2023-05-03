@@ -12,9 +12,10 @@ from tts_mos_test_mturk.common import get_ratings
 from tts_mos_test_mturk.evaluation_data import EvaluationData
 from tts_mos_test_mturk.logging import get_detail_logger, get_logger
 from tts_mos_test_mturk.masking.mask_factory import MaskFactory
+from tts_mos_test_mturk.typing import MaskName
 
 
-def get_mos_df(data: EvaluationData, mask_names: Set[str], rating_names: Set[str]) -> pd.DataFrame:
+def get_mos_df(data: EvaluationData, mask_names: Set[MaskName], rating_names: Set[str]) -> pd.DataFrame:
   masks = data.get_masks_from_names(mask_names)
   factory = MaskFactory(data)
   rmask = factory.merge_masks_into_rmask(masks)
@@ -280,15 +281,15 @@ def generate_ground_truth_table(data: EvaluationData, mask_names: Set[str]) -> p
   for worker, worker_data in data.worker_data.items():
     w_i = data.workers.get_loc(worker)
     for assignment, assignment_data in worker_data.assignments.items():
-      for rating_data in assignment_data.ratings:
-        alg_i = data.algorithms.get_loc(rating_data.algorithm)
-        file_i = data.files.get_loc(rating_data.file)
+      for (alg_name, file_name), ass_ratings in assignment_data.ratings.items():
+        alg_i = data.algorithms.get_loc(alg_name)
+        file_i = data.files.get_loc(file_name)
         is_masked = rmask.mask[alg_i, w_i, file_i]
         line = OrderedDict()
         line["WorkerId"] = worker
-        line["Algorithm"] = rating_data.algorithm
-        line["File"] = rating_data.file
-        for rating_name, rating in rating_data.ratings.items():
+        line["Algorithm"] = alg_name
+        line["File"] = file_name
+        for rating_name, rating in ass_ratings.items():
           line[f"Rating \"{rating_name}\""] = rating
         line["AcceptTime"] = assignment_data.time
         line["FinishTime"] = assignment_data.time + \
