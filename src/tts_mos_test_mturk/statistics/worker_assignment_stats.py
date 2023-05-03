@@ -34,7 +34,8 @@ COL_LAST_DEVICE = "Last device"
 COL_SENT_CORR = "Sent. corr."
 COL_ALGO_CORR = "Alg. corr."
 COL_BOTH_CORR = "Corr."
-COL_FALLEN_TRAPS = "#Fallen Traps"
+COL_N_TRAPS = "#Traps"
+COL_N_FALLEN_TRAPS = "#Fallen Traps"
 COL_OVERLAPPING_HITS = "#HIT Overlaps"
 COL_MIN_OVERLAP_DUR = "Min. overlap"
 COL_AVG_OVERLAP_DUR = "Avg. overlap"
@@ -65,6 +66,7 @@ class WorkerEntry:
   masked_assignments: int = 0
   # Count of assignment traps which the worker fell into
   fallen_traps: int = 0
+  total_traps: int = 0
   statuses: List[str] = field(default_factory=list)
   worktimes: List[Union[int, float]] = field(default_factory=list)
   accept_times: List[datetime.datetime] = field(default_factory=list)
@@ -138,6 +140,8 @@ def get_data(data: EvaluationData, masks: List[MaskBase]):
         x != 0
         for x in assignment_data.traps.values()
       )
+
+      worker_entry.total_traps += len(assignment_data.traps)
 
       for (alg_name, file_name), ass_ratings in assignment_data.ratings.items():
         for rating_name, rating_val in ass_ratings.items():
@@ -244,7 +248,8 @@ def stats_to_df(stats: Dict[str, WorkerEntry]) -> pd.DataFrame:
       assert key not in data_entry
       data_entry[key] = status_counts.get(status, 0)
     data_entry[COL_TOT_ASSIGNMENTS] = entry.total_assignments
-    data_entry[COL_FALLEN_TRAPS] = entry.fallen_traps
+    data_entry[COL_N_TRAPS] = entry.total_traps
+    data_entry[COL_N_FALLEN_TRAPS] = entry.fallen_traps
 
     max_deviations = [
       get_max_deviation(rating_values_unique_file)
@@ -356,7 +361,12 @@ def add_all_row(df: pd.DataFrame, stats: Dict[str, WorkerEntry]) -> pd.DataFrame
       assert col not in row
       row[col] = df[col].sum()
   row[COL_TOT_ASSIGNMENTS] = df[COL_TOT_ASSIGNMENTS].sum()
-  row[COL_FALLEN_TRAPS] = df[COL_FALLEN_TRAPS].sum()
+
+  row[COL_COUNT_DUP_RATINGS] = df[COL_COUNT_DUP_RATINGS].sum()
+  row[COL_AVG_DEV_DUP_RATINGS] = df[COL_AVG_DEV_DUP_RATINGS].mean()
+
+  row[COL_N_TRAPS] = df[COL_N_TRAPS].sum()
+  row[COL_N_FALLEN_TRAPS] = df[COL_N_FALLEN_TRAPS].sum()
 
   all_accept_times = [
     time
