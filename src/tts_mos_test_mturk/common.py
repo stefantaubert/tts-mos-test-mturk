@@ -26,7 +26,7 @@ def get_ratings(data: EvaluationData, rating_names: Set[str]) -> np.ndarray:
       for (alg_name, file_name), ass_ratings in assignment_data.ratings.items():
         alg_i = data.algorithms.get_loc(alg_name)
         file_i = data.files.get_loc(file_name)
-        rating = get_rating(ass_ratings, rating_names)
+        rating = get_rating(ass_ratings.votes, rating_names)
         ratings[alg_i][worker_i][file_i].append(rating)
 
   final_ratings = np.full(

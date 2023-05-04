@@ -30,8 +30,8 @@ class EvaluationData():
       rating_name
       for worker in result.workers.values()
       for assignment in worker.assignments.values()
-      for rating_names in assignment.ratings.values()
-      for rating_name in rating_names.keys()
+      for rating_data in assignment.ratings.values()
+      for rating_name in rating_data.votes.keys()
     )
 
     self.masks: ODType[str, MaskBase] = OrderedDict()

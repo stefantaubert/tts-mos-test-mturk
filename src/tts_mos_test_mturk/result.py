@@ -10,12 +10,14 @@ from ordered_set import OrderedSet
 from tts_mos_test_mturk.typing import (AlgorithmName, AssignmentId, FileName, RatingName, Ratings,
                                        RatingValue, WorkerName)
 
-# @dataclass()
-# class Rating:
-#   algorithm: str
-#   file: str
-#   # file_duration: float
-#   ratings: ODType[str, List[Union[int, float]]] = field(default_factory=OrderedDict)
+
+@dataclass()
+class RatingData:
+  file_duration: float
+  played_count: int
+  stopped_count: int
+  full_play_count: int
+  votes: Ratings = field(default_factory=OrderedDict)
 
 
 @dataclass()
@@ -31,8 +33,11 @@ class Assignment:
   # TODO make optional
   comments: str
   time: datetime.datetime
+  active_sessions_count: int
+  time_page_hidden_sec: float
+  browser_info: str
   # ratings: List[Rating] = field(default_factory=list)
-  ratings: ODType[Tuple[AlgorithmName, FileName], Ratings] = field(default_factory=OrderedDict)
+  ratings: ODType[Tuple[AlgorithmName, FileName], RatingData] = field(default_factory=OrderedDict)
   # Trap differences
   traps: ODType[RatingName, Union[int, float]] = field(default_factory=OrderedDict)
 
@@ -60,6 +65,7 @@ def parse_int_then_float(val: str) -> Union[int, float]:
 
 
 def parse_time(val: str) -> datetime.datetime:
+  # e.g., Mon Mar 06 08:59:21 PST 2023
   # Pacific Standard Time
   val = val.replace(" PST", "")
   # Pacific Daylight Time
@@ -83,17 +89,21 @@ def parse_result_from_json(data: Dict) -> Result:
     assert worker_id not in res_data
     res_data[worker_id] = worker
     for assignment_id, assignment_data in worker_data["assignments"].items():
-      device = str(assignment_data["device"])
-      state = str(assignment_data["state"])
-      hit = str(assignment_data["hit"])
-      comments = str(assignment_data["comments"])
-      time = parse_time(str(assignment_data["time"]))
-      # Mon Mar 06 08:59:21 PST 2023
-      worktime = parse_int_then_float(str(assignment_data["worktime"]))
       if assignment_id in assignment_ids:
         raise ValueError(f"Assignment \"{assignment_id}\" exist multiple times!")
       assignment_ids.add(assignment_id)
-      assignment = Assignment(device, state, worktime, hit, comments, time)
+      assignment = Assignment(
+        device=str(assignment_data["device"]),
+        active_sessions_count=int(assignment_data["active_sessions_count"]),
+        browser_info=str(assignment_data["browser_info"]),
+        comments=str(assignment_data["comments"]),
+        hit_id=str(assignment_data["hit"]),
+        state=str(assignment_data["state"]),
+        time=parse_time(str(assignment_data["time"])),
+        time_page_hidden_sec=float(assignment_data["time_page_hidden_sec"]),
+        worktime=parse_int_then_float(str(assignment_data["worktime"])),
+      )
+
       assert assignment_id not in worker.assignments
       worker.assignments[assignment_id] = assignment
       ratings = cast(List[Dict[str, Any]], assignment_data["ratings"])
@@ -111,14 +121,21 @@ def parse_result_from_json(data: Dict) -> Result:
         if alg_file_comb in assignment.ratings:
           raise ValueError("Rating for algorithm and file combination exist multiple times!")
 
-        assignment.ratings[alg_file_comb] = OrderedDict()
-
-        duration = float(rating_data["duration"])
         votes: Dict[str, Union[int, float]] = rating_data["votes"]
-
+        votes_parsed = OrderedDict()
         for vote_name, vote in votes.items():
           assert isinstance(vote, (int, float))
-          assignment.ratings[alg_file_comb][vote_name] = vote
+          votes_parsed[vote_name] = vote
+
+        rating_data = RatingData(
+          file_duration=float(rating_data["duration"]),
+          full_play_count=int(rating_data["full_play_count"]),
+          played_count=int(rating_data["played_count"]),
+          stopped_count=int(rating_data["stopped_count"]),
+          votes=votes_parsed,
+        )
+
+        assignment.ratings[alg_file_comb] = rating_data
 
       traps = cast(Dict[str, Union[int, float]], assignment_data["traps"])
       for rating_name, trap_difference in traps.items():

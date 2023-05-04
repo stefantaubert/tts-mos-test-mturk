@@ -289,7 +289,7 @@ def generate_ground_truth_table(data: EvaluationData, mask_names: Set[str]) -> p
         line["WorkerId"] = worker
         line["Algorithm"] = alg_name
         line["File"] = file_name
-        for rating_name, rating in ass_ratings.items():
+        for rating_name, rating in ass_ratings.votes.items():
           line[f"Rating \"{rating_name}\""] = rating
         line["AcceptTime"] = assignment_data.time
         line["FinishTime"] = assignment_data.time + \

@@ -75,7 +75,7 @@ def get_worker_stats(data: EvaluationData, masks: List[MaskBase]):
           continue
 
         entry.devices.append(assignment_data.device)
-        for rating_name, rating_val in ass_ratings.items():
+        for rating_name, rating_val in ass_ratings.votes.items():
           if rating_name not in entry.ratings:
             entry.ratings[rating_name] = []
           entry.ratings[rating_name].append(rating_val)

@@ -37,6 +37,15 @@ COL_BOTH_CORR = "Corr."
 COL_N_TRAPS = "#Traps"
 COL_N_FALLEN_TRAPS = "#Fallen Traps"
 COL_OVERLAPPING_HITS = "#HIT Overlaps"
+COL_PAGE_HIDDEN_TOT_DUR = "Page hidden tot."
+COL_PAGE_HIDDEN_AVG_DUR = "Page hidden avg."
+COL_PAGE_HIDDEN_MIN_DUR = "Page hidden min."
+COL_PAGE_HIDDEN_MAX_DUR = "Page hidden max."
+COL_ACTIVE_SESSIONS_MIN = "#Active sessions min."
+COL_ACTIVE_SESSIONS_AVG = "#Active sessions avg."
+COL_ACTIVE_SESSIONS_MAX = "#Active sessions max."
+COL_COUNT_BROWSERS = "#Browsers"
+COL_BROWSERS = "Browsers"
 COL_MIN_OVERLAP_DUR = "Min. overlap"
 COL_AVG_OVERLAP_DUR = "Avg. overlap"
 COL_MAX_OVERLAP_DUR = "Max. overlap"
@@ -57,6 +66,20 @@ COL_MASKED_ASSIGNMENTS = "#Masked assignments"
 COL_MASKED = "Masked?"
 COL_ALL = "-ALL-"
 
+COL_LISTENED_FILE_COUNT = "#Listened files"
+COL_OVERPLAYED_MIN = "#Overplayed min."
+COL_OVERPLAYED_AVG = "#Overplayed avg."
+COL_OVERPLAYED_MAX = "#Overplayed max."
+COL_OVERPLAYED_RATE = "Overplayed rate"
+COL_OVERFULLPLAYED_MIN = "#Overfullplayed min."
+COL_OVERFULLPLAYED_AVG = "#Overfullplayed avg."
+COL_OVERFULLPLAYED_MAX = "#Overfullplayed max."
+COL_OVERFULLPLAYED_RATE = "Overfullplayed rate"
+COL_STOPPED_MIN = "#Stopped min."
+COL_STOPPED_AVG = "#Stopped avg."
+COL_STOPPED_MAX = "#Stopped max."
+COL_STOPPED_RATE = "Stopped rate"
+
 
 @dataclass
 class WorkerEntry:
@@ -67,6 +90,16 @@ class WorkerEntry:
   # Count of assignment traps which the worker fell into
   fallen_traps: int = 0
   total_traps: int = 0
+  page_hidden: List[int] = field(default_factory=list)
+  active_sessions: List[int] = field(default_factory=list)
+  browser_strings: List[str] = field(default_factory=list)
+  # normal is one play
+  overplayed_counts: List[int] = field(default_factory=list)
+  # normal is no stop
+  stopped_counts: List[int] = field(default_factory=list)
+  # normal is one fullplay
+  overfullplayed_counts: List[int] = field(default_factory=list)
+  listened_file_count: int = 0
   statuses: List[str] = field(default_factory=list)
   worktimes: List[Union[int, float]] = field(default_factory=list)
   accept_times: List[datetime.datetime] = field(default_factory=list)
@@ -143,8 +176,12 @@ def get_data(data: EvaluationData, masks: List[MaskBase]):
 
       worker_entry.total_traps += len(assignment_data.traps)
 
-      for (alg_name, file_name), ass_ratings in assignment_data.ratings.items():
-        for rating_name, rating_val in ass_ratings.items():
+      for (alg_name, file_name), rating_data in assignment_data.ratings.items():
+        worker_entry.overplayed_counts.append(rating_data.played_count - 1)
+        worker_entry.overfullplayed_counts.append(rating_data.full_play_count - 1)
+        worker_entry.stopped_counts.append(rating_data.stopped_count)
+        worker_entry.listened_file_count += 1
+        for rating_name, rating_val in rating_data.votes.items():
           key = (alg_name, file_name, rating_name)
           if key not in worker_entry.ratings:
             worker_entry.ratings[key] = []
@@ -158,6 +195,9 @@ def get_data(data: EvaluationData, masks: List[MaskBase]):
       worker_entry.worktimes.append(assignment_data.worktime)
       worker_entry.accept_times.append(assignment_data.time)
       worker_entry.comments.append(assignment_data.comments)
+      worker_entry.browser_strings.append(assignment_data.browser_info)
+      worker_entry.active_sessions.append(assignment_data.active_sessions_count)
+      worker_entry.page_hidden.append(assignment_data.time_page_hidden_sec)
 
       for rating_name, ratings in all_ratings.items():
         worker_entry.algorithm_correlations[rating_name] = get_algorithm_mos_correlation(
@@ -251,6 +291,37 @@ def stats_to_df(stats: Dict[str, WorkerEntry]) -> pd.DataFrame:
     data_entry[COL_N_TRAPS] = entry.total_traps
     data_entry[COL_N_FALLEN_TRAPS] = entry.fallen_traps
 
+    data_entry[COL_PAGE_HIDDEN_MIN_DUR] = min(entry.page_hidden)
+    data_entry[COL_PAGE_HIDDEN_AVG_DUR] = mean(entry.page_hidden)
+    data_entry[COL_PAGE_HIDDEN_MAX_DUR] = max(entry.page_hidden)
+    data_entry[COL_PAGE_HIDDEN_TOT_DUR] = sum(entry.page_hidden)
+    data_entry[COL_ACTIVE_SESSIONS_MIN] = min(entry.active_sessions)
+    data_entry[COL_ACTIVE_SESSIONS_AVG] = mean(entry.active_sessions)
+    data_entry[COL_ACTIVE_SESSIONS_MAX] = max(entry.active_sessions)
+    data_entry[COL_COUNT_BROWSERS] = len(set(entry.browser_strings))
+
+    data_entry[COL_LISTENED_FILE_COUNT] = entry.listened_file_count
+    data_entry[COL_OVERPLAYED_MIN] = min(entry.overplayed_counts)
+    data_entry[COL_OVERPLAYED_AVG] = mean(entry.overplayed_counts)
+    data_entry[COL_OVERPLAYED_MAX] = max(entry.overplayed_counts)
+    data_entry[COL_OVERPLAYED_RATE] = sum(
+      1 for x in entry.overplayed_counts if x > 0
+    ) / entry.listened_file_count * 100
+
+    data_entry[COL_OVERFULLPLAYED_MIN] = min(entry.overfullplayed_counts)
+    data_entry[COL_OVERFULLPLAYED_AVG] = mean(entry.overfullplayed_counts)
+    data_entry[COL_OVERFULLPLAYED_MAX] = max(entry.overfullplayed_counts)
+    data_entry[COL_OVERFULLPLAYED_RATE] = sum(
+      1 for x in entry.overfullplayed_counts if x > 0
+    ) / entry.listened_file_count * 100
+
+    data_entry[COL_STOPPED_MIN] = min(entry.stopped_counts)
+    data_entry[COL_STOPPED_AVG] = mean(entry.stopped_counts)
+    data_entry[COL_STOPPED_MAX] = max(entry.stopped_counts)
+    data_entry[COL_STOPPED_RATE] = sum(
+      1 for x in entry.stopped_counts if x > 0
+    ) / entry.listened_file_count * 100
+
     max_deviations = [
       get_max_deviation(rating_values_unique_file)
       for rating_values_unique_file in entry.ratings.values()
@@ -332,6 +403,12 @@ def stats_to_df(stats: Dict[str, WorkerEntry]) -> pd.DataFrame:
     data_entry[COL_MASKED_ASSIGNMENTS] = entry.masked_assignments
     data_entry[COL_MASKED] = entry.masked
 
+    browser_counter = Counter(entry.browser_strings)
+    browser_strings = []
+    for browser_string, count in browser_counter.most_common():
+      browser_strings.append(f"{count}x \"{browser_string}\"")
+    data_entry[COL_BROWSERS] = "; ".join(browser_strings)
+
     comment_counter = Counter(entry.comments)
     if len(comment_counter) == 1 and "" in comment_counter.keys():
       data_entry[COL_COMMENTS] = ""
@@ -367,6 +444,30 @@ def add_all_row(df: pd.DataFrame, stats: Dict[str, WorkerEntry]) -> pd.DataFrame
 
   row[COL_N_TRAPS] = df[COL_N_TRAPS].sum()
   row[COL_N_FALLEN_TRAPS] = df[COL_N_FALLEN_TRAPS].sum()
+
+  row[COL_PAGE_HIDDEN_MIN_DUR] = df[COL_PAGE_HIDDEN_MIN_DUR].min()
+  row[COL_PAGE_HIDDEN_AVG_DUR] = df[COL_PAGE_HIDDEN_AVG_DUR].mean()
+  row[COL_PAGE_HIDDEN_MAX_DUR] = df[COL_PAGE_HIDDEN_MAX_DUR].max()
+  row[COL_PAGE_HIDDEN_TOT_DUR] = df[COL_PAGE_HIDDEN_TOT_DUR].sum()
+  row[COL_ACTIVE_SESSIONS_MIN] = df[COL_ACTIVE_SESSIONS_MIN].min()
+  row[COL_ACTIVE_SESSIONS_AVG] = df[COL_ACTIVE_SESSIONS_AVG].mean()
+  row[COL_ACTIVE_SESSIONS_MAX] = df[COL_ACTIVE_SESSIONS_MAX].max()
+  row[COL_COUNT_BROWSERS] = df[COL_ACTIVE_SESSIONS_MAX].mean()
+  row[COL_BROWSERS] = np.nan
+
+  row[COL_LISTENED_FILE_COUNT] = df[COL_LISTENED_FILE_COUNT].sum()
+  row[COL_OVERPLAYED_MIN] = df[COL_OVERPLAYED_MIN].min()
+  row[COL_OVERPLAYED_AVG] = df[COL_OVERPLAYED_AVG].mean()
+  row[COL_OVERPLAYED_MAX] = df[COL_OVERPLAYED_MAX].max()
+  row[COL_OVERPLAYED_RATE] = df[COL_OVERPLAYED_RATE].mean()
+  row[COL_OVERFULLPLAYED_MIN] = df[COL_OVERFULLPLAYED_MIN].min()
+  row[COL_OVERFULLPLAYED_AVG] = df[COL_OVERFULLPLAYED_AVG].mean()
+  row[COL_OVERFULLPLAYED_MAX] = df[COL_OVERFULLPLAYED_MAX].max()
+  row[COL_OVERFULLPLAYED_RATE] = df[COL_OVERFULLPLAYED_RATE].mean()
+  row[COL_STOPPED_MIN] = df[COL_STOPPED_MIN].min()
+  row[COL_STOPPED_AVG] = df[COL_STOPPED_AVG].mean()
+  row[COL_STOPPED_MAX] = df[COL_STOPPED_MAX].max()
+  row[COL_STOPPED_RATE] = df[COL_STOPPED_RATE].mean()
 
   all_accept_times = [
     time
