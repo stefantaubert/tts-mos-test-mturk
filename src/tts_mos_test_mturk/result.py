@@ -13,10 +13,6 @@ from tts_mos_test_mturk.typing import (AlgorithmName, AssignmentId, FileName, Ra
 
 @dataclass()
 class RatingData:
-  file_duration: float
-  played_count: int
-  stopped_count: int
-  full_play_count: int
   votes: Ratings = field(default_factory=OrderedDict)
 
 
@@ -27,19 +23,10 @@ class Assignment:
   # TODO make optional
   state: str
   # TODO make optional
-  worktime: Union[int, float]
-  # TODO make optional
   hit_id: str
-  # TODO make optional
-  comments: str
   time: datetime.datetime
-  active_sessions_count: int
-  time_page_hidden_sec: float
-  browser_info: str
   # ratings: List[Rating] = field(default_factory=list)
   ratings: ODType[Tuple[AlgorithmName, FileName], RatingData] = field(default_factory=OrderedDict)
-  # Trap differences
-  traps: ODType[RatingName, Union[int, float]] = field(default_factory=OrderedDict)
 
 
 @dataclass()
@@ -73,6 +60,10 @@ def parse_time(val: str) -> datetime.datetime:
   result = datetime.datetime.strptime(val, "%a %b %d %H:%M:%S %Y")
   return result
 
+def parse_time2(val: str) -> datetime.datetime:
+  result = datetime.datetime.strptime(val, "%d.%m.%y %H:%M:%S")
+  return result
+
 
 def parse_result_from_json(data: Dict) -> Result:
   res_data: ODType[str, Worker] = OrderedDict()
@@ -94,14 +85,9 @@ def parse_result_from_json(data: Dict) -> Result:
       assignment_ids.add(assignment_id)
       assignment = Assignment(
         device=str(assignment_data["device"]),
-        active_sessions_count=int(assignment_data["active_sessions_count"]),
-        browser_info=str(assignment_data["browser_info"]),
-        comments=str(assignment_data["comments"]),
         hit_id=str(assignment_data["hit"]),
         state=str(assignment_data["state"]),
-        time=parse_time(str(assignment_data["time"])),
-        time_page_hidden_sec=float(assignment_data["time_page_hidden_sec"]),
-        worktime=parse_int_then_float(str(assignment_data["worktime"])),
+        time=parse_time2(str(assignment_data["time"])),
       )
 
       assert assignment_id not in worker.assignments
@@ -128,18 +114,9 @@ def parse_result_from_json(data: Dict) -> Result:
           votes_parsed[vote_name] = vote
 
         rating_data = RatingData(
-          file_duration=float(rating_data["duration"]),
-          full_play_count=int(rating_data["full_play_count"]),
-          played_count=int(rating_data["played_count"]),
-          stopped_count=int(rating_data["stopped_count"]),
           votes=votes_parsed,
         )
 
         assignment.ratings[alg_file_comb] = rating_data
-
-      traps = cast(Dict[str, Union[int, float]], assignment_data["traps"])
-      for rating_name, trap_difference in traps.items():
-        assert isinstance(trap_difference, (int, float))
-        assignment.traps[rating_name] = trap_difference
 
   return result

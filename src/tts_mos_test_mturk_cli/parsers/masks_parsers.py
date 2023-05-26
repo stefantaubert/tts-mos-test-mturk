@@ -11,7 +11,6 @@ from tts_mos_test_mturk.masking.time_mask import mask_assignments_by_time
 from tts_mos_test_mturk.masking.worker_correlation_mask import (mask_workers_by_correlation,
                                                                 mask_workers_by_correlation_percent)
 from tts_mos_test_mturk.masking.worker_id_mask import mask_workers_by_id
-from tts_mos_test_mturk.masking.worktime_mask import mask_assignments_by_worktime
 from tts_mos_test_mturk_cli.argparse_helper import (ConvertToSetAction, parse_datetime,
                                                     parse_non_empty_or_whitespace,
                                                     parse_non_negative_float,
@@ -61,24 +60,24 @@ def get_mask_assignments_by_status_parser(parser: ArgumentParser):
   return main
 
 
-def init_mask_assignments_by_worktime_parser(parser: ArgumentParser):
-  parser.description = "Mask assignments by their worktime."
-  add_req_project_argument(parser)
-  add_opt_masks_argument(parser)
-  parser.add_argument("--from-time", type=parse_non_negative_integer, metavar="FROM-TIME",
-                      help="mask all assignments, which have a worktime greater than or equal to FROM-TIME (inclusive); in [0; inf)", default=0)
-  parser.add_argument("to_time", type=parse_positive_integer, metavar="TO-TIME",
-                      help="mask all assignments, which have a worktime smaller than TO-TIME (exclusive); in (0; inf)")
-  add_req_output_mask_argument(parser)
-  add_opt_dry_argument(parser)
+# def init_mask_assignments_by_worktime_parser(parser: ArgumentParser):
+#   parser.description = "Mask assignments by their worktime."
+#   add_req_project_argument(parser)
+#   add_opt_masks_argument(parser)
+#   parser.add_argument("--from-time", type=parse_non_negative_integer, metavar="FROM-TIME",
+#                       help="mask all assignments, which have a worktime greater than or equal to FROM-TIME (inclusive); in [0; inf)", default=0)
+#   parser.add_argument("to_time", type=parse_positive_integer, metavar="TO-TIME",
+#                       help="mask all assignments, which have a worktime smaller than TO-TIME (exclusive); in (0; inf)")
+#   add_req_output_mask_argument(parser)
+#   add_opt_dry_argument(parser)
 
-  def main(ns: Namespace) -> None:
-    ensure_masks_exist(ns.project, ns.masks)
-    mask_assignments_by_worktime(ns.project, ns.masks, ns.from_time, ns.to_time, ns.output_mask)
+#   def main(ns: Namespace) -> None:
+#     ensure_masks_exist(ns.project, ns.masks)
+#     mask_assignments_by_worktime(ns.project, ns.masks, ns.from_time, ns.to_time, ns.output_mask)
 
-    if not ns.dry:
-      save_project(ns.project)
-  return main
+#     if not ns.dry:
+#       save_project(ns.project)
+#   return main
 
 
 def init_mask_assignments_by_time_parser(parser: ArgumentParser):
