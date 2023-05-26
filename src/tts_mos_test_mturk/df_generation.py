@@ -7,70 +7,84 @@ from typing import Set
 import numpy as np
 import pandas as pd
 from mean_opinion_score import get_ci95, get_mos
+from ordered_set import OrderedSet
 
 from tts_mos_test_mturk.common import get_ratings
 from tts_mos_test_mturk.evaluation_data import EvaluationData
 from tts_mos_test_mturk.logging import get_detail_logger, get_logger
 from tts_mos_test_mturk.masking.mask_factory import MaskFactory
+from tts_mos_test_mturk.masking.masks import MaskBase
 from tts_mos_test_mturk.typing import MaskName
 
 
-def get_mos_df(data: EvaluationData, mask_names: Set[MaskName], rating_names: Set[str]) -> pd.DataFrame:
+def get_row(row_template: ODType, ratings: np.ndarray, ratings_masked: np.ndarray, algo_i: int, masks: List[MaskBase]) -> ODType:
+  row = row_template.copy()
+  current_ratings = ratings.copy()
+  current_ratings_masked = ratings_masked.copy()
+  for mask in masks:
+    mask.apply_by_nan(current_ratings)
+    mask.apply_by_nan(current_ratings_masked)
+  row["MOS"] = get_mos(current_ratings_masked[algo_i])
+  row["CI95"] = get_ci95(current_ratings_masked[algo_i])
+  row["#Ratings"] = np.sum(~np.isnan(current_ratings_masked[algo_i]))
+  row["#Ratings (all)"] = np.sum(~np.isnan(current_ratings[algo_i]))
+  row["%"] = row["#Ratings"] / row["#Ratings (all)"] * 100
+  return row
+
+
+def get_mos_df(data: EvaluationData, mask_names: Set[MaskName]) -> pd.DataFrame:
   masks = data.get_masks_from_names(mask_names)
   factory = MaskFactory(data)
   rmask = factory.merge_masks_into_rmask(masks)
 
-  algo_stats: ODType[str, ODType] = OrderedDict()
+  all_genders = OrderedSet(sorted({x.gender for x in data.worker_data.values()}))
+  all_age_groups = OrderedSet(sorted({x.age_group for x in data.worker_data.values()}))
 
-  current_ratings = get_ratings(data, rating_names)
-  adj_ratings = current_ratings.copy()
-  rmask.apply_by_nan(adj_ratings)
+  gender_masks = {
+    gender: factory.convert_mask_to_rmask(factory.get_wmask_by_gender(gender))
+    for gender in all_genders
+  }
 
-  for algo_i, alg_name in enumerate(data.algorithms):
-    algo_ratings = current_ratings[algo_i]
-    algo_ratings_adj = adj_ratings[algo_i]
+  age_group_masks = {
+    age_group: factory.convert_mask_to_rmask(factory.get_wmask_by_age_group(age_group))
+    for age_group in all_age_groups
+  }
 
-    all_ratings_count = np.sum(~np.isnan(algo_ratings))
-    ratings_count = np.sum(~np.isnan(algo_ratings_adj))
-    if alg_name not in algo_stats:
-      algo_stats[alg_name] = OrderedDict()
-    algo_stat = algo_stats[alg_name]
-    algo_stat["MOS"] = get_mos(algo_ratings_adj)
-    algo_stat["CI95"] = get_ci95(algo_ratings_adj)
-    algo_stat["#Unmasked"] = ratings_count
-    algo_stat["#All"] = all_ratings_count
-    algo_stat["Percent"] = ratings_count / all_ratings_count * 100
+  all_row_name = "-ALL-"
+  rows = []
+  for rating_name in data.rating_names:
+    row_template = OrderedDict()
+    row_template["Rating"] = rating_name
+    current_ratings = get_ratings(data, {rating_name})
+    current_ratings_masked = current_ratings.copy()
+    rmask.apply_by_nan(current_ratings_masked)
 
-  lines: List[Dict] = []
-  for alg_name, alg_stats in algo_stats.items():
-    line = OrderedDict()
-    line["Algorithm"] = alg_name
-    line.update(alg_stats)
-    lines.append(line)
-  df = pd.DataFrame.from_records(lines)
+    for algo_i, alg_name in enumerate(data.algorithms):
+      row_template["Algorithm"] = alg_name
 
-  all_row = OrderedDict()
-  all_row["Algorithm"] = "-ALL-"
-  col: str
-  for col in df.columns:
-    if col.startswith("MOS"):
-      assert col not in all_row
-      all_row[col] = df[col].mean()
-    if col.startswith("CI95"):
-      assert col not in all_row
-      all_row[col] = df[col].mean()
-    if col.startswith("#Unmasked"):
-      assert col not in all_row
-      all_row[col] = df[col].sum()
-    if col.startswith("#All"):
-      assert col not in all_row
-      all_row[col] = df[col].sum()
-    if col.startswith("Percent"):
-      assert col not in all_row
-      # TODO
-      all_row[col] = np.nan
-  df = pd.concat([df, pd.DataFrame.from_records([all_row])], ignore_index=True)
+      for gender in all_genders:
+        row_template["Gender"] = gender
+        gender_mask = gender_masks[gender]
+        for age_group in all_age_groups:
+          row_template["AgeGroup"] = age_group
+          age_group_mask = age_group_masks[age_group]
+          rows.append(get_row(row_template, current_ratings,
+                      current_ratings_masked, algo_i, [gender_mask, age_group_mask]))
+        row_template["AgeGroup"] = all_row_name
+        rows.append(get_row(row_template, current_ratings,
+                    current_ratings_masked, algo_i, [gender_mask]))
+      row_template["Gender"] = all_row_name
+      rows.append(get_row(row_template, current_ratings,
+                  current_ratings_masked, algo_i, []))
 
+      for age_group in all_age_groups:
+        row_template["AgeGroup"] = age_group
+        age_group_mask = age_group_masks[age_group]
+        rows.append(get_row(row_template, current_ratings,
+                    current_ratings_masked, algo_i, [age_group_mask]))
+
+  df = pd.DataFrame.from_records(rows)
+  df.sort_values(["Rating", "Algorithm", "Gender", "AgeGroup"], inplace=True)
   return df
 
 

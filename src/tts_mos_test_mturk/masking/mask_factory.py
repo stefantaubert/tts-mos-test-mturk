@@ -34,6 +34,22 @@ class MaskFactory():
     )
     return WorkersMask(mask)
 
+  def get_wmask_by_gender(self, gender: str):
+    res_wmask = self.get_wmask()
+    for i, worker_id in enumerate(self.__data.workers):
+      worker_data = self.__data.worker_data[worker_id]
+      if worker_data.gender != gender:
+        res_wmask.mask[i] = True
+    return res_wmask
+
+  def get_wmask_by_age_group(self, age_group: str):
+    res_wmask = self.get_wmask()
+    for i, worker_id in enumerate(self.__data.workers):
+      worker_data = self.__data.worker_data[worker_id]
+      if worker_data.age_group != age_group:
+        res_wmask.mask[i] = True
+    return res_wmask
+
   def convert_ndarray_to_rmask(self, array: np.ndarray) -> RatingsMask:
     if array.shape != (self.__data.n_algorithms, self.__data.n_workers, self.__data.n_files):
       raise ValueError("Invalid format!")

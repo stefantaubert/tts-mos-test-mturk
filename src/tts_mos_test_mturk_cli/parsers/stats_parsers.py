@@ -55,15 +55,13 @@ def init_print_masking_stats_parser(parser: ArgumentParser):
 def init_print_mos_parser(parser: ArgumentParser):
   parser.description = "Print MOS and CI95 statistics for each algorithm."
   add_req_project_argument(parser)
-  add_req_ratings_argument(parser)
   add_opt_masks_argument(parser)
   add_opt_output_argument(parser)
   add_silent_argument(parser)
 
   def main(ns: Namespace) -> None:
     ensure_masks_exist(ns.project, ns.masks)
-    ensure_ratings_exist(ns.project, ns.ratings)
-    result_df = get_mos_df(ns.project, ns.masks, ns.ratings)
+    result_df = get_mos_df(ns.project, ns.masks)
 
     if not ns.silent:
       log_full_df(result_df)

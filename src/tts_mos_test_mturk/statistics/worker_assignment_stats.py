@@ -115,8 +115,6 @@ def get_data(data: EvaluationData, masks: List[MaskBase]):
       if skip:
         continue
 
-      worker_entry.total_traps += len(assignment_data.traps)
-
       for (alg_name, file_name), rating_data in assignment_data.ratings.items():
         worker_entry.listened_file_count += 1
         for rating_name, rating_val in rating_data.votes.items():
