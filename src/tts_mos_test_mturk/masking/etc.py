@@ -3,6 +3,9 @@ import numpy as np
 
 
 def sort_indices_after_values(indices: np.ndarray, values: np.ndarray) -> np.ndarray:
+  assert indices.shape == values.shape
+  if len(indices) == 0:
+    return indices
   # sub_sorted_indices = np.argsort((values, tmp))
   sub_sorted_indices = np.lexsort((indices, values))
   sub_sorted_indices = np.array(list(sub_sorted_indices))

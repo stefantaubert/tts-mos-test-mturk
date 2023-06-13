@@ -2,10 +2,14 @@ import math
 from argparse import ArgumentParser, Namespace
 from datetime import datetime
 
+from tts_mos_test_mturk.masking.age_group_mask import mask_workers_by_age_group
 from tts_mos_test_mturk.masking.assignment_count_mask import mask_workers_by_assignment_count
+from tts_mos_test_mturk.masking.gender_mask import mask_workers_by_gender
 from tts_mos_test_mturk.masking.listening_device_mask import mask_assignments_by_listening_device
 from tts_mos_test_mturk.masking.masked_count_mask import mask_ratings_by_masked_count
+from tts_mos_test_mturk.masking.merge import merge_masks
 from tts_mos_test_mturk.masking.outlier_mask import mask_outlying_ratings
+from tts_mos_test_mturk.masking.reverse import reverse_mask
 from tts_mos_test_mturk.masking.state_mask import mask_assignments_by_state
 from tts_mos_test_mturk.masking.time_mask import mask_assignments_by_time
 from tts_mos_test_mturk.masking.worker_correlation_mask import (mask_workers_by_correlation,
@@ -20,7 +24,8 @@ from tts_mos_test_mturk_cli.default_args import (add_opt_dry_argument, add_opt_m
                                                  add_req_output_mask_argument,
                                                  add_req_project_argument, add_req_ratings_argument)
 from tts_mos_test_mturk_cli.helper import save_project
-from tts_mos_test_mturk_cli.validation import (ensure_masks_exist, ensure_ratings_exist,
+from tts_mos_test_mturk_cli.validation import (ensure_age_groups_exist, ensure_mask_exists,
+                                               ensure_masks_exist, ensure_ratings_exist,
                                                ensure_workers_exist)
 
 
@@ -181,6 +186,81 @@ def init_mask_workers_by_id_parser(parser: ArgumentParser):
     ensure_workers_exist(ns.project, ns.worker_ids)
     mask_workers_by_id(
       ns.project, ns.masks, ns.worker_ids, ns.output_mask)
+
+    if not ns.dry:
+      save_project(ns.project)
+  return main
+
+
+def init_mask_workers_by_age_group_parser(parser: ArgumentParser):
+  parser.description = "Mask workers based on their age group."
+  add_req_project_argument(parser)
+  add_opt_masks_argument(parser)
+  parser.add_argument("age_groups", type=parse_non_empty_or_whitespace,
+                      metavar="AGE-GROUP", nargs="+", help="mask workers with these age groups", action=ConvertToSetAction)
+  add_req_output_mask_argument(parser)
+  add_opt_dry_argument(parser)
+
+  def main(ns: Namespace) -> None:
+    ensure_masks_exist(ns.project, ns.masks)
+    # maybe not useful to check
+    # ensure_age_groups_exist(ns.project, ns.age_groups)
+    mask_workers_by_age_group(ns.project, ns.masks, ns.age_groups, ns.output_mask)
+
+    if not ns.dry:
+      save_project(ns.project)
+  return main
+
+
+def init_mask_workers_by_gender_parser(parser: ArgumentParser):
+  parser.description = "Mask workers based on their age gender."
+  add_req_project_argument(parser)
+  add_opt_masks_argument(parser)
+  parser.add_argument("genders", type=parse_non_empty_or_whitespace,
+                      metavar="GENDER", nargs="+", help="mask workers with these genders", action=ConvertToSetAction)
+  add_req_output_mask_argument(parser)
+  add_opt_dry_argument(parser)
+
+  def main(ns: Namespace) -> None:
+    ensure_masks_exist(ns.project, ns.masks)
+    # maybe not useful to check
+    # ensure_genders_exist(ns.project, ns.age_groups)
+    mask_workers_by_gender(ns.project, ns.masks, ns.genders, ns.output_mask)
+
+    if not ns.dry:
+      save_project(ns.project)
+  return main
+
+
+def init_merge_masks_parser(parser: ArgumentParser):
+  parser.description = "Merge masks together."
+  add_req_project_argument(parser)
+  parser.add_argument("masks", type=parse_non_empty_or_whitespace,
+                      nargs="+", metavar="MASK", help="merge these masks", action=ConvertToSetAction)
+  add_req_output_mask_argument(parser)
+  add_opt_dry_argument(parser)
+
+  def main(ns: Namespace) -> None:
+    ensure_masks_exist(ns.project, ns.masks)
+    # maybe not useful to check
+    # ensure_genders_exist(ns.project, ns.age_groups)
+    merge_masks(ns.project, ns.masks, ns.output_mask)
+
+    if not ns.dry:
+      save_project(ns.project)
+  return main
+
+def init_reverse_masks_parser(parser: ArgumentParser):
+  parser.description = "Reverse mask."
+  add_req_project_argument(parser)
+  parser.add_argument("mask", type=parse_non_empty_or_whitespace,
+                      metavar="MASK", help="reverse this mask")
+  add_req_output_mask_argument(parser)
+  add_opt_dry_argument(parser)
+
+  def main(ns: Namespace) -> None:
+    ensure_mask_exists(ns.project, ns.mask)
+    reverse_mask(ns.project, ns.mask, ns.output_mask)
 
     if not ns.dry:
       save_project(ns.project)

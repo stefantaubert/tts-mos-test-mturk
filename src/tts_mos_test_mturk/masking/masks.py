@@ -28,6 +28,9 @@ class MaskBase():
     data = data[~self.mask]
     return data
 
+  def reverse(self) -> None:
+    self.mask = ~self.mask
+
   @property
   def n_masked(self) -> int:
     result = np.sum(self.mask)
@@ -48,14 +51,20 @@ class MaskBase():
     result = (~self.mask).nonzero()[0]
     return result
 
+  def clone(self) -> "MaskBase":
+    raise NotImplementedError()
+
 
 class RatingsMask(MaskBase):
-  pass
+  def clone(self) -> "RatingsMask":
+    return RatingsMask(self.mask.copy())
 
 
 class AssignmentsMask(MaskBase):
-  pass
+  def clone(self) -> "AssignmentsMask":
+    return AssignmentsMask(self.mask.copy())
 
 
 class WorkersMask(MaskBase):
-  pass
+  def clone(self) -> "WorkersMask":
+    return WorkersMask(self.mask.copy())

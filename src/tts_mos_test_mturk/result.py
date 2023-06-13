@@ -1,14 +1,13 @@
 import datetime
 from collections import OrderedDict
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 from typing import OrderedDict as ODType
 from typing import Set, Tuple, Union, cast
 
 from ordered_set import OrderedSet
 
-from tts_mos_test_mturk.typing import (AlgorithmName, AssignmentId, FileName, RatingName, Ratings,
-                                       RatingValue, WorkerName)
+from tts_mos_test_mturk.typing import AlgorithmName, AssignmentId, FileName, Ratings, WorkerName
 
 
 @dataclass()

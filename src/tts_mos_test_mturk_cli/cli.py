@@ -40,6 +40,8 @@ def formatter(prog):
 
 def get_masks_parsers() -> Parsers:
   yield "mask-workers-by-id", "mask workers by their WorkerId", init_mask_workers_by_id_parser
+  yield "mask-workers-by-age-group", "mask workers by their age group", init_mask_workers_by_age_group_parser
+  yield "mask-workers-by-gender", "mask workers by their gender", init_mask_workers_by_gender_parser
   yield "mask-workers-by-assignments-count", "mask workers by their count of assignments", init_mask_workers_by_assignments_count_parser
   yield "mask-workers-by-masked-ratings-count", "mask workers by their count of masked ratings", init_workers_by_masked_ratings_count_parser
   yield "mask-workers-by-correlation", "mask workers by their algorithm/sentence correlation", init_mask_workers_by_correlation_parser
@@ -49,6 +51,8 @@ def get_masks_parsers() -> Parsers:
   # yield "mask-assignments-by-worktime", "mask assignments by their worktime", init_mask_assignments_by_worktime_parser
   yield "mask-assignments-by-time", "mask assignments by their submit time", init_mask_assignments_by_time_parser
   yield "mask-rating-outliers", "mask outlying ratings", init_mask_rating_outliers_parser
+  yield "merge-masks", "merge masks together", init_merge_masks_parser
+  yield "reverse-mask", "reverse mask", init_reverse_masks_parser
 
 
 def get_stats_parsers() -> Parsers:

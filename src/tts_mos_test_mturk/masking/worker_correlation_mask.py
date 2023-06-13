@@ -122,22 +122,24 @@ def get_stats_df(workers: OrderedSet[str], ratings: np.ndarray, masked_indices: 
     )))
 
   result = pd.DataFrame.from_records(lines)
-  result.sort_values(by=[col_used, col_w_i], inplace=True)
-  for nr, (i, row) in enumerate(result.iterrows(), start=1):
-    result.at[i, col_percent] = nr / len(result.index) * 100
 
-  result.drop(columns=[col_w_i, col_used], inplace=True)
+  if len(result.index) > 0:
+    result.sort_values(by=[col_used, col_w_i], inplace=True)
+    for nr, (i, row) in enumerate(result.iterrows(), start=1):
+      result.at[i, col_percent] = nr / len(result.index) * 100
 
-  row = {
-    col_worker: "-ALL-",
-    col_ratings: result[col_ratings].sum(),
-    col_sent_corr: result[col_sent_corr].mean(),
-    col_alg_corr: result[col_alg_corr].mean(),
-    col_both_corr: result[col_both_corr].mean(),
-    col_percent: np.nan,
-    col_masked: result[col_masked].all(),
-  }
-  result = pd.concat([result, pd.DataFrame.from_records([row])], ignore_index=True)
+    result.drop(columns=[col_w_i, col_used], inplace=True)
+
+    row = {
+      col_worker: "-ALL-",
+      col_ratings: result[col_ratings].sum(),
+      col_sent_corr: result[col_sent_corr].mean(),
+      col_alg_corr: result[col_alg_corr].mean(),
+      col_both_corr: result[col_both_corr].mean(),
+      col_percent: np.nan,
+      col_masked: result[col_masked].all(),
+    }
+    result = pd.concat([result, pd.DataFrame.from_records([row])], ignore_index=True)
   return result
 
 

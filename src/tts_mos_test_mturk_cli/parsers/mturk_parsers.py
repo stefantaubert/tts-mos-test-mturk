@@ -1,18 +1,13 @@
 from argparse import ArgumentParser, Namespace
 
-import boto3
-from mypy_boto3_mturk import MTurkClient
-
 from tts_mos_test_mturk.df_generation import (generate_approve_csv, generate_bonus_csv,
                                               generate_reject_csv)
 from tts_mos_test_mturk_cli.argparse_helper import (ConvertToSetAction, get_optional,
-                                                    parse_data_frame, parse_non_empty_or_whitespace,
+                                                    parse_non_empty_or_whitespace,
                                                     parse_non_negative_float, parse_path,
                                                     parse_percent)
 from tts_mos_test_mturk_cli.default_args import add_opt_masks_argument, add_req_project_argument
-from tts_mos_test_mturk_cli.globals import MTURK_SANDBOX
 from tts_mos_test_mturk_cli.helper import save_csv
-from tts_mos_test_mturk_cli.types import CLIError
 from tts_mos_test_mturk_cli.validation import ensure_masks_exist
 
 DEFAULT_AMAZON_FEE = 20

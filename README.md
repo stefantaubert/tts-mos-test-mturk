@@ -261,7 +261,7 @@ mos-cli mturk reject \
 - add `masks mask-workers-by-id`
 - add `masks mask-assignments-by-id`
 - add `masks mask-assignments-not-of-last-month/week/day`
-- add `masks reverse-mask`
+- add `!` before mask name reverses mask on input
 
 ## Dependencies
 

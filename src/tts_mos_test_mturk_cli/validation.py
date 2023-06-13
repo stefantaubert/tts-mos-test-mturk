@@ -32,3 +32,15 @@ def ensure_workers_exist(data: EvaluationData, worker_ids: Set[str]) -> None:
 def ensure_worker_exists(data: EvaluationData, worker_id: str) -> None:
   if worker_id not in data.workers:
     raise ValueError(f"Worker \"{worker_id}\" doesn't exist!")
+
+
+def ensure_age_groups_exist(data: EvaluationData, age_groups: Set[str]) -> None:
+  for age_group in age_groups:
+    ensure_age_group_exists(data, age_group)
+
+
+def ensure_age_group_exists(data: EvaluationData, age_group: str) -> None:
+  all_age_groups = {x.age_group for x in data.worker_data.values()}
+  if age_group not in all_age_groups:
+    raise ValueError(
+      f"Age group \"{age_group}\" doesn't exist! Please select from: {', '.join(sorted(all_age_groups))}")

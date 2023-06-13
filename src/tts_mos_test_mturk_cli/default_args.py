@@ -6,7 +6,7 @@ from tts_mos_test_mturk_cli.argparse_helper import (ConvertToSetAction,
 
 def add_req_ratings_argument(parser: ArgumentParser) -> None:
   parser.add_argument("ratings", type=parse_non_empty_or_whitespace, nargs="+", metavar="RATING",
-                      help="names of ratings to use (i.e., mean of the ratings is taken)", action=ConvertToSetAction)
+                      help="names of ratings to use (mean of the ratings is taken)", action=ConvertToSetAction)
 
 
 def add_req_project_argument(parser: ArgumentParser) -> None:

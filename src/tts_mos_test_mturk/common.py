@@ -1,11 +1,10 @@
-import math
 from statistics import mean
-from typing import Dict, List, Set, Union
+from typing import List, Set
 
 import numpy as np
 
 from tts_mos_test_mturk.evaluation_data import EvaluationData
-from tts_mos_test_mturk.typing import AlgorithmName, FileName, RatingName, Ratings, RatingValue
+from tts_mos_test_mturk.typing import RatingName, Ratings, RatingValue
 
 
 def get_ratings(data: EvaluationData, rating_names: Set[str]) -> np.ndarray:
@@ -40,7 +39,7 @@ def get_ratings(data: EvaluationData, rating_names: Set[str]) -> np.ndarray:
       for i in range(data.n_files):
         rs = ratings[k][j][i]
         if len(rs) > 0:
-          # Note: theoretically the mean for each rating-name separately and then the mean of both but in case the amount per rating is equal it makes no difference
+          # Note: theoretically its better to take the mean for each rating-name separately and then the mean of both but in case the amount per rating is equal it makes no difference
           avg_rating = mean(rs)
           final_ratings[k, j, i] = avg_rating
   return final_ratings

@@ -6,10 +6,9 @@ from tts_mos_test_mturk.statistics.algorithm_worker_stats import get_worker_algo
 from tts_mos_test_mturk.statistics.update_stats import print_stats
 from tts_mos_test_mturk.statistics.worker_assignment_stats import get_worker_assignment_stats
 from tts_mos_test_mturk_cli.argparse_helper import get_optional, parse_path
-from tts_mos_test_mturk_cli.default_args import (add_opt_masks_argument, add_req_project_argument,
-                                                 add_req_ratings_argument)
+from tts_mos_test_mturk_cli.default_args import add_opt_masks_argument, add_req_project_argument
 from tts_mos_test_mturk_cli.helper import log_full_df, save_csv
-from tts_mos_test_mturk_cli.validation import ensure_masks_exist, ensure_ratings_exist
+from tts_mos_test_mturk_cli.validation import ensure_masks_exist
 
 
 def add_opt_output_argument(parser: ArgumentParser) -> None:
