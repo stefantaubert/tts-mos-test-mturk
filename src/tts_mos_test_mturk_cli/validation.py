@@ -1,10 +1,12 @@
 from typing import Set
 
 from tts_mos_test_mturk.evaluation_data import EvaluationData
+from tts_mos_test_mturk.masking.masks import get_mask_name_and_reverse
 from tts_mos_test_mturk_cli.types import CLIError
 
 
 def ensure_mask_exists(data: EvaluationData, mask: str) -> None:
+  mask, _ = get_mask_name_and_reverse(mask)
   if mask not in data.masks:
     raise CLIError(f"Mask \"{mask}\" doesn't exist!")
 

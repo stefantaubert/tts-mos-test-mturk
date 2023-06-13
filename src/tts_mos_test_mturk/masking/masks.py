@@ -1,4 +1,8 @@
+from typing import Tuple
+
 import numpy as np
+
+REVERSE_INDICATOR = "!"
 
 
 class MaskBase():
@@ -68,3 +72,10 @@ class AssignmentsMask(MaskBase):
 class WorkersMask(MaskBase):
   def clone(self) -> "WorkersMask":
     return WorkersMask(self.mask.copy())
+
+
+def get_mask_name_and_reverse(mask_name: str) -> Tuple[str, bool]:
+  if mask_name.startswith(REVERSE_INDICATOR):
+    mask_name = mask_name[len(REVERSE_INDICATOR):]
+    return mask_name, True
+  return mask_name, False

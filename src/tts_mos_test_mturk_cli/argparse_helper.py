@@ -11,6 +11,7 @@ import pandas as pd
 from ordered_set import OrderedSet
 
 from tts_mos_test_mturk.evaluation_data import EvaluationData
+from tts_mos_test_mturk.masking.masks import REVERSE_INDICATOR
 
 T = TypeVar("T")
 
@@ -120,6 +121,13 @@ def parse_non_empty_or_whitespace(value: str) -> str:
   value = parse_required(value)
   if value.strip() == "":
     raise ArgumentTypeError("Value must not be empty or whitespace!")
+  return value
+
+
+def parse_output_mask_name(value: str) -> str:
+  value = parse_non_empty_or_whitespace(value)
+  if value.startswith(REVERSE_INDICATOR):
+    raise ArgumentTypeError(f"Value must not start with \"{REVERSE_INDICATOR}\"!")
   return value
 
 

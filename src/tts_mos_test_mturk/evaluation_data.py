@@ -7,8 +7,9 @@ from typing import Set, cast
 from ordered_set import OrderedSet
 
 from tts_mos_test_mturk.io import load_obj, save_obj
-from tts_mos_test_mturk.masking.masks import MaskBase
+from tts_mos_test_mturk.masking.masks import MaskBase, get_mask_name_and_reverse
 from tts_mos_test_mturk.result import Result, Worker
+from tts_mos_test_mturk.typing import MaskName
 
 
 class EvaluationData():
@@ -79,15 +80,30 @@ class EvaluationData():
   def n_files(self) -> int:
     return len(self.files)
 
-  def get_mask(self, mask_name: str) -> MaskBase:
+  def get_mask(self, mask_name: MaskName) -> MaskBase:
+    mask_name, reverse = get_mask_name_and_reverse(mask_name)
+    if mask_name not in self.masks:
+      raise ValueError(f"Mask \"{mask_name}\" doesn't exist!")
+    mask = self.masks[mask_name]
+    if reverse:
+      new_mask = mask.clone()
+      new_mask.reverse()
+      return new_mask
+    return mask
+
+  def get_masks_from_names(self, mask_names: Set[MaskName]) -> List[MaskBase]:
+    masks = [self.get_mask(mask_name) for mask_name in mask_names]
+    return masks
+
+  def get_mask_old(self, mask_name: MaskName) -> MaskBase:
     if mask_name not in self.masks:
       raise ValueError(f"Mask \"{mask_name}\" doesn't exist!")
     return self.masks[mask_name]
 
-  def get_masks_from_names(self, mask_names: Set[str]) -> List[MaskBase]:
-    masks = [self.get_mask(mask_name) for mask_name in mask_names]
+  def get_masks_from_names_old(self, mask_names: Set[MaskName]) -> List[MaskBase]:
+    masks = [self.get_mask_old(mask_name) for mask_name in mask_names]
     return masks
 
-  def add_or_update_mask(self, name: str, mask: MaskBase) -> None:
+  def add_or_update_mask(self, name: MaskName, mask: MaskBase) -> None:
     assert name is not None
     self.masks[name] = mask

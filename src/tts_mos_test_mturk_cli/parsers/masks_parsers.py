@@ -250,7 +250,9 @@ def init_merge_masks_parser(parser: ArgumentParser):
       save_project(ns.project)
   return main
 
+
 def init_reverse_masks_parser(parser: ArgumentParser):
+  # can be removed bc !maskname does the same thing
   parser.description = "Reverse mask."
   add_req_project_argument(parser)
   parser.add_argument("mask", type=parse_non_empty_or_whitespace,

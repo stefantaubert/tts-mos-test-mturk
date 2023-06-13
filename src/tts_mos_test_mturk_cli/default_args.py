@@ -1,7 +1,8 @@
 from argparse import ArgumentParser
 
 from tts_mos_test_mturk_cli.argparse_helper import (ConvertToSetAction,
-                                                    parse_non_empty_or_whitespace, parse_project)
+                                                    parse_non_empty_or_whitespace,
+                                                    parse_output_mask_name, parse_project)
 
 
 def add_req_ratings_argument(parser: ArgumentParser) -> None:
@@ -20,7 +21,7 @@ def add_opt_masks_argument(parser: ArgumentParser) -> None:
 
 
 def add_req_output_mask_argument(parser: ArgumentParser) -> None:
-  parser.add_argument("output_mask", type=parse_non_empty_or_whitespace,
+  parser.add_argument("output_mask", type=parse_output_mask_name,
                       metavar="OUTPUT-MASK", help="name of the output mask")
 
 
