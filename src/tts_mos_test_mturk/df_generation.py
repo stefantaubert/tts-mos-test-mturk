@@ -2,7 +2,7 @@ import datetime
 from collections import OrderedDict
 from typing import Any, Dict, List, Optional
 from typing import OrderedDict as ODType
-from typing import Set
+from typing import Set, Tuple
 
 import numpy as np
 import pandas as pd
@@ -88,7 +88,7 @@ def get_mos_df(data: EvaluationData, mask_names: Set[MaskName]) -> pd.DataFrame:
   return df
 
 
-def generate_approve_csv(data: EvaluationData, mask_names: Set[str], reason: Optional[str], approval_cost: Optional[float], amazon_fee: Optional[float]) -> pd.DataFrame:
+def generate_approve_csv(data: EvaluationData, mask_names: Set[str], reason: Optional[str], approval_cost: Optional[float], amazon_fee: Optional[float]) -> Tuple[pd.DataFrame, List[Dict]]:
   logger = get_logger()
   dlogger = get_detail_logger()
   masks = data.get_masks_from_names(mask_names)
@@ -122,6 +122,7 @@ def generate_approve_csv(data: EvaluationData, mask_names: Set[str], reason: Opt
     reason = "x"
 
   results: List[Dict[str, Any]] = []
+  results_dict = []
   for assignment_index in sorted(assignment_indices):
     assignment_id = data.assignments[assignment_index]
     worker_index = assignments_worker_matrix[assignment_index]
@@ -135,6 +136,23 @@ def generate_approve_csv(data: EvaluationData, mask_names: Set[str], reason: Opt
       ("Reject", ""),
     ))
     results.append(line)
+    # if worker_id not in results_dict:
+    #   results_dict[worker_id] = []
+    # worker_data: List[str] = results_dict[worker_id]
+    # assert assignment_id not in worker_data
+    # worker_data.append(assignment_id)
+    # assignment_meta = OrderedDict()
+    # assignment_meta["HITId"] = hit_id
+    # assignment_meta["ApprovalReason"] = reason
+    # assignment_meta["Reject"] = ""
+    # assignment_meta["Costs"] = approval_cost
+    # assignment_meta["Fee"] = amazon_fee
+    # worker_data[assignment_id] = assignment_meta
+    results_dict.append({
+      "WorkerId": worker_id,
+      "AssignmentId": assignment_id
+    })
+
   result = pd.DataFrame.from_records(results)
   if len(result.index) > 0:
     result.sort_values(["WorkerId", "AssignmentId"], inplace=True)
@@ -154,10 +172,10 @@ def generate_approve_csv(data: EvaluationData, mask_names: Set[str], reason: Opt
       f"Estimated Fees to Mechanical Turk: {amazon_fee*100:.2f}% of ${costs:.2f} = ${fees:.2f}")
     logger.info(
       f"Estimated Cost: Total Reward + Fees = ${costs + fees:.2f}")
-  return result
+  return result, results_dict
 
 
-def generate_reject_csv(data: EvaluationData, mask_names: Set[str], reject_mask_names: Set[str], reason: str) -> pd.DataFrame:
+def generate_reject_csv(data: EvaluationData, mask_names: Set[str], reject_mask_names: Set[str], reason: str) -> Tuple[pd.DataFrame, List[Dict]]:
   logger = get_logger()
   dlogger = get_detail_logger()
 
@@ -200,6 +218,7 @@ def generate_reject_csv(data: EvaluationData, mask_names: Set[str], reject_mask_
   logger.info(f"Count of assignments that will be rejected: {len(assignment_indices)}")
 
   results: List[Dict[str, Any]] = []
+  results_dict = []
   for assignment_index in sorted(assignment_indices):
     assignment_id = data.assignments[assignment_index]
     worker_index = assignments_worker_matrix[assignment_index]
@@ -213,13 +232,22 @@ def generate_reject_csv(data: EvaluationData, mask_names: Set[str], reject_mask_
       ("Reject", reason),
     ))
     results.append(line)
+    # if worker_id not in results_dict:
+    #   results_dict[worker_id] = []
+    # worker_data: List[str] = results_dict[worker_id]
+    # assert assignment_id not in worker_data
+    # worker_data.append(assignment_id)
+    results_dict.append({
+      "WorkerId": worker_id,
+      "AssignmentId": assignment_id
+    })
   result = pd.DataFrame.from_records(results)
   if len(result.index) > 0:
     result.sort_values(["WorkerId", "AssignmentId"], inplace=True)
-  return result
+  return result, results_dict
 
 
-def generate_bonus_csv(data: EvaluationData, mask_names: Set[str], bonus: float, reason: str, amazon_fee_percent: float) -> pd.DataFrame:
+def generate_bonus_csv(data: EvaluationData, mask_names: Set[str], bonus: float, reason: str, amazon_fee_percent: float) -> Tuple[pd.DataFrame, List[Dict]]:
   assert 0 <= amazon_fee_percent <= 1
   logger = get_logger()
   dlogger = get_detail_logger()
@@ -251,6 +279,7 @@ def generate_bonus_csv(data: EvaluationData, mask_names: Set[str], bonus: float,
   logger.info(f"Count of assignments that will be paid a bonus: {len(assignment_indices)}")
 
   results: List[Dict[str, Any]] = []
+  results_dict = []
   for assignment_index in sorted(assignment_indices):
     assignment_id = data.assignments[assignment_index]
     worker_index = assignments_worker_matrix[assignment_index]
@@ -265,6 +294,10 @@ def generate_bonus_csv(data: EvaluationData, mask_names: Set[str], bonus: float,
       ("Reason", reason),
     ))
     results.append(line)
+    results_dict.append({
+      "WorkerId": worker_id,
+      "AssignmentId": assignment_id
+    })
   result = pd.DataFrame.from_records(results)
   if len(result.index) > 0:
     result.sort_values(["WorkerId", "AssignmentId"], inplace=True)
@@ -281,7 +314,7 @@ def generate_bonus_csv(data: EvaluationData, mask_names: Set[str], bonus: float,
     f"Estimated Fees to Mechanical Turk: {amazon_fee_percent*100:.2f}% of ${costs:.2f} = ${fees:.2f}")
   logger.info(
     f"Estimated Cost: Total Reward + Fees = ${costs + fees:.2f}")
-  return result
+  return result, results_dict
 
 
 def generate_ground_truth_table(data: EvaluationData, mask_names: Set[str]) -> pd.DataFrame:

@@ -1,6 +1,7 @@
+import json
 import os
 from pathlib import Path
-from typing import Generator
+from typing import Dict, Generator
 
 import pandas as pd
 
@@ -43,3 +44,13 @@ def save_csv(path: Path, df: pd.DataFrame, output_name: str = "output") -> None:
   except Exception as ex:
     raise CLIError(f"CSV-file couldn't be saved to: \"{path.absolute()}\"!") from ex
   logger.info(f"Written {output_name} to: \"{path.absolute()}\"")
+
+
+def save_json(path: Path, data: Dict) -> None:
+  try:
+    with open(path, "w", encoding="utf8") as f:
+      json.dump(data, f, indent=2)
+    logger = get_cli_logger()
+    logger.info(f"Written output to: \"{path.absolute()}\"")
+  except Exception as ex:
+    raise CLIError("Output file couldn't be created!") from ex
