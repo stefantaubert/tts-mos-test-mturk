@@ -150,7 +150,13 @@ def generate_approve_csv(data: EvaluationData, mask_names: Set[str], reason: Opt
     # worker_data[assignment_id] = assignment_meta
     results_dict.append({
       "WorkerId": worker_id,
-      "AssignmentId": assignment_id
+      "AssignmentId": assignment_id,
+      "Gender": data.worker_data[worker_id].gender,
+      "AgeGroup": data.worker_data[worker_id].age_group,
+      "HITId": data.worker_data[worker_id].assignments[assignment_id].hit_id,
+      "Device": data.worker_data[worker_id].assignments[assignment_id].device,
+      "State": data.worker_data[worker_id].assignments[assignment_id].state,
+      "Time": datetime.datetime.strftime(data.worker_data[worker_id].assignments[assignment_id].time, "%m.%d.%Y %H:%M:%S"),
     })
 
   result = pd.DataFrame.from_records(results)
@@ -239,7 +245,13 @@ def generate_reject_csv(data: EvaluationData, mask_names: Set[str], reject_mask_
     # worker_data.append(assignment_id)
     results_dict.append({
       "WorkerId": worker_id,
-      "AssignmentId": assignment_id
+      "AssignmentId": assignment_id,
+      "Gender": data.worker_data[worker_id].gender,
+      "AgeGroup": data.worker_data[worker_id].age_group,
+      "HITId": data.worker_data[worker_id].assignments[assignment_id].hit_id,
+      "Device": data.worker_data[worker_id].assignments[assignment_id].device,
+      "State": data.worker_data[worker_id].assignments[assignment_id].state,
+      "Time": datetime.datetime.strftime(data.worker_data[worker_id].assignments[assignment_id].time, "%m.%d.%Y %H:%M:%S"),
     })
   result = pd.DataFrame.from_records(results)
   if len(result.index) > 0:
@@ -296,7 +308,13 @@ def generate_bonus_csv(data: EvaluationData, mask_names: Set[str], bonus: float,
     results.append(line)
     results_dict.append({
       "WorkerId": worker_id,
-      "AssignmentId": assignment_id
+      "AssignmentId": assignment_id,
+      "Gender": data.worker_data[worker_id].gender,
+      "AgeGroup": data.worker_data[worker_id].age_group,
+      "HITId": data.worker_data[worker_id].assignments[assignment_id].hit_id,
+      "Device": data.worker_data[worker_id].assignments[assignment_id].device,
+      "State": data.worker_data[worker_id].assignments[assignment_id].state,
+      "Time": datetime.datetime.strftime(data.worker_data[worker_id].assignments[assignment_id].time, "%m.%d.%Y %H:%M:%S"),
     })
   result = pd.DataFrame.from_records(results)
   if len(result.index) > 0:
@@ -338,17 +356,16 @@ def generate_ground_truth_table(data: EvaluationData, mask_names: Set[str]) -> p
         line["File"] = file_name
         for rating_name, rating in ass_ratings.votes.items():
           line[f"Rating \"{rating_name}\""] = rating
-        line["AcceptTime"] = assignment_data.time
-        line["FinishTime"] = assignment_data.time + \
-            datetime.timedelta(seconds=assignment_data.worktime)
-        line["Worktime"] = str(datetime.timedelta(seconds=assignment_data.worktime))
-        line["Worktime (s)"] = assignment_data.worktime
+        # line["AcceptTime"] = assignment_data.time
+        # line["FinishTime"] = assignment_data.time + datetime.timedelta(seconds=assignment_data.worktime)
+        # line["Worktime"] = str(datetime.timedelta(seconds=assignment_data.worktime))
+        # line["Worktime (s)"] = assignment_data.worktime
         line["Device"] = assignment_data.device
         line["State"] = assignment_data.state
         line["HITId"] = assignment_data.hit_id
         line["AssignmentId"] = assignment
         line["Masked?"] = is_masked
-        line["Comments"] = assignment_data.comments
+        # line["Comments"] = assignment_data.comments
         results.append(line)
 
   result = pd.DataFrame.from_records(results)
