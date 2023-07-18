@@ -50,6 +50,13 @@ class MaskFactory():
         res_wmask.mask[i] = True
     return res_wmask
 
+  def get_wmask_by_worker_id(self, worker_id: str):
+    res_wmask = self.get_wmask()
+    for i, w_id in enumerate(self.__data.workers):
+      if worker_id != w_id:
+        res_wmask.mask[i] = True
+    return res_wmask
+
   def convert_ndarray_to_rmask(self, array: np.ndarray) -> RatingsMask:
     if array.shape != (self.__data.n_algorithms, self.__data.n_workers, self.__data.n_files):
       raise ValueError("Invalid format!")

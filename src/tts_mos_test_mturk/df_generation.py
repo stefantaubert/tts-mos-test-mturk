@@ -19,16 +19,17 @@ from tts_mos_test_mturk.typing import MaskName
 
 def get_row(row_template: ODType, ratings: np.ndarray, ratings_masked: np.ndarray, algo_i: int, masks: List[MaskBase]) -> ODType:
   row = row_template.copy()
-  current_ratings = ratings.copy()
   current_ratings_masked = ratings_masked.copy()
   for mask in masks:
-    mask.apply_by_nan(current_ratings)
     mask.apply_by_nan(current_ratings_masked)
   row["MOS"] = get_mos(current_ratings_masked[algo_i])
   row["CI95"] = get_ci95(current_ratings_masked[algo_i])
   row["#Ratings"] = np.sum(~np.isnan(current_ratings_masked[algo_i]))
-  row["#Ratings (all)"] = np.sum(~np.isnan(current_ratings[algo_i]))
-  row["%"] = row["#Ratings"] / row["#Ratings (all)"] * 100
+  row["#Ratings (all)"] = np.sum(~np.isnan(ratings[algo_i]))
+  if row["#Ratings (all)"] == 0:
+    row["%"] = np.nan
+  else:
+    row["%"] = row["#Ratings"] / row["#Ratings (all)"] * 100
   return row
 
 
@@ -39,6 +40,7 @@ def get_mos_df(data: EvaluationData, mask_names: Set[MaskName]) -> pd.DataFrame:
 
   all_genders = OrderedSet(sorted({x.gender for x in data.worker_data.values()}))
   all_age_groups = OrderedSet(sorted({x.age_group for x in data.worker_data.values()}))
+  all_workers = data.workers
 
   gender_masks = {
     gender: factory.convert_mask_to_rmask(factory.get_wmask_by_gender(gender))
@@ -48,6 +50,11 @@ def get_mos_df(data: EvaluationData, mask_names: Set[MaskName]) -> pd.DataFrame:
   age_group_masks = {
     age_group: factory.convert_mask_to_rmask(factory.get_wmask_by_age_group(age_group))
     for age_group in all_age_groups
+  }
+
+  worker_masks = {
+    worker_id: factory.convert_mask_to_rmask(factory.get_wmask_by_worker_id(worker_id))
+    for worker_id in all_workers
   }
 
   all_row_name = "-ALL-"
@@ -68,6 +75,17 @@ def get_mos_df(data: EvaluationData, mask_names: Set[MaskName]) -> pd.DataFrame:
         for age_group in all_age_groups:
           row_template["AgeGroup"] = age_group
           age_group_mask = age_group_masks[age_group]
+          for worker_id, worker_info in data.worker_data.items():
+            if worker_info.age_group != age_group:
+              continue
+            if worker_info.gender != gender:
+              continue
+            row_template["WorkerId"] = worker_id
+            worker_mask = worker_masks[worker_id]
+            rows.append(get_row(row_template, current_ratings,
+                        current_ratings_masked, algo_i, [worker_mask]))
+          # All workers row
+          row_template["WorkerId"] = all_row_name
           rows.append(get_row(row_template, current_ratings,
                       current_ratings_masked, algo_i, [gender_mask, age_group_mask]))
         row_template["AgeGroup"] = all_row_name
@@ -82,9 +100,9 @@ def get_mos_df(data: EvaluationData, mask_names: Set[MaskName]) -> pd.DataFrame:
         age_group_mask = age_group_masks[age_group]
         rows.append(get_row(row_template, current_ratings,
                     current_ratings_masked, algo_i, [age_group_mask]))
-
+  rows.sort(key=lambda row: (row["Gender"], row["AgeGroup"],
+            row["WorkerId"], row["Rating"], row["Algorithm"]))
   df = pd.DataFrame.from_records(rows)
-  df.sort_values(["Rating", "Algorithm", "Gender", "AgeGroup"], inplace=True)
   return df
 
 
