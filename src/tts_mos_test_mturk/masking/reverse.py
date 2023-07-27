@@ -15,4 +15,4 @@ def reverse_mask(data: EvaluationData, mask_name: str, output_mask_name: str):
 
   data.add_or_update_mask(output_mask_name, new_mask)
 
-  print_stats_masks(data, mask, [new_mask])
+  print_stats_masks(data, [mask], [new_mask])

@@ -39,6 +39,7 @@ def formatter(prog):
 
 
 def get_masks_parsers() -> Parsers:
+  yield "create", "create empty mask", init_create_mask_parser
   yield "mask-workers-by-id", "mask workers by their WorkerId", init_mask_workers_by_id_parser
   yield "mask-workers-by-age-group", "mask workers by their age group", init_mask_workers_by_age_group_parser
   yield "mask-workers-by-gender", "mask workers by their gender", init_mask_workers_by_gender_parser
@@ -46,6 +47,7 @@ def get_masks_parsers() -> Parsers:
   yield "mask-workers-by-masked-ratings-count", "mask workers by their count of masked ratings", init_workers_by_masked_ratings_count_parser
   yield "mask-workers-by-correlation", "mask workers by their algorithm/sentence correlation", init_mask_workers_by_correlation_parser
   yield "mask-workers-by-correlation-percent", "mask workers by their algorithm/sentence correlation (percentage-wise)", init_mask_workers_by_correlation_percent_parser
+  yield "mask-assignments-by-id", "mask assignments by their AssignmentId", init_mask_assignments_by_id_parser
   yield "mask-assignments-by-device", "mask assignments by their listening device", get_mask_assignments_by_device_parser
   yield "mask-assignments-by-status", "mask assignments by their status", get_mask_assignments_by_status_parser
   # yield "mask-assignments-by-worktime", "mask assignments by their worktime", init_mask_assignments_by_worktime_parser

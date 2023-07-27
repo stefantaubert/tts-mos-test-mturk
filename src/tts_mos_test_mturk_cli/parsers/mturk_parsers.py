@@ -65,7 +65,7 @@ def init_prepare_rejection_parser(parser: ArgumentParser):
 
 
 def init_prepare_bonus_payment_parser(parser: ArgumentParser):
-  parser.description = "Generate a CSV-file in which all unmasked assignments will be listed for them to be paid a bonus via API or the MTurk website."
+  parser.description = "Generate a file in which all unmasked assignments will be listed for them to be paid a bonus via API or the MTurk website."
   add_req_project_argument(parser)
   add_opt_masks_argument(parser)
   parser.add_argument("amount", type=parse_non_negative_float,
@@ -75,7 +75,7 @@ def init_prepare_bonus_payment_parser(parser: ArgumentParser):
   parser.add_argument("--fee", type=parse_percent,
                       metavar="PERCENT", help="Mechanical Turk fee (in percent)", default=DEFAULT_AMAZON_FEE)
   parser.add_argument("output", type=parse_path,
-                      help="write CSV to this path", metavar="OUTPUT-CSV")
+                      help="write file to this path (.json/.csv)", metavar="OUTPUT")
 
   def main(ns: Namespace) -> None:
     ensure_masks_exist(ns.project, ns.masks)

@@ -174,7 +174,7 @@ def generate_approve_csv(data: EvaluationData, mask_names: Set[str], reason: Opt
       "HITId": data.worker_data[worker_id].assignments[assignment_id].hit_id,
       "Device": data.worker_data[worker_id].assignments[assignment_id].device,
       "State": data.worker_data[worker_id].assignments[assignment_id].state,
-      "Time": datetime.datetime.strftime(data.worker_data[worker_id].assignments[assignment_id].time, "%m.%d.%Y %H:%M:%S"),
+      "Time": datetime.datetime.strftime(data.worker_data[worker_id].assignments[assignment_id].time, "%d.%m.%Y %H:%M:%S"),
     })
 
   result = pd.DataFrame.from_records(results)
@@ -269,7 +269,7 @@ def generate_reject_csv(data: EvaluationData, mask_names: Set[str], reject_mask_
       "HITId": data.worker_data[worker_id].assignments[assignment_id].hit_id,
       "Device": data.worker_data[worker_id].assignments[assignment_id].device,
       "State": data.worker_data[worker_id].assignments[assignment_id].state,
-      "Time": datetime.datetime.strftime(data.worker_data[worker_id].assignments[assignment_id].time, "%m.%d.%Y %H:%M:%S"),
+      "Time": datetime.datetime.strftime(data.worker_data[worker_id].assignments[assignment_id].time, "%d.%m.%Y %H:%M:%S"),
     })
   result = pd.DataFrame.from_records(results)
   if len(result.index) > 0:
@@ -332,7 +332,10 @@ def generate_bonus_csv(data: EvaluationData, mask_names: Set[str], bonus: float,
       "HITId": data.worker_data[worker_id].assignments[assignment_id].hit_id,
       "Device": data.worker_data[worker_id].assignments[assignment_id].device,
       "State": data.worker_data[worker_id].assignments[assignment_id].state,
-      "Time": datetime.datetime.strftime(data.worker_data[worker_id].assignments[assignment_id].time, "%m.%d.%Y %H:%M:%S"),
+      "Time": datetime.datetime.strftime(data.worker_data[worker_id].assignments[assignment_id].time, "%d.%m.%Y %H:%M:%S"),
+      "BonusAmount": bonus,
+      "BonusAmountWithFee": bonus + (bonus * amazon_fee_percent),
+      "Reason": reason,
     })
   result = pd.DataFrame.from_records(results)
   if len(result.index) > 0:

@@ -24,6 +24,7 @@ def mask_workers_by_correlation(data: EvaluationData, mask_names: Set[str], from
   rmask = factory.merge_masks_into_rmask(masks)
   wmask = factory.merge_masks_into_wmask(masks)
 
+  # Note: it is not clever to merge all ratings to one
   ratings = get_ratings(data, rating_names)
   rmask.apply_by_nan(ratings)
 
@@ -51,6 +52,7 @@ def mask_workers_by_correlation_percent(data: EvaluationData, mask_names: Set[st
   rmask = factory.merge_masks_into_rmask(masks)
   wmask = factory.merge_masks_into_wmask(masks)
 
+  # Note: it is not clever to merge all ratings to one
   ratings = get_ratings(data, rating_names)
   rmask.apply_by_nan(ratings)
 

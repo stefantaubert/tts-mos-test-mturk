@@ -29,6 +29,7 @@ COL_LAST_DEVICE = "Last device"
 COL_SENT_CORR = "Sent. corr."
 COL_ALGO_CORR = "Alg. corr."
 COL_BOTH_CORR = "Corr."
+COL_ALL_CORR = "All Corr."
 COL_MASKED_ASSIGNMENTS = "#Masked assignments"
 COL_MASKED = "Masked?"
 COL_ALL = "-ALL-"
@@ -86,8 +87,14 @@ def get_data(data: EvaluationData, masks: List[MaskBase]):
 
   stats: Dict[str, WorkerEntry] = {}
 
+  # init entries
   for worker, worker_data in data.worker_data.items():
-    stats[worker] = WorkerEntry(worker_data.age_group, worker_data.gender)
+    worker_entry = WorkerEntry(worker_data.age_group, worker_data.gender)
+    for rating_name, ratings in all_ratings.items():
+      worker_entry.algorithm_correlations[rating_name] = np.nan
+      worker_entry.sentence_correlations[rating_name] = np.nan
+
+    stats[worker] = worker_entry
 
   for worker, worker_data in data.worker_data.items():
     w_i = data.workers.get_loc(worker)
@@ -105,10 +112,6 @@ def get_data(data: EvaluationData, masks: List[MaskBase]):
         worker_entry.masked_assignments += 1
         skip = True
 
-      for rating_name, ratings in all_ratings.items():
-        worker_entry.algorithm_correlations[rating_name] = np.nan
-        worker_entry.sentence_correlations[rating_name] = np.nan
-
       if skip:
         continue
 
@@ -124,11 +127,14 @@ def get_data(data: EvaluationData, masks: List[MaskBase]):
       worker_entry.statuses.append(assignment_data.state)
       worker_entry.accept_times.append(assignment_data.time)
 
-      for rating_name, ratings in all_ratings.items():
-        worker_entry.algorithm_correlations[rating_name] = get_algorithm_mos_correlation(
-          w_i, ratings)
-        worker_entry.sentence_correlations[rating_name] = get_sentence_mos_correlation_3dim(
-          w_i, ratings)
+  for worker, worker_data in data.worker_data.items():
+    worker_entry = stats[worker]
+    w_i = data.workers.get_loc(worker)
+    for rating_name, ratings in all_ratings.items():
+      worker_entry.algorithm_correlations[rating_name] = get_algorithm_mos_correlation(
+        w_i, ratings)
+      worker_entry.sentence_correlations[rating_name] = get_sentence_mos_correlation_3dim(
+        w_i, ratings)
 
   return stats
 
@@ -191,11 +197,20 @@ def stats_to_df(stats: Dict[str, WorkerEntry]) -> pd.DataFrame:
       assert key not in data_entry
       data_entry[key] = device_counts.get(device, 0)
 
+    all_corr_vals = []
     for rating_name in all_rating_names:
       col_append_str = "-ALL-" if rating_name is None else rating_name
       data_entry[f"{COL_SENT_CORR} ({col_append_str})"] = entry.sentence_correlations[rating_name]
       data_entry[f"{COL_ALGO_CORR} ({col_append_str})"] = entry.algorithm_correlations[rating_name]
-      data_entry[f"{COL_BOTH_CORR} ({col_append_str})"] = entry.correlations_mean(rating_name)
+      mn = entry.correlations_mean(rating_name)
+      data_entry[f"{COL_BOTH_CORR} ({col_append_str})"] = mn
+      if not np.isnan(mn):
+        all_corr_vals.append(mn)
+    all_corr = np.nan
+    if len(all_corr_vals) > 0:
+      all_corr = mean(all_corr_vals)
+    data_entry[COL_ALL_CORR] = all_corr
+
     data_entry[COL_MASKED_ASSIGNMENTS] = entry.masked_assignments
     data_entry[COL_MASKED] = entry.masked
 
@@ -228,19 +243,22 @@ def add_all_row(df: pd.DataFrame, stats: Dict[str, WorkerEntry]) -> pd.DataFrame
   row[COL_FIRST_HIT_ACC_TIME] = min(all_accept_times).strftime(DATE_FMT)
   row[COL_LAST_HIT_ACC_TIME] = max(all_accept_times).strftime(DATE_FMT)
 
+  all_corr_vals = []
   for col in df.columns:
     if col.startswith(COL_DEVICE):
       assert col not in row
-      row[col] = df[col].sum()
+      row[col] = df[col].sum(skipna=True)
     if col.startswith(COL_SENT_CORR):
       assert col not in row
-      row[col] = df[col].mean()
+      row[col] = df[col].mean(skipna=True)
     if col.startswith(COL_ALGO_CORR):
       assert col not in row
-      row[col] = df[col].mean()
+      row[col] = df[col].mean(skipna=True)
     if col.startswith(COL_BOTH_CORR):
       assert col not in row
-      row[col] = df[col].mean()
+      row[col] = df[col].mean(skipna=True)
+      all_corr_vals.append(row[col])
+  row[COL_ALL_CORR] = mean(all_corr_vals)
   row[COL_MASKED_ASSIGNMENTS] = df[COL_MASKED_ASSIGNMENTS].sum()
   row[COL_MASKED] = df[COL_MASKED].all()
   df = pd.concat([df, pd.DataFrame.from_records([row])], ignore_index=True)

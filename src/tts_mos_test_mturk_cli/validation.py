@@ -36,6 +36,16 @@ def ensure_worker_exists(data: EvaluationData, worker_id: str) -> None:
     raise ValueError(f"Worker \"{worker_id}\" doesn't exist!")
 
 
+def ensure_assignments_exists(data: EvaluationData, assignment_ids: Set[str]) -> None:
+  for assignment_id in assignment_ids:
+    ensure_assignment_exists(data, assignment_id)
+
+
+def ensure_assignment_exists(data: EvaluationData, assignment_id: str) -> None:
+  if assignment_id not in data.assignments:
+    raise ValueError(f"Assignment \"{assignment_id}\" doesn't exist!")
+
+
 def ensure_age_groups_exist(data: EvaluationData, age_groups: Set[str]) -> None:
   for age_group in age_groups:
     ensure_age_group_exists(data, age_group)

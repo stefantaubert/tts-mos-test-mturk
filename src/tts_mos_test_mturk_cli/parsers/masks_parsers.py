@@ -1,11 +1,15 @@
 import math
 from argparse import ArgumentParser, Namespace
 from datetime import datetime
+from typing import cast
 
+from tts_mos_test_mturk.evaluation_data import EvaluationData
 from tts_mos_test_mturk.masking.age_group_mask import mask_workers_by_age_group
 from tts_mos_test_mturk.masking.assignment_count_mask import mask_workers_by_assignment_count
+from tts_mos_test_mturk.masking.assignment_id_mask import mask_assignments_by_id
 from tts_mos_test_mturk.masking.gender_mask import mask_workers_by_gender
 from tts_mos_test_mturk.masking.listening_device_mask import mask_assignments_by_listening_device
+from tts_mos_test_mturk.masking.mask_factory import MaskFactory
 from tts_mos_test_mturk.masking.masked_count_mask import mask_ratings_by_masked_count
 from tts_mos_test_mturk.masking.merge import merge_masks
 from tts_mos_test_mturk.masking.outlier_mask import mask_outlying_ratings
@@ -24,9 +28,9 @@ from tts_mos_test_mturk_cli.default_args import (add_opt_dry_argument, add_opt_m
                                                  add_req_output_mask_argument,
                                                  add_req_project_argument, add_req_ratings_argument)
 from tts_mos_test_mturk_cli.helper import save_project
-from tts_mos_test_mturk_cli.validation import (ensure_age_groups_exist, ensure_mask_exists,
-                                               ensure_masks_exist, ensure_ratings_exist,
-                                               ensure_workers_exist)
+from tts_mos_test_mturk_cli.validation import (ensure_age_groups_exist, ensure_assignments_exists,
+                                               ensure_mask_exists, ensure_masks_exist,
+                                               ensure_ratings_exist, ensure_workers_exist)
 
 
 def get_mask_assignments_by_device_parser(parser: ArgumentParser):
@@ -186,6 +190,50 @@ def init_mask_workers_by_id_parser(parser: ArgumentParser):
     ensure_workers_exist(ns.project, ns.worker_ids)
     mask_workers_by_id(
       ns.project, ns.masks, ns.worker_ids, ns.output_mask)
+
+    if not ns.dry:
+      save_project(ns.project)
+  return main
+
+
+def init_mask_assignments_by_id_parser(parser: ArgumentParser):
+  parser.description = "Mask assignments based on their AssignmentId."
+  add_req_project_argument(parser)
+  add_opt_masks_argument(parser)
+  parser.add_argument("assignment_ids", type=parse_non_empty_or_whitespace,
+                      metavar="ASSIGNMENT-ID", nargs="+", help="mask assignments with these AssignmentId's", action=ConvertToSetAction)
+  add_req_output_mask_argument(parser)
+  add_opt_dry_argument(parser)
+
+  def main(ns: Namespace) -> None:
+    ensure_masks_exist(ns.project, ns.masks)
+    ensure_assignments_exists(ns.project, ns.assignment_ids)
+    mask_assignments_by_id(
+      ns.project, ns.masks, ns.assignment_ids, ns.output_mask)
+
+    if not ns.dry:
+      save_project(ns.project)
+  return main
+
+
+def init_create_mask_parser(parser: ArgumentParser):
+  parser.description = "Create empty mask."
+  add_req_project_argument(parser)
+  parser.add_argument("mask_type", type=str, choices=["a", "w", "r"], help="type of the mask")
+  add_req_output_mask_argument(parser)
+  add_opt_dry_argument(parser)
+
+  def main(ns: Namespace) -> None:
+    factory = MaskFactory(ns.project)
+    if ns.mask_type == "a":
+      mask = factory.get_amask()
+    elif ns.mask_type == "w":
+      mask = factory.get_wmask()
+    elif ns.mask_type == "r":
+      mask = factory.get_rmask()
+    else:
+      raise NotImplementedError()
+    cast(EvaluationData, ns.project).add_or_update_mask(ns.output_mask, mask)
 
     if not ns.dry:
       save_project(ns.project)
