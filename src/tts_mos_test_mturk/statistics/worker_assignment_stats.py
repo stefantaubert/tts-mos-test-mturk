@@ -270,6 +270,8 @@ def get_worker_assignment_stats(data: EvaluationData, mask_names: Set[str]) -> p
   stats = get_data(data, masks)
   df = stats_to_df(stats)
   if len(df.index) > 0:
-    df.sort_values([COL_FIRST_HIT_ACC_TIME, COL_WORKER], inplace=True)
+    # df.sort_values([COL_FIRST_HIT_ACC_TIME, COL_WORKER], inplace=True)
+    df.sort_values([COL_GENDER, COL_AGE_GROUP, COL_ALL_CORR],
+                   ascending=[False, True, False], inplace=True)
     df = add_all_row(df, stats)
   return df
