@@ -1,5 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
+import pandas as pd
+
 from tts_mos_test_mturk.df_generation import generate_ground_truth_table, get_mos_df
 from tts_mos_test_mturk.statistics.algorithm_sentence_stats import get_algorithm_sentence_stats
 from tts_mos_test_mturk.statistics.algorithm_worker_stats import get_worker_algorithm_stats
@@ -60,7 +62,8 @@ def init_print_mos_parser(parser: ArgumentParser):
 
   def main(ns: Namespace) -> None:
     ensure_masks_exist(ns.project, ns.masks)
-    result_df = get_mos_df(ns.project, ns.masks)
+    result = get_mos_df(ns.project, ns.masks)
+    result_df = pd.DataFrame.from_records(result)
 
     if not ns.silent:
       log_full_df(result_df)

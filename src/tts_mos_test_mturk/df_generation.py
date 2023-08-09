@@ -24,6 +24,7 @@ def get_row(row_template: ODType, ratings: np.ndarray, ratings_masked: np.ndarra
     mask.apply_by_nan(current_ratings_masked)
   row["MOS"] = get_mos(current_ratings_masked[algo_i])
   row["CI95"] = get_ci95(current_ratings_masked[algo_i])
+  row["STD"] = np.std(current_ratings_masked[algo_i])
   row["#Ratings"] = np.sum(~np.isnan(current_ratings_masked[algo_i]))
   row["#Ratings (all)"] = np.sum(~np.isnan(ratings[algo_i]))
   if row["#Ratings (all)"] == 0:
@@ -33,7 +34,10 @@ def get_row(row_template: ODType, ratings: np.ndarray, ratings_masked: np.ndarra
   return row
 
 
-def get_mos_df(data: EvaluationData, mask_names: Set[MaskName]) -> pd.DataFrame:
+ALL_CELL_CONTENT = "-ALL-"
+
+
+def get_mos_df(data: EvaluationData, mask_names: Set[MaskName]) -> List[ODType[str, Any]]:
   masks = data.get_masks_from_names(mask_names)
   factory = MaskFactory(data)
   rmask = factory.merge_masks_into_rmask(masks)
@@ -57,7 +61,6 @@ def get_mos_df(data: EvaluationData, mask_names: Set[MaskName]) -> pd.DataFrame:
     for worker_id in all_workers
   }
 
-  all_row_name = "-ALL-"
   rows = []
   for rating_name in data.rating_names:
     row_template = OrderedDict()
@@ -85,13 +88,13 @@ def get_mos_df(data: EvaluationData, mask_names: Set[MaskName]) -> pd.DataFrame:
             rows.append(get_row(row_template, current_ratings,
                         current_ratings_masked, algo_i, [worker_mask]))
           # All workers row
-          row_template["WorkerId"] = all_row_name
+          row_template["WorkerId"] = ALL_CELL_CONTENT
           rows.append(get_row(row_template, current_ratings,
                       current_ratings_masked, algo_i, [gender_mask, age_group_mask]))
-        row_template["AgeGroup"] = all_row_name
+        row_template["AgeGroup"] = ALL_CELL_CONTENT
         rows.append(get_row(row_template, current_ratings,
                     current_ratings_masked, algo_i, [gender_mask]))
-      row_template["Gender"] = all_row_name
+      row_template["Gender"] = ALL_CELL_CONTENT
       rows.append(get_row(row_template, current_ratings,
                   current_ratings_masked, algo_i, []))
 
@@ -102,8 +105,7 @@ def get_mos_df(data: EvaluationData, mask_names: Set[MaskName]) -> pd.DataFrame:
                     current_ratings_masked, algo_i, [age_group_mask]))
   rows.sort(key=lambda row: (row["Gender"], row["AgeGroup"],
             row["WorkerId"], row["Rating"], row["Algorithm"]))
-  df = pd.DataFrame.from_records(rows)
-  return df
+  return rows
 
 
 def generate_approve_csv(data: EvaluationData, mask_names: Set[str], reason: Optional[str], approval_cost: Optional[float], amazon_fee: Optional[float]) -> Tuple[pd.DataFrame, List[Dict]]:
@@ -348,11 +350,12 @@ def generate_bonus_csv(data: EvaluationData, mask_names: Set[str], bonus: float,
   # Estimated Fees to Mechanical Turk: 20.00% of $30 = $2
   # Estimated Cost: Total Bonus + Fees = $32
   logger.info(
-    f"Estimated Total Bonus: {len(assignment_indices)} assignments x ${bonus:.2f} = ${costs:.2f}")
+    f"Estimated Total Reward: {len(assignment_indices)} assignments x ${bonus:.2f} = ${costs:.2f}")
   logger.info(
     f"Estimated Fees to Mechanical Turk: {amazon_fee_percent*100:.2f}% of ${costs:.2f} = ${fees:.2f}")
-  logger.info(
-    f"Estimated Cost: Total Reward + Fees = ${costs + fees:.2f}")
+  logger.info(f"Total Reward + Fees = ${costs + fees:.2f}")
+  logger.info(f"19% Tax of ${costs + fees:.2f} = ${(costs + fees)*0.19:.2f}")
+  logger.info(f"Estimated Cost: Total Reward + Fees + Tax = ${(costs + fees)*1.19:.2f}")
   return result, results_dict
 
 
