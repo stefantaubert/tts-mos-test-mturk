@@ -21,12 +21,14 @@ COL_DEVICE = "#D="
 COL_RATING = "#R"
 COL_MASKED = "#Masked"
 COL_ALL = "-ALL-"
+COL_N_RATERS = "#Workers"
 
 
 @dataclass
 class FileEntry:
   ratings: ODType[str, List[Union[int, float]]] = field(default_factory=OrderedDict)
   devices: List[str] = field(default_factory=list)
+  raters: Set[str] = field(default_factory=set)
   masked: int = 0
 
   def min_ratings(self, rating_name: str) -> Union[int, float]:
@@ -68,6 +70,7 @@ def get_worker_stats(data: EvaluationData, masks: List[MaskBase]):
         alg_i = data.algorithms.get_loc(alg_name)
         file_i = data.files.get_loc(file_name)
         entry = stats[alg_name][file_name]
+        entry.raters.add(worker)
 
         o_is_masked = rmask.mask[alg_i, w_i, file_i]
         if o_is_masked:
@@ -115,6 +118,7 @@ def stats_to_df(stats: Dict[str, Dict[str, FileEntry]]) -> pd.DataFrame:
       data_entry = OrderedDict()
       data_entry[COL_ALG] = algorithm
       data_entry[COL_SENT] = file
+      data_entry[COL_N_RATERS] = len(entry.raters)
 
       for device in unique_devices:
         key = f"{COL_DEVICE}{device}"
@@ -146,6 +150,7 @@ def add_all_to_df(df: pd.DataFrame) -> pd.DataFrame:
   row = {}
   row[COL_ALG] = COL_ALL
   row[COL_SENT] = COL_ALL
+  row[COL_N_RATERS] = ""
 
   col: str
   for col in df.columns:

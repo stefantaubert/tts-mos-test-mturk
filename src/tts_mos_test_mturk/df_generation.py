@@ -6,7 +6,7 @@ from typing import Set, Tuple
 
 import numpy as np
 import pandas as pd
-from mean_opinion_score import get_ci95, get_mos
+from mean_opinion_score import get_ci95, get_ci95_default, get_mos
 from ordered_set import OrderedSet
 
 from tts_mos_test_mturk.common import get_ratings
@@ -24,7 +24,8 @@ def get_row(row_template: ODType, ratings: np.ndarray, ratings_masked: np.ndarra
     mask.apply_by_nan(current_ratings_masked)
   row["MOS"] = get_mos(current_ratings_masked[algo_i])
   row["CI95"] = get_ci95(current_ratings_masked[algo_i])
-  row["STD"] = np.std(current_ratings_masked[algo_i])
+  row["CI95 (default)"] = get_ci95_default(current_ratings_masked[algo_i])
+  row["STD"] = np.nanstd(current_ratings_masked[algo_i])
   row["#Ratings"] = np.sum(~np.isnan(current_ratings_masked[algo_i]))
   row["#Ratings (all)"] = np.sum(~np.isnan(ratings[algo_i]))
   if row["#Ratings (all)"] == 0:

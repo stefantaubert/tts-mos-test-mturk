@@ -20,10 +20,8 @@ tox = "*"
 numpy = "*"
 pandas = "*"
 tqdm = "*"
-boto3 = "*"
-boto3-stubs = {extras = ["mturk"], version = "*"}
 ordered-set = ">=4.1.0"
-mean-opinion-score = "==0.0.1"
+mean-opinion-score = "==0.0.2"
 matplotlib = "*"
 
 [requires]

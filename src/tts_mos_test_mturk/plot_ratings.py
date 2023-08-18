@@ -125,7 +125,7 @@ def plot_mean_group(ax: Axes, ratings: List[Dict], label: str):
   algorithms = [x["Algorithm"] for x in ratings]
   mos_ratings = [x["MOS"] for x in ratings]
   ci95_ratings = [x["CI95"] for x in ratings]
-  # std_ratings = [x["STD"] for x in all_ratings]
+  # ci95_ratings = [x["CI95 (default)"] for x in ratings]
 
   ax.set_title(label)
 
