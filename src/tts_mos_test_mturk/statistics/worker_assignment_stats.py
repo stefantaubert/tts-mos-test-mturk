@@ -72,7 +72,7 @@ class WorkerEntry:
     return mean([self.algorithm_correlations[rating_name], self.sentence_correlations[rating_name]])
 
 
-def get_data(data: EvaluationData, masks: List[MaskBase]):
+def get_wass_stat_data(data: EvaluationData, masks: List[MaskBase]) -> Dict[str, WorkerEntry]:
   factory = MaskFactory(data)
 
   wmask = factory.merge_masks_into_wmask(masks)
@@ -267,7 +267,7 @@ def add_all_row(df: pd.DataFrame, stats: Dict[str, WorkerEntry]) -> pd.DataFrame
 
 def get_worker_assignment_stats(data: EvaluationData, mask_names: Set[str]) -> pd.DataFrame:
   masks = data.get_masks_from_names(mask_names)
-  stats = get_data(data, masks)
+  stats = get_wass_stat_data(data, masks)
   df = stats_to_df(stats)
   if len(df.index) > 0:
     # df.sort_values([COL_FIRST_HIT_ACC_TIME, COL_WORKER], inplace=True)
