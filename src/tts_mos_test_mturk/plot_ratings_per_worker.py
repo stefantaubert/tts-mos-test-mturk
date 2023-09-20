@@ -48,16 +48,16 @@ def plot_ratings_workerwise(data: EvaluationData, mask_names: Set[MaskName], rat
     figsize=(N_COLS * 3, N_ROWS * 4),
     dpi=300,
     edgecolor="black",
-    linewidth=1,
+    linewidth=0,
   )
 
   group_names = {
-    1: "Männlich, 18-29",
-    2: "Männlich, 30-49",
-    3: "Männlich, 50+",
-    4: "Weiblich, 18-29",
-    5: "Weiblich, 30-49",
-    6: "Weiblich, 50+",
+    1: "♂ 18-29",
+    2: "♂ 30-49",
+    3: "♂ 50+",
+    4: "♀ 18-29",
+    5: "♀ 30-49",
+    6: "♀ 50+",
   }
 
   group_params = {

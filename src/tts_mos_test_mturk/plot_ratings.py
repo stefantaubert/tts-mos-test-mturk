@@ -184,6 +184,7 @@ def plot_means(data: EvaluationData, mask_names: Set[MaskName], rating_name: str
   else:
     with Path("/tmp/pickle-res.pkl").open("rb") as f:
       res = pickle.load(f)
+      
   res = [x for x in res if x["Rating"] == rating_name]
   all_ratings = [
     x
