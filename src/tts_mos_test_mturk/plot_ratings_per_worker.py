@@ -15,6 +15,7 @@ from matplotlib import collections
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from matplotlib.patches import Rectangle
+from matplotlib.text import Text
 from matplotlib.ticker import FixedLocator
 from mean_opinion_score import get_ci95, get_mos
 from ordered_set import OrderedSet
@@ -22,6 +23,7 @@ from ordered_set import OrderedSet
 from tts_mos_test_mturk.common import get_ratings
 from tts_mos_test_mturk.df_generation import ALL_CELL_CONTENT, get_mos_df
 from tts_mos_test_mturk.evaluation_data import EvaluationData
+from tts_mos_test_mturk.globals import LATEX_FONT, LATEX_FONT_SIZE, LATEX_TEXT_WIDTH, LEGEND_FONT
 from tts_mos_test_mturk.logging import get_detail_logger, get_logger
 from tts_mos_test_mturk.masking.mask_factory import MaskFactory
 from tts_mos_test_mturk.masking.masks import MaskBase
@@ -29,7 +31,7 @@ from tts_mos_test_mturk.statistics.worker_assignment_stats import WorkerEntry, g
 from tts_mos_test_mturk.typing import MaskName
 
 
-def plot_ratings_workerwise(data: EvaluationData, mask_names: Set[MaskName], rating_name: str) -> Figure:
+def plot_ratings_workerwise(data: EvaluationData, mask_names: Set[MaskName], rating_name: str, y_min: float) -> Figure:
   stat_rows: List[ODType[str, Any]]
   if False:
     stat_rows = get_mos_df(data, mask_names)
@@ -45,19 +47,15 @@ def plot_ratings_workerwise(data: EvaluationData, mask_names: Set[MaskName], rat
   fig, axes = plt.subplots(
     ncols=N_COLS,
     nrows=N_ROWS,
-    figsize=(N_COLS * 3, N_ROWS * 4),
-    dpi=300,
-    edgecolor="black",
-    linewidth=0,
   )
 
   group_names = {
-    1: "♂ 18-29",
-    2: "♂ 30-49",
-    3: "♂ 50+",
-    4: "♀ 18-29",
-    5: "♀ 30-49",
-    6: "♀ 50+",
+    1: "M/18-29",
+    2: "M/30-49",
+    3: "M/50+",
+    4: "W/18-29",
+    5: "W/30-49",
+    6: "W/50+",
   }
 
   group_params = {
@@ -77,7 +75,7 @@ def plot_ratings_workerwise(data: EvaluationData, mask_names: Set[MaskName], rat
       dem_group = dem_groups[row][col]
       gender, age = group_params[dem_group]
       title = group_names[dem_group]
-      ax.set_title(title)
+      ax.set_title(title, fontsize=LATEX_FONT_SIZE, font=LATEX_FONT)
 
       stat_entries = OrderedDict((
         ((stat_row["WorkerId"], stat_row["Algorithm"]), stat_row)
@@ -184,54 +182,72 @@ def plot_ratings_workerwise(data: EvaluationData, mask_names: Set[MaskName], rat
       #ax.legend(legend_recs, legend_keys,loc='best', ncols=1, fontsize='x-small')
       
       # todo for intell 3
-      dtw_y_min = 0
+      dtw_y_min = y_min
       dtw_y_max = 5
       dtw_y_step_maj = 1
       dtw_y_step_min = 0.5
 
-      axis_fontsize = 10
-
       # ax.minorticks_on()
-      ax.grid(axis="both", which="major", zorder=1)
+      ax.grid(axis="x", which="both", visible=False)
+      ax.grid(axis="y", which="major", zorder=1)
       ax.grid(axis="y", which="minor", zorder=1, alpha=0.2)
       ax.minorticks_on()
 
-      ax.set_xlabel("Arbeiter")
+      ax.set_xlabel("Arbeiter", fontsize=LATEX_FONT_SIZE, font=LATEX_FONT)
       ax.set_xticks(keys_nr + width*((len(all_vals)-1)/2), disp_keys, rotation=0, minor=False)
       # ax.set_xticks(x_ticks_min, minor=True)
       # ax.set_xlim(0.25, len(algorithms) + 0.75)
-      ax.set_xticklabels(disp_keys, fontsize="small")
+      ax.set_xticklabels(disp_keys, font=LATEX_FONT)
+      ax.xaxis.set_tick_params(labelsize=LATEX_FONT_SIZE)
 
       y_ticks_maj = np.arange(dtw_y_min, dtw_y_max + dtw_y_step_maj, step=dtw_y_step_maj)
       y_ticks_min = np.arange(dtw_y_min, dtw_y_max + dtw_y_step_min, step=dtw_y_step_min)
 
       ax.set_ylim(dtw_y_min, dtw_y_max)
       ax.set_yticks(y_ticks_maj)
-      ax.set_yticklabels(ax.get_yticks(), fontsize=axis_fontsize)
+      ax.set_yticklabels(ax.get_yticks(), font=LATEX_FONT)
+      ax.yaxis.set_tick_params(labelsize=LATEX_FONT_SIZE)
       ax.yaxis.set_minor_locator(FixedLocator(y_ticks_min))
       # disable minor x ticks
       ax.tick_params(axis='x', which='minor', bottom=False)
       # ax.tick_params(axis='x', which='minor')
-      ax.set_ylabel("Bewertung")
+      ax.set_ylabel("Bewertung", fontsize=LATEX_FONT_SIZE, font=LATEX_FONT)
       if row < N_ROWS - 1:
         ax.set_xlabel("")
         # ax.set_xticklabels([])
       if col > 0:
         ax.set_ylabel("")
         ax.set_yticklabels([])
-
-  plt.subplots_adjust(
-    top=0.83,
-    bottom=0.1,
-    hspace=0.47,
-    wspace=0.05,
-    right=0.99,
-    left=0.09,
+      
+      tick: Text
+      for tick in ax.get_xticklabels():
+        tick.set_rotation(90)
+    
+  # plt.subplots_adjust(
+  #   top=0.83,
+  #   bottom=0.1,
+  #   hspace=0.47,
+  #   wspace=0.05,
+  #   right=0.99,
+  #   left=0.09,
+  # )
+  
+  fig.legend(
+    legend_recs,
+    legend_keys,
+    loc="upper right",
+    ncols=4,
+    facecolor='white',
+    framealpha=1,
+    prop = LEGEND_FONT,
   )
   
-  fig.legend(legend_recs, legend_keys,
-        loc=(0.755,0.9), ncols=2, fontsize='small')
-
-  plt.gcf().set_size_inches(7, 4)
+  plt.gcf().set_size_inches(LATEX_TEXT_WIDTH, 4)
+  
+  plt.tight_layout(
+    pad=0.2,
+    h_pad=0.2,
+    rect=(0,0,1.0,0.92),
+  )
 
   return fig

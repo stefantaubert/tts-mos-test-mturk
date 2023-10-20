@@ -14,6 +14,7 @@ import pandas as pd
 from matplotlib import collections
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
+from matplotlib.font_manager import FontProperties
 from matplotlib.patches import Rectangle
 from matplotlib.ticker import FixedLocator
 from mean_opinion_score import get_ci95, get_mos
@@ -22,6 +23,7 @@ from ordered_set import OrderedSet
 from tts_mos_test_mturk.common import get_ratings
 from tts_mos_test_mturk.df_generation import ALL_CELL_CONTENT, get_mos_df
 from tts_mos_test_mturk.evaluation_data import EvaluationData
+from tts_mos_test_mturk.globals import LATEX_FONT, LATEX_FONT_SIZE, LATEX_TEXT_WIDTH, LEGEND_FONT
 from tts_mos_test_mturk.logging import get_detail_logger, get_logger
 from tts_mos_test_mturk.masking.mask_factory import MaskFactory
 from tts_mos_test_mturk.masking.masks import MaskBase
@@ -39,19 +41,14 @@ def plot_ratings_groupwise(data: EvaluationData, mask_names: Set[MaskName]) -> F
     with Path("/tmp/get_mos_df.pkl").open("rb") as f:
       stat_rows = pickle.load(f)
 
-
   fig, axes = plt.subplots(
     ncols=2,
     nrows=1,
-    figsize=(3, 8),
-    dpi=300,
-    edgecolor="black",
-    linewidth=0,
   )
   
   rating_names = OrderedDict()
-  rating_names["intelligibility"]= "Verständlichkeit"
-  rating_names["naturalness"]= "Natürlichkeit"
+  rating_names["intelligibility"]= "Verstaendlichkeit"
+  rating_names["naturalness"]= "Natuerlichkeit"
 
   for col, (rating_name, disp_rating_name) in enumerate(rating_names.items()):
     ax: Axes = axes[col]
@@ -104,7 +101,7 @@ def plot_ratings_groupwise(data: EvaluationData, mask_names: Set[MaskName]) -> F
         x["WorkerId"] == ALL_CELL_CONTENT
     }
     
-    ax.set_title(disp_rating_name)
+    ax.set_title(disp_rating_name, fontsize=LATEX_FONT_SIZE, font=LATEX_FONT)
 
     all_algos = OrderedDict()
     all_algos["orig"]="GT"
@@ -117,8 +114,8 @@ def plot_ratings_groupwise(data: EvaluationData, mask_names: Set[MaskName]) -> F
     
     vals = OrderedDict()
     vals["Alles"] = all_ratings
-    vals["♂"] = all_male
-    vals["♀"] = all_female
+    vals["M"] = all_male
+    vals["W"] = all_female
     vals["18-29"] = all_18_29
     vals["30-49"] = all_30_49
     vals["50+"] = all_50
@@ -182,30 +179,32 @@ def plot_ratings_groupwise(data: EvaluationData, mask_names: Set[MaskName]) -> F
     dtw_y_step_maj = 0.5
     dtw_y_step_min = 0.25
 
-    axis_fontsize = 10
-
     # ax.minorticks_on()
-    ax.grid(axis="both", which="major", zorder=1)
+    ax.grid(axis="x", which="both", visible=False)
+    ax.grid(axis="y", which="major", zorder=1)
     ax.grid(axis="y", which="minor", zorder=1, alpha=0.2)
     ax.minorticks_on()
 
-    ax.set_xlabel("Gruppe")
+    ax.set_xlabel("Gruppe", fontsize=LATEX_FONT_SIZE, font=LATEX_FONT)
     ax.set_xticks(keys_nr + width*((len(all_vals)-1)/2), disp_keys, rotation=0, minor=False)
     # ax.set_xticks(x_ticks_min, minor=True)
     # ax.set_xlim(0.25, len(algorithms) + 0.75)
-    ax.set_xticklabels(disp_keys, fontsize="medium")
+    ax.set_xticklabels(disp_keys, font=LATEX_FONT)
+    ax.xaxis.set_tick_params(labelsize=LATEX_FONT_SIZE)
 
     y_ticks_maj = np.arange(dtw_y_min, dtw_y_max + dtw_y_step_maj, step=dtw_y_step_maj)
     y_ticks_min = np.arange(dtw_y_min, dtw_y_max + dtw_y_step_min, step=dtw_y_step_min)
 
     ax.set_ylim(dtw_y_min, dtw_y_max)
     ax.set_yticks(y_ticks_maj)
-    ax.set_yticklabels(ax.get_yticks(), fontsize=axis_fontsize)
+    ax.set_yticklabels(ax.get_yticks(), font=LATEX_FONT)
+    ax.yaxis.set_tick_params(labelsize=LATEX_FONT_SIZE)
+
     ax.yaxis.set_minor_locator(FixedLocator(y_ticks_min))
     # disable minor x ticks
     ax.tick_params(axis='x', which='minor', bottom=False)
     # ax.tick_params(axis='x', which='minor')
-    ax.set_ylabel("Bewertung")
+    ax.set_ylabel("Bewertung", fontsize=LATEX_FONT_SIZE, font=LATEX_FONT)
     # if row < 1:
     #   ax.set_xlabel("")
     #   # ax.set_xticklabels([])
@@ -214,18 +213,31 @@ def plot_ratings_groupwise(data: EvaluationData, mask_names: Set[MaskName]) -> F
       ax.set_ylabel("")
       ax.set_yticklabels([])
       
-  plt.subplots_adjust(
-    top=0.75,
-    bottom=0.15,
-    hspace=0.47,
-    wspace=0.05,
-    right=0.99,
-    left=0.075,
+  # plt.subplots_adjust(
+  #   top=0.75,
+  #   bottom=0.15,
+  #   hspace=0.47,
+  #   wspace=0.05,
+  #   right=0.99,
+  #   left=0.075,
+  # )
+  
+  fig.legend(
+    legend_recs,
+    legend_keys,
+    loc="upper right",
+    ncols=4,
+    facecolor='white',
+    framealpha=1,
+    prop = LEGEND_FONT,
   )
   
-  fig.legend(legend_recs, legend_keys,
-        loc=(0.755,0.85), ncols=2, fontsize='small')
-
-  plt.gcf().set_size_inches(7, 3)
+  plt.gcf().set_size_inches(LATEX_TEXT_WIDTH, 2)
+  
+  plt.tight_layout(
+    pad=0.2,
+    h_pad=0.2,
+    rect=(0,0,1.0,0.85),
+  )
 
   return fig
