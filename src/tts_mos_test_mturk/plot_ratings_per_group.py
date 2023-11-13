@@ -49,6 +49,7 @@ def plot_ratings_groupwise(data: EvaluationData, mask_names: Set[MaskName]) -> F
   rating_names = OrderedDict()
   rating_names["intelligibility"]= "Verstaendlichkeit"
   rating_names["naturalness"]= "Natuerlichkeit"
+  stats = OrderedDict()
 
   for col, (rating_name, disp_rating_name) in enumerate(rating_names.items()):
     ax: Axes = axes[col]
@@ -120,12 +121,15 @@ def plot_ratings_groupwise(data: EvaluationData, mask_names: Set[MaskName]) -> F
     vals["30-49"] = all_30_49
     vals["50+"] = all_50
     
+    
     for alg_index, alg in enumerate(all_algos):
       for v in vals.values():
         all_vals[alg_index].append(v[alg]["MOS"])
         
       for v in vals.values():
         all_ci95s[alg_index].append(v[alg]["CI95"])
+    
+    stats[rating_name] = vals
   
     all_vals = np.array(all_vals)
     all_ci95s = np.array(all_ci95s)
@@ -240,4 +244,4 @@ def plot_ratings_groupwise(data: EvaluationData, mask_names: Set[MaskName]) -> F
     rect=(0,0,1.0,0.85),
   )
 
-  return fig
+  return fig, stats

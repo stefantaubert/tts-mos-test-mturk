@@ -2,6 +2,7 @@ import json
 import os
 from pathlib import Path
 from typing import Dict, Generator
+import numpy as np
 
 import pandas as pd
 
@@ -46,10 +47,21 @@ def save_csv(path: Path, df: pd.DataFrame, output_name: str = "output") -> None:
   logger.info(f"Written {output_name} to: \"{path.absolute()}\"")
 
 
+class NpEncoder(json.JSONEncoder):
+  def default(self, obj):
+    if isinstance(obj, np.integer):
+      return int(obj)
+    if isinstance(obj, np.floating):
+      return float(obj)
+    if isinstance(obj, np.ndarray):
+      return obj.tolist()
+    return json.JSONEncoder.default(self, obj)
+
+
 def save_json(path: Path, data: Dict) -> None:
   try:
     with open(path, "w", encoding="utf8") as f:
-      json.dump(data, f, indent=2)
+      json.dump(data, f, indent=2, cls=NpEncoder)
     logger = get_cli_logger()
     logger.info(f"Written output to: \"{path.absolute()}\"")
   except Exception as ex:
