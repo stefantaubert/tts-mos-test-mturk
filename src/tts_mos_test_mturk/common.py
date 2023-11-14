@@ -1,4 +1,3 @@
-from statistics import mean
 from typing import List, Set
 
 import numpy as np
@@ -40,7 +39,7 @@ def get_ratings(data: EvaluationData, rating_names: Set[str]) -> np.ndarray:
         rs = ratings[alg_i][worker_i][file_i]
         if len(rs) > 0:
           # Note: theoretically its better to take the mean for each rating-name separately and then the mean of both but in case the amount per rating is equal it makes no difference
-          avg_rating = mean(rs)
+          avg_rating = np.mean(rs)
           final_ratings[alg_i, worker_i, file_i] = avg_rating
   return final_ratings
 
@@ -50,5 +49,5 @@ def get_mean_rating(ratings: Ratings, rating_names: Set[RatingName]) -> RatingVa
     ratings[rating_name]
     for rating_name in rating_names
   ]
-  result = mean(selected_ratings)
+  result = np.mean(selected_ratings)
   return result

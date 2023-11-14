@@ -26,6 +26,15 @@ def get_row(row_template: ODType, ratings: np.ndarray, ratings_masked: np.ndarra
   row["CI95"] = get_ci95(current_ratings_masked[algo_i])
   row["CI95 (default)"] = get_ci95_default(current_ratings_masked[algo_i])
   row["STD"] = np.nanstd(current_ratings_masked[algo_i])
+  row["Min. #Ratings per Sentence"] = np.min(
+    np.sum(~np.isnan(current_ratings_masked[algo_i]), axis=0))
+  row["Max. #Ratings per Sentence"] = np.max(
+    np.sum(~np.isnan(current_ratings_masked[algo_i]), axis=0))
+  row["Avg. #Ratings per Sentence"] = np.mean(
+    np.sum(~np.isnan(current_ratings_masked[algo_i]), axis=0))
+  row["#Sentences"] = current_ratings_masked.shape[0]
+  row["#Workers"] = np.sum(np.any(~np.isnan(current_ratings_masked[algo_i]), axis=1))
+  row["#Workers (all)"] = current_ratings_masked.shape[1]
   row["#Ratings"] = np.sum(~np.isnan(current_ratings_masked[algo_i]))
   row["#Ratings (all)"] = np.sum(~np.isnan(ratings[algo_i]))
   if row["#Ratings (all)"] == 0:

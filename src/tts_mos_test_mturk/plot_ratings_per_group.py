@@ -33,7 +33,7 @@ from tts_mos_test_mturk.typing import MaskName
 
 def plot_ratings_groupwise(data: EvaluationData, mask_names: Set[MaskName]) -> Figure:
   stat_rows: List[ODType[str, Any]]
-  if False:
+  if True:
     stat_rows = get_mos_df(data, mask_names)
     with Path("/tmp/get_mos_df.pkl").open("wb") as f:
       pickle.dump(stat_rows, f)

@@ -1,7 +1,6 @@
 import datetime
 from collections import Counter, OrderedDict
 from dataclasses import dataclass, field
-from statistics import mean
 from typing import Dict, List, Set, Tuple
 
 import numpy as np
@@ -69,7 +68,7 @@ class WorkerEntry:
       return self.algorithm_correlations[rating_name]
     if np.isnan(self.algorithm_correlations[rating_name]):
       return self.sentence_correlations[rating_name]
-    return mean([self.algorithm_correlations[rating_name], self.sentence_correlations[rating_name]])
+    return np.mean([self.algorithm_correlations[rating_name], self.sentence_correlations[rating_name]])
 
 
 def get_wass_stat_data(data: EvaluationData, masks: List[MaskBase]) -> Dict[str, WorkerEntry]:
@@ -208,7 +207,7 @@ def stats_to_df(stats: Dict[str, WorkerEntry]) -> pd.DataFrame:
         all_corr_vals.append(mn)
     all_corr = np.nan
     if len(all_corr_vals) > 0:
-      all_corr = mean(all_corr_vals)
+      all_corr = np.mean(all_corr_vals)
     data_entry[COL_ALL_CORR] = all_corr
 
     data_entry[COL_MASKED_ASSIGNMENTS] = entry.masked_assignments
