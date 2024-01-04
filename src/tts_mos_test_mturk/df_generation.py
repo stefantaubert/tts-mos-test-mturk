@@ -16,6 +16,7 @@ from tts_mos_test_mturk.masking.mask_factory import MaskFactory
 from tts_mos_test_mturk.masking.masks import MaskBase
 from tts_mos_test_mturk.typing import MaskName
 
+ALL_CELL_CONTENT = "-ALL-"
 
 def get_row(row_template: ODType, ratings: np.ndarray, ratings_masked: np.ndarray, algo_i: int, masks: List[MaskBase]) -> ODType:
   row = row_template.copy()
@@ -42,10 +43,6 @@ def get_row(row_template: ODType, ratings: np.ndarray, ratings_masked: np.ndarra
   else:
     row["%"] = row["#Ratings"] / row["#Ratings (all)"] * 100
   return row
-
-
-ALL_CELL_CONTENT = "-ALL-"
-
 
 def get_mos_df(data: EvaluationData, mask_names: Set[MaskName]) -> List[ODType[str, Any]]:
   masks = data.get_masks_from_names(mask_names)
@@ -364,6 +361,7 @@ def generate_bonus_csv(data: EvaluationData, mask_names: Set[str], bonus: float,
   logger.info(
     f"Estimated Fees to Mechanical Turk: {amazon_fee_percent*100:.2f}% of ${costs:.2f} = ${fees:.2f}")
   logger.info(f"Total Reward + Fees = ${costs + fees:.2f}")
+  # TODO tax as param
   logger.info(f"19% Tax of ${costs + fees:.2f} = ${(costs + fees)*0.19:.2f}")
   logger.info(f"Estimated Cost: Total Reward + Fees + Tax = ${(costs + fees)*1.19:.2f}")
   return result, results_dict
