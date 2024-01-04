@@ -140,3 +140,4 @@ deploy-PyPI.sh
 TODO.txt
 examples/
 *_debug/
+README_old.md

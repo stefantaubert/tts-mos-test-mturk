@@ -14,15 +14,21 @@ Command-line interface (CLI) to evaluate text-to-speech (TTS) mean opinion score
 
 - `init`: initialize project from .json-file
 - `masks`
+  - `create`: create empty mask
+  - `mask-workers-by-id`: mask workers by their WorkerId
+  - `mask-workers-by-age-group`: mask workers by their age group
+  - `mask-workers-by-gender`: mask workers by their gender
   - `mask-workers-by-assignments-count`: mask workers by their count of assignments
   - `mask-workers-by-masked-ratings-count`: mask workers by their count of masked ratings
   - `mask-workers-by-correlation`: mask workers by their algorithm/sentence correlation
   - `mask-workers-by-correlation-percent`: mask workers by their algorithm/sentence correlation (percentage-wise)
+  - `mask-assignments-by-id`: mask assignments by their AssignmentId
   - `mask-assignments-by-device`: mask assignments by their listening device
-  - `mask-assignments-by-worktime`: mask assignments by their worktime
-  - `mask-assignments-by-time`: mask assignments by their submit time
   - `mask-assignments-by-status`: mask assignments by their status
+  - `mask-assignments-by-time`: mask assignments by their submit time
   - `mask-rating-outliers`: mask outlying ratings
+  - `merge-masks`: merge masks together
+  - `reverse-mask`: reverse mask
 - `stats`
   - `print-mos`: print MOS and CI95
   - `print-masking-stats`: print masking statistics
@@ -31,12 +37,9 @@ Command-line interface (CLI) to evaluate text-to-speech (TTS) mean opinion score
   - `print-sentence-stats`: print sentence statistics for each algorithm
   - `print-data`: print all data points
 - `mturk`
-  - `prepare-approval`: generate approval CSV-file
-  - `approve`: approve assignments from CSV-file
-  - `prepare-rejection`: generate rejection CSV-file
-  - `reject`: reject assignments from CSV-file
-  - `prepare-bonus-payment`: generate bonus payment CSV-file
-  - `pay-bonus`: pay bonus to assignments from CSV-file
+  - `prepare-approval`: generate approval file
+  - `prepare-rejection`: generate rejection file
+  - `prepare-bonus-payment`: generate bonus payment file
 
 ## Installation
 
@@ -49,12 +52,12 @@ pip install tts-mos-test-mturk --user
 ```txt
 usage: mos-cli [-h] [-v] {init,masks,stats,mturk} ...
 
-CLI to evaluate MOS results from MTurk and approve/reject workers.
+CLI to evaluate text-to-speech MOS studies done on MTurk.
 
 positional arguments:
   {init,masks,stats,mturk}
                                         description
-    init                                initialize project
+    init                                initialize project from .json-file
     masks                               masks commands
     stats                               stats commands
     mturk                               mturk commands
@@ -64,213 +67,70 @@ options:
   -v, --version                         show program's version number and exit
 ```
 
-## Pipeline
-
-The evaluation can be done using a .json-file which interacts as a interface between the MTurk template and the evaluation (see "Project JSON example").
-
-### 1. Run survey on MTurk
-
-The survey needs to be started at MTurk and then the .json-file needs to be prepared which contains all relevant information for the evaluation. An example .json-file can be found at [examples/example.json](./examples/example.json).
-
-### 2. Initialize project
-
-From the previously created .json-file a new project can be initialized with:
-
-```sh
-mos-cli init \
-  "/tmp/project.json" \
-  "/tmp/project.pkl"
-```
-
-### 3. Mask workers/assignments/ratings
-
-Workers/assignments/ratings can be masked in order to ignore them later in the MOS calculation. For these operations the command `mos-cli masks [operation]` is used. For example: Mask assignments that were done too fast  (e.g., less than 30 seconds):
-
-```sh
-mos-cli masks mask-assignments-by-worktime \
-  "/tmp/project.pkl" \
-  30 "too-fast"
-```
-
-Example output:
-
-```txt
---- Assignment Statistics ---
-0 out of all 540 assignments (0.00%) were already masked (i.e., 540 unmasked).
-Masked 34 out of the 540 unmasked assignments (6.30%), kept 506 unmasked!
-Result: 34 out of all 540 assignments (6.30%) are masked now!
---- Ratings Statistics ---
-0 out of all 4320 ratings (0.00%) were already masked (i.e., 4320 unmasked).
-Masked 272 out of the 4320 unmasked ratings (6.30%), kept 4048 unmasked!
-Result: 272 out of all 4320 ratings (6.30%) are masked now!
-Updated project at: "/tmp/project.pkl"
-Log: "/tmp/tts-mos-test-mturk.log"
-```
-
-This operation masked all 34 assignments (incl. their 272 contained ratings) that were done too fast.
-
-Then, to mask from the remaining assignments the ones done without a headphone (i.e., laptop or desktop), the following command can be used:
-
-```sh
-mos-cli masks mask-assignments-by-device \
-  "/tmp/project.pkl" \
-  "laptop" "desktop" \
-  "too-fast > no-headphone" \
-  --masks "too-fast"
-```
-
-Example output:
-
-```log
---- Assignment Statistics ---
-34 out of all 540 assignments (6.30%) were already masked (i.e., 506 unmasked).
-Masked 54 out of the 506 unmasked assignments (10.67%), kept 452 unmasked!
-Result: 88 out of all 540 assignments (16.30%) are masked now!
---- Ratings Statistics ---
-272 out of all 4320 ratings (6.30%) were already masked (i.e., 4048 unmasked).
-Masked 432 out of the 4048 unmasked ratings (10.67%), kept 3616 unmasked!
-Result: 704 out of all 4320 ratings (16.30%) are masked now!
-Updated project at: "/tmp/project.pkl"
-Log: "/tmp/tts-mos-test-mturk.log"
-```
-
-This operation masked 54 further assignments (incl. their 432 ratings) that were done without a headphone. All assignments that were done too fast were already masked.
-
-### 4. Calculate MOS and CI95
-
-To calculate the MOS for all ratings while ignoring ratings that were done without a headphone or were taken too fast, the masks `too-fast` and `too-fast > no-headphone` need to be applied:
-
-```sh
-mos-cli stats print-mos \
-  "/tmp/project.pkl" \
-  --masks \
-    "too-fast" \
-    "too-fast > no-headphone"
-```
-
-Example output:
-
-```log
-Count of ratings (unmasked/all): 3616/4320 -> on average 904/1080 per algorithm
-
-  Algorithm       MOS      CI95
-0      alg0    3.1551    0.1781
-1      alg1    2.9856    0.1618
-2      alg2    2.8686    0.1751
-3      alg3    2.8904    0.1831
-Log: "/tmp/tts-mos-test-mturk.log"
-```
-
-### 5. Approve/reject assignments
-
-To approve all assignments that weren't done too fast, a CSV can be generated using:
-
-```sh
-mos-cli mturk prepare-approval \
-  "/tmp/project.pkl" \
-  "/tmp/approve.csv" \
-  --costs 0.10 \
-  --reason "good work" \
-  --masks "too-fast"
-```
-
-Example output:
-
-```log
-Count of assignments that will be approved: 506
-Estimated costs (506 assignments x 0.10$): 50.60$
-Written output to: "/tmp/approve.csv"
-Log: "/tmp/tts-mos-test-mturk.log"
-```
-
-To finally approve the assignments:
-
-```sh
-mos-cli mturk approve \
-  "AWS_ACCESS_KEY_ID" \
-  "AWS_SECRET_ACCESS_KEY" \
-  "/tmp/approve.csv"
-```
-
-To reject all assignments that were done too fast, a CSV can be generated using:
-
-```sh
-mos-cli mturk prepare-rejection \
-  "/tmp/project.pkl" \
-  "assignment was done too fast" \
-  "/tmp/reject.csv" \
-  --masks "too-fast"
-```
-
-Example output:
-
-```log
-Count of assignments that will be rejected: 34
-Written output to: "/tmp/reject.csv"
-Log: "/tmp/tts-mos-test-mturk.log"
-```
-
-To finally reject the assignments:
-
-```sh
-mos-cli mturk reject \
-  "AWS_ACCESS_KEY_ID" \
-  "AWS_SECRET_ACCESS_KEY" \
-  "/tmp/reject.csv"
-```
-
 ## Project JSON example
 
 ```json
 {
-  "files": [
-    "file1",
-    "file2"
-  ],
   "algorithms": [
     "alg1",
-    "alg2"
+    "alg2",
+    "alg3",
+    "alg4"
+  ],
+  "files": [
+    "file1",
+    "file2",
+    "file3"
   ],
   "workers": {
-    "Worker1": {
-      "Assignment1": {
-        "device": "in-ear",
-        "state": "Approved",
-        "worktime": 30,
-        "hit": "Hit1",
-        "ratings": [
-          {
-            "rating": 5,
-            "algorithm": "alg1",
-            "file": "file1"
-          },
-          {
-            "rating": 3,
-            "algorithm": "alg2",
-            "file": "file1"
-          }
-        ]
+    "worker1": {
+      "gender": "male",
+      "age_group": "18-29",
+      "assignments": {
+        "assignment1": {
+          "device": "headphone",
+          "state": "Approved",
+          "hit": "hit1",
+          "time": "13.07.23 05:08:04",
+          "ratings": [
+            {
+              "algorithm": "alg1",
+              "file": "file1",
+              "votes": {
+                "naturalness": 3,
+                "intelligibility": 5
+              }
+            },
+            {
+              "algorithm": "alg2",
+              "file": "file3",
+              "votes": {
+                "naturalness": 2,
+                "intelligibility": 4
+              }
+            }
+          ]
+        }
       }
     }
   }
 }
 ```
 
+For a longer example see [here](./etc/example.json)
+
 ## Roadmap
 
-- add `masks mask-workers-by-id`
-- add `masks mask-assignments-by-id`
 - add `masks mask-assignments-not-of-last-month/week/day`
-- add `!` before mask name reverses mask on input
+- make device, state and HitId optional
 
 ## Dependencies
 
 - `numpy`
 - `pandas`
 - `tqdm`
-- `boto3`
-- `boto3-stubs`
 - `ordered-set>=4.1.0`
+- `mean-opinion-score==0.0.2`
 
 ## Contributing
 
@@ -350,7 +210,11 @@ Taubert, S. (2023). tts-mos-test-mturk (Version 0.0.1) [Computer software]. http
     - added `mask mask-assignments-by-time`
     - added parsing of `HITId`
     - added option to mask assignments before preparing rejection CSV
+    - added `!` before mask name reverses mask on input
+    - added `masks mask-assignments-by-id`
+    - added `masks mask-workers-by-id`
   - Changed:
     - moved template creation and preparation to another repository
+    - removed worktime parsing
 - v0.0.1 (2023-02-23)
   - Initial release

@@ -28,9 +28,9 @@ from tts_mos_test_mturk_cli.default_args import (add_opt_dry_argument, add_opt_m
                                                  add_req_output_mask_argument,
                                                  add_req_project_argument, add_req_ratings_argument)
 from tts_mos_test_mturk_cli.helper import save_project
-from tts_mos_test_mturk_cli.validation import (ensure_age_groups_exist, ensure_assignments_exists,
-                                               ensure_mask_exists, ensure_masks_exist,
-                                               ensure_ratings_exist, ensure_workers_exist)
+from tts_mos_test_mturk_cli.validation import (ensure_assignments_exists, ensure_mask_exists,
+                                               ensure_masks_exist, ensure_ratings_exist,
+                                               ensure_workers_exist)
 
 
 def get_mask_assignments_by_device_parser(parser: ArgumentParser):

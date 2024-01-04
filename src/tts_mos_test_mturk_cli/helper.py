@@ -2,8 +2,8 @@ import json
 import os
 from pathlib import Path
 from typing import Dict, Generator
-import numpy as np
 
+import numpy as np
 import pandas as pd
 
 from tts_mos_test_mturk.evaluation_data import EvaluationData

@@ -44,7 +44,6 @@ dependencies = [
   "tqdm",
   "ordered-set>=4.1.0",
   "mean-opinion-score==0.0.2",
-  "matplotlib",
 ]
 
 [project.urls]

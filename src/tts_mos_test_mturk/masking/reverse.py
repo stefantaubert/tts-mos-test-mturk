@@ -1,9 +1,6 @@
 
-from typing import List, Set
 
 from tts_mos_test_mturk.evaluation_data import EvaluationData
-from tts_mos_test_mturk.masking.mask_factory import MaskFactory
-from tts_mos_test_mturk.masking.masks import AssignmentsMask, MaskBase, RatingsMask, WorkersMask
 from tts_mos_test_mturk.statistics.update_stats import print_stats_masks
 
 
