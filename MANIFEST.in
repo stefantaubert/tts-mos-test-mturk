@@ -1,0 +1,2 @@
+include etc/example.json
+include etc/example.sh

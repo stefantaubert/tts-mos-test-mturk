@@ -2,7 +2,7 @@ DS_PATH="/tmp/example.pkl"
 
 # Initialize project using example.json
 mos-cli init \
-  "/home/mi/code/tts-mos-test-mturk/etc/example.json" \
+  "example.json" \
   "$DS_PATH"
 # Output:
 # Parsed 36 workers, 438 assignments and 2 x 4380 ratings for 4 algorithms and 120 files.
