@@ -12,8 +12,8 @@ authors:
     affiliation: Chemnitz University of Technology
     orcid: 'https://orcid.org/0000-0002-4932-2874'
     website: 'https://stefantaubert.com/'
-version: 0.0.1
-date-released: 2023-02-23
+version: 0.0.2
+date-released: 2024-01-05
 license: MIT
 url: https://github.com/stefantaubert/tts-mos-test-mturk
-doi: 10.5281/zenodo.7669641
+doi: 10.5281/zenodo.10461539

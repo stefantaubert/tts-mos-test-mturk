@@ -23,6 +23,7 @@ class Assignment:
   state: str
   # TODO make optional
   hit_id: str
+  # TODO make optional
   time: datetime.datetime
   # ratings: List[Rating] = field(default_factory=list)
   ratings: ODType[Tuple[AlgorithmName, FileName], RatingData] = field(default_factory=OrderedDict)

@@ -1,6 +1,6 @@
 [project]
 name = "tts-mos-test-mturk"
-version = "0.0.1"
+version = "0.0.2"
 description = "Command-line interface to evaluate text-to-speech mean opinion score studies done on Amazon Mechanical Turk."
 readme = "README.md"
 requires-python = ">=3.8, <3.12"

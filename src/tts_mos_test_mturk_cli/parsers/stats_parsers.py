@@ -54,7 +54,7 @@ def init_print_masking_stats_parser(parser: ArgumentParser):
 
 
 def init_print_mos_parser(parser: ArgumentParser):
-  parser.description = "Print MOS and CI95 statistics for each algorithm."
+  parser.description = "Print MOS and CI95 statistics."
   add_req_project_argument(parser)
   add_opt_masks_argument(parser)
   add_opt_output_argument(parser)

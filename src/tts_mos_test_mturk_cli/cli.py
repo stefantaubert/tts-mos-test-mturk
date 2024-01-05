@@ -11,8 +11,7 @@ from tempfile import gettempdir
 from time import perf_counter
 from typing import Callable, Generator, List, Tuple
 
-from tts_mos_test_mturk.logging import (attach_boto_to_detail_logger,
-                                        attach_urllib3_to_detail_logger, get_detail_logger,
+from tts_mos_test_mturk.logging import (attach_urllib3_to_detail_logger, get_detail_logger,
                                         get_logger)
 from tts_mos_test_mturk_cli.argparse_helper import get_optional, parse_path, parse_positive_integer
 from tts_mos_test_mturk_cli.globals import APP_NAME
@@ -50,7 +49,6 @@ def get_masks_parsers() -> Parsers:
   yield "mask-assignments-by-id", "mask assignments by their AssignmentId", init_mask_assignments_by_id_parser
   yield "mask-assignments-by-device", "mask assignments by their listening device", get_mask_assignments_by_device_parser
   yield "mask-assignments-by-status", "mask assignments by their status", get_mask_assignments_by_status_parser
-  # yield "mask-assignments-by-worktime", "mask assignments by their worktime", init_mask_assignments_by_worktime_parser
   yield "mask-assignments-by-time", "mask assignments by their submit time", init_mask_assignments_by_time_parser
   yield "mask-rating-outliers", "mask outlying ratings", init_mask_rating_outliers_parser
   yield "merge-masks", "merge masks together", init_merge_masks_parser
@@ -217,7 +215,6 @@ def parse_args(args: List[str]) -> None:
   core_main_logger.parent = cmd_logger
   core_detail_logger = get_detail_logger()
   core_detail_logger.parent = cmd_flogger
-  attach_boto_to_detail_logger()
   attach_urllib3_to_detail_logger()
 
   success = True

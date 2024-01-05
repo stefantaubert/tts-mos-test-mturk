@@ -69,26 +69,6 @@ def get_mask_assignments_by_status_parser(parser: ArgumentParser):
   return main
 
 
-# def init_mask_assignments_by_worktime_parser(parser: ArgumentParser):
-#   parser.description = "Mask assignments by their worktime."
-#   add_req_project_argument(parser)
-#   add_opt_masks_argument(parser)
-#   parser.add_argument("--from-time", type=parse_non_negative_integer, metavar="FROM-TIME",
-#                       help="mask all assignments, which have a worktime greater than or equal to FROM-TIME (inclusive); in [0; inf)", default=0)
-#   parser.add_argument("to_time", type=parse_positive_integer, metavar="TO-TIME",
-#                       help="mask all assignments, which have a worktime smaller than TO-TIME (exclusive); in (0; inf)")
-#   add_req_output_mask_argument(parser)
-#   add_opt_dry_argument(parser)
-
-#   def main(ns: Namespace) -> None:
-#     ensure_masks_exist(ns.project, ns.masks)
-#     mask_assignments_by_worktime(ns.project, ns.masks, ns.from_time, ns.to_time, ns.output_mask)
-
-#     if not ns.dry:
-#       save_project(ns.project)
-#   return main
-
-
 def init_mask_assignments_by_time_parser(parser: ArgumentParser):
   parser.description = "Mask assignments by their submit time."
   add_req_project_argument(parser)
@@ -219,7 +199,7 @@ def init_mask_assignments_by_id_parser(parser: ArgumentParser):
 def init_create_mask_parser(parser: ArgumentParser):
   parser.description = "Create empty mask."
   add_req_project_argument(parser)
-  parser.add_argument("mask_type", type=str, choices=["a", "w", "r"], help="type of the mask")
+  parser.add_argument("mask_type", type=str, choices=["a", "w", "r"], help="type of the mask (assignment/worker/rating)")
   add_req_output_mask_argument(parser)
   add_opt_dry_argument(parser)
 
@@ -371,4 +351,4 @@ def init_mask_workers_by_correlation_percent_parser(parser: ArgumentParser):
 
 def add_mode_argument(parser: ArgumentParser) -> None:
   parser.add_argument("--mode", type=str, choices=["sentence", "algorithm",
-                      "both"], default="both", help="mode to calculate the correlations: sentence -> the correlation of the ratings of each audio url from a worker in comparison to the mean of the ratings of the other workers; algorithm -> the correlation of the mean ratings from one worker compared to the mean of all other workers for each algorithm; both -> the mean of sentence and algorithm correlation")
+                      "both"], default="both", help="mode to calculate the correlations: sentence -> the correlation of the ratings of each audio file from a worker in comparison to the mean of the ratings of the other workers; algorithm -> the correlation of the mean ratings from one worker compared to the mean of all other workers for each algorithm; both -> the mean of sentence and algorithm correlation")

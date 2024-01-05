@@ -1,5 +1,3 @@
-
-
 from tts_mos_test_mturk.evaluation_data import EvaluationData
 from tts_mos_test_mturk.statistics.update_stats import print_stats_masks
 
