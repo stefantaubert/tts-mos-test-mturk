@@ -257,7 +257,7 @@ def add_all_row(df: pd.DataFrame, stats: Dict[str, WorkerEntry]) -> pd.DataFrame
       assert col not in row
       row[col] = df[col].mean(skipna=True)
       all_corr_vals.append(row[col])
-  row[COL_ALL_CORR] = mean(all_corr_vals)
+  row[COL_ALL_CORR] = np.mean(all_corr_vals)
   row[COL_MASKED_ASSIGNMENTS] = df[COL_MASKED_ASSIGNMENTS].sum()
   row[COL_MASKED] = df[COL_MASKED].all()
   df = pd.concat([df, pd.DataFrame.from_records([row])], ignore_index=True)
